@@ -3,21 +3,13 @@ FROM mcr.microsoft.com/dotnet/core/sdk:3.1 AS test
 
 SHELL ["/bin/bash", "-c"]
 
-# dotnet compiler options
-ARG TAG=false
-
-EXPOSE 4120
-
 ### copy the source and tests
 COPY src /src
 
 WORKDIR /src/Ngsa.DataService
 
 # build the app
-RUN if [ "$TAG" == "true" ]; then dotnet publish -c Release -o /app --version-suffix ''; else dotnet publish -c Release -o /app; fi
-
-WORKDIR /src/Ngsa.DataService.Tests
-ENTRYPOINT [ "./runtests.sh" ]
+RUN dotnet publish -c Release -o /app
 
 ###########################################################
 
