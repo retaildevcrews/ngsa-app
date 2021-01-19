@@ -1,0 +1,6 @@
+#!/bin/bash
+
+# build release containers
+docker build . -t ngsa-lr -f src/Ngsa.LodeRunner/Dockerfile
+docker build . -t ngsa-ds -f src/Ngsa.DataService/Dockerfile
+docker build . -t ngsa-app -f src/Ngsa.App/Dockerfile
