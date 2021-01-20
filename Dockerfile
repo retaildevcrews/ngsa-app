@@ -4,9 +4,9 @@ FROM mcr.microsoft.com/dotnet/core/sdk:3.1 AS test
 SHELL ["/bin/bash", "-c"]
 
 ### copy the source and tests
-COPY src /src
+COPY . /src
 
-WORKDIR /src/Ngsa.DataService
+WORKDIR /src
 
 # build the app
 RUN dotnet publish -c Release -o /app
@@ -18,7 +18,7 @@ RUN dotnet publish -c Release -o /app
 FROM mcr.microsoft.com/dotnet/core/aspnet:3.1-alpine AS release
 
 ### if port is changed, also update value in Constants.cs
-EXPOSE 4122
+EXPOSE 4120
 WORKDIR /app
 
 ### create a user
