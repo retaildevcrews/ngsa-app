@@ -34,4 +34,4 @@ USER ngsa
 ### copy the app
 COPY --from=test /app .
 
-ENTRYPOINT [ "dotnet",  "app.dll", "--in-memory" ]
+ENTRYPOINT [ "dotnet",  "aspnetapp.dll", "--in-memory" ]
