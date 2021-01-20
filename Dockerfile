@@ -18,7 +18,7 @@ RUN dotnet publish -c Release -o /app
 FROM mcr.microsoft.com/dotnet/core/aspnet:3.1-alpine AS release
 
 ### if port is changed, also update value in Constants.cs
-EXPOSE 4120
+EXPOSE 8080
 WORKDIR /app
 
 ### create a user
