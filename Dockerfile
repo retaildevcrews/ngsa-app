@@ -34,4 +34,4 @@ USER ngsa
 ### copy the app
 COPY --from=test /app .
 
-ENTRYPOINT [ "dotnet",  "Ngsa.DataService.dll" ]
+ENTRYPOINT [ "dotnet",  "app.dll", "--in-memory" ]
