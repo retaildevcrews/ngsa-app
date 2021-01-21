@@ -81,8 +81,24 @@ namespace Ngsa.DataService
             // map the controllers
             app.UseEndpoints(ep => { ep.MapControllers(); });
 
+            // rewrite root to /index.html
+            app.UseSwaggerRoot();
+
+            // Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.), specifying the Swagger JSON endpoint.
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/swagger.json", "Next Gen Symmetric Apps");
+                c.RoutePrefix = string.Empty;
+            });
+
             // use the version middleware to handle /version
             app.UseVersion();
+
+            // handle robots.txt
+            app.UseRobots();
+
+            // swagger.json
+            app.UseStaticFiles();
         }
 
         /// <summary>
