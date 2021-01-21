@@ -56,9 +56,8 @@ namespace Ngsa.DataService.Controllers
 
             if (list.Count > 0)
             {
-                nLogger.Data.Clear();
                 nLogger.EventId = new EventId((int)HttpStatusCode.BadRequest, HttpStatusCode.BadRequest.ToString());
-                nLogger.LogWarning($"Invalid query string");
+                nLogger.LogWarning("Invalid query string");
 
                 return ResultHandler.CreateResult(list, Request.Path.ToString() + (Request.QueryString.HasValue ? Request.QueryString.Value : string.Empty));
             }
@@ -94,9 +93,8 @@ namespace Ngsa.DataService.Controllers
 
             if (list.Count > 0)
             {
-                nLogger.Data.Clear();
                 nLogger.EventId = new EventId((int)HttpStatusCode.BadRequest, HttpStatusCode.BadRequest.ToString());
-                nLogger.LogWarning($"Invalid Actor Id");
+                nLogger.LogWarning("Invalid Actor Id");
 
                 return ResultHandler.CreateResult(list, Request.Path.ToString() + (Request.QueryString.HasValue ? Request.QueryString.Value : string.Empty));
             }

@@ -13,7 +13,6 @@ namespace Ngsa.Middleware
 {
     public class NgsaLog
     {
-        private static readonly Dictionary<int, NgsaLog> Loggers = new Dictionary<int, NgsaLog>();
         private static readonly JsonSerializerOptions Options = new JsonSerializerOptions
         {
             IgnoreNullValues = true,
@@ -28,7 +27,7 @@ namespace Ngsa.Middleware
         public Exception Exception { get; set; } = null;
         public EventId EventId { get; set; } = new EventId(-1, string.Empty);
         public HttpContext Context { get; set; } = null;
-        public Dictionary<string, string> Data { get; } = new Dictionary<string, string>();
+        public Dictionary<string, object> Data { get; } = new Dictionary<string, object>();
 
         public NgsaLog GetLogger(string method, HttpContext context = null)
         {
@@ -52,8 +51,8 @@ namespace Ngsa.Middleware
                 return;
             }
 
-            Dictionary<string, object> d = GetDictionary(message, LogLevel.Information);
-            WriteLog(d, ConsoleColor.Green);
+            UpdateDictionary(message, LogLevel.Information);
+            WriteLog();
         }
 
         public void LogWarning(string message)
@@ -63,8 +62,8 @@ namespace Ngsa.Middleware
                 return;
             }
 
-            Dictionary<string, object> d = GetDictionary(message, LogLevel.Warning);
-            WriteLog(d, ConsoleColor.Yellow);
+            UpdateDictionary(message, LogLevel.Warning);
+            WriteLog();
         }
 
         public void LogError(string message, Exception ex = null)
@@ -74,136 +73,135 @@ namespace Ngsa.Middleware
                 return;
             }
 
-            Dictionary<string, object> d = GetDictionary(message, LogLevel.Error);
-
+            // set the exception
             if (ex != null)
             {
-                d.Add("ExceptionType", ex.GetType().FullName);
-                d.Add("ExceptionMessage", ex.Message);
+                Exception = ex;
             }
-            else if (Exception != null)
-            {
-                d.Add("ExceptionType", Exception.GetType().FullName);
-                d.Add("ExceptionMessage", Exception.Message);
-            }
+
+            UpdateDictionary(message, LogLevel.Error);
 
             // display the error
-            WriteLog(d, ConsoleColor.Red);
+            WriteLog();
         }
 
-        private static void WriteLog(Dictionary<string, object> log, ConsoleColor color)
+        private void WriteLog()
         {
             // todo - temporary workaround for XSS error
 
-            StringBuilder sb = new StringBuilder("{");
+            //StringBuilder sb = new StringBuilder("{");
 
-            StringBuilder val;
+            //StringBuilder val;
 
-            foreach (string key in log.Keys)
+            //foreach (string key in Data.Keys)
+            //{
+            //    if (Data[key] != null)
+            //    {
+            //        val = new StringBuilder();
+
+            //        switch (Data[key].GetType().Name)
+            //        {
+            //            case "DateTime":
+            //                val.Append('"');
+            //                val.Append(((DateTime)Data[key]).ToString("o"));
+            //                val.Append('"');
+            //                break;
+
+            //            case "Int16":
+            //            case "Int32":
+            //            case "Int64":
+            //            case "Double":
+            //            case "Single":
+            //            case "Decimal":
+            //                val.Append(Data[key]);
+            //                break;
+
+            //            default:
+            //                val.Append('"');
+            //                val.Append(Data[key].ToString().Trim().Replace("\"", string.Empty));
+            //                val.Append('"');
+            //                break;
+            //        }
+
+            //        if (val != null && val.Length > 0)
+            //        {
+            //            if (sb.Length > 1)
+            //            {
+            //                sb.Append(',');
+            //            }
+
+            //            sb.Append(" \"");
+            //            sb.Append(key);
+            //            sb.Append("\": ");
+            //            sb.Append(val);
+            //        }
+            //    }
+            //}
+
+            //sb.Append(" }");
+
+            Console.ForegroundColor = LogLevel >= LogLevel.Error ? ConsoleColor.Red :
+                LogLevel == LogLevel.Warning ? ConsoleColor.Yellow :
+                LogLevel == LogLevel.Information ? ConsoleColor.Green : Console.ForegroundColor;
+
+            if (LogLevel >= LogLevel.Error)
             {
-                if (log[key] != null)
-                {
-                    val = new StringBuilder();
-
-                    switch (log[key].GetType().Name)
-                    {
-                        case "DateTime":
-                            val.Append('"');
-                            val.Append(((DateTime)log[key]).ToString("o"));
-                            val.Append('"');
-                            break;
-
-                        case "Int16":
-                        case "Int32":
-                        case "Int64":
-                        case "Double":
-                        case "Single":
-                        case "Decimal":
-                            val.Append(log[key]);
-                            break;
-
-                        default:
-                            val.Append('"');
-                            val.Append(log[key].ToString().Trim().Replace("\"", string.Empty));
-                            val.Append('"');
-                            break;
-                    }
-
-                    if (val != null && val.Length > 0)
-                    {
-                        if (sb.Length > 1)
-                        {
-                            sb.Append(',');
-                        }
-
-                        sb.Append(" \"");
-                        sb.Append(key);
-                        sb.Append("\": ");
-                        sb.Append(val);
-                    }
-                }
-            }
-
-            sb.Append(" }");
-
-            Console.ForegroundColor = color;
-
-            if (color == ConsoleColor.Red)
-            {
-                // Console.Error.WriteLine(JsonSerializer.Serialize(log, Options));
-                Console.Error.WriteLine(sb);
+                Console.Error.WriteLine(JsonSerializer.Serialize(Data, Options));
+                // Console.Error.WriteLine(sb);
             }
             else
             {
-                // Console.WriteLine(JsonSerializer.Serialize(log, Options));
-                Console.WriteLine(sb);
+                Console.WriteLine(JsonSerializer.Serialize(Data, Options));
+                // Console.WriteLine(sb);
             }
 
             Console.ResetColor();
         }
 
-        private Dictionary<string, object> GetDictionary(string message, LogLevel logLevel)
+        private void SetDataValue(string key, object value)
         {
-            Dictionary<string, object> data = new Dictionary<string, object>
+            if (!Data.TryAdd(key, value))
             {
-                { "Date", DateTime.UtcNow },
-                { "LogName", Name },
-                { "Method", Method },
-                { "Message", message },
-                { "LogLevel", logLevel.ToString() },
-            };
+                Data[key] = value;
+            }
+        }
+
+        private void UpdateDictionary(string message, LogLevel logLevel)
+        {
+            SetDataValue("Date", DateTime.UtcNow);
+            SetDataValue("LogName", Name);
+            SetDataValue("Method", Method);
+            SetDataValue("Message", message);
+            SetDataValue("LogLevel", logLevel);
 
             if (EventId.Id > 0)
             {
-                data.Add("EventId", EventId.Id);
+                SetDataValue("EventId", EventId.Id);
             }
 
             if (!string.IsNullOrWhiteSpace(EventId.Name))
             {
-                data.Add("EventName", EventId.Name);
+                SetDataValue("EventName", EventId.Name);
+            }
+
+            if (Exception != null)
+            {
+                SetDataValue("ExceptionType", Exception.GetType().FullName);
+                SetDataValue("ExceptionMessage", Exception.Message);
             }
 
             if (Context != null && Context.Items != null)
             {
-                data.Add("Path", Context.Request.Path + (string.IsNullOrWhiteSpace(Context.Request.QueryString.Value) ? string.Empty : Context.Request.QueryString.Value));
+                // todo - causing xss error
+                // SetDataValue("Path", Context.Request.Path + (string.IsNullOrWhiteSpace(Context.Request.QueryString.Value) ? string.Empty : Context.Request.QueryString.Value));
 
-                if (Context.Items != null)
+                CorrelationVector cv = CorrelationVectorExtensions.GetCorrelationVectorFromContext(Context);
+
+                if (cv != null)
                 {
-                    CorrelationVector cv = Middleware.CorrelationVectorExtensions.GetCorrelationVectorFromContext(Context);
-
-                    if (cv != null)
-                    {
-                        data.Add("CVector", cv.Value);
-                    }
+                    SetDataValue("CVector", cv.Value);
                 }
             }
-
-            foreach (KeyValuePair<string, string> kvp in Data)
-            {
-                data.Add(kvp.Key, kvp.Value);
-            }
-
-            return data;
         }
     }
 }
