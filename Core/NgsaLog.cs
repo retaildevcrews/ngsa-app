@@ -19,8 +19,6 @@ namespace Ngsa.Middleware
             IgnoreNullValues = true,
         };
 
-        private static int counter = 0;
-
         public string Name { get; set; } = string.Empty;
         public LogLevel LogLevel { get; set; } = LogLevel.Information;
         public string ErrorMessage { get; set; } = string.Empty;
@@ -40,65 +38,43 @@ namespace Ngsa.Middleware
                 ErrorMessage = ErrorMessage,
                 NotFoundError = NotFoundError,
                 LogLevel = LogLevel,
-
                 Method = method,
                 Context = context,
             };
-
-            // get the next key
-            while (Loggers.ContainsKey(counter))
-            {
-                if (counter == int.MaxValue)
-                {
-                    counter = 0;
-                }
-
-                counter++;
-            }
-
-            // todo - reuse loggers
-            // use iDisposable?
-            //Loggers.Add(counter, logger);
 
             return logger;
         }
 
         public void LogInformation(string message)
         {
-            const LogLevel logLevel = LogLevel.Information;
-
-            if (LogLevel <= logLevel)
-            {
-                Dictionary<string, object> d = GetDictionary(message, logLevel);
-
-                WriteLog(d, ConsoleColor.Green);
-            }
-        }
-
-        public void LogWarning(string message)
-        {
-            const LogLevel logLevel = LogLevel.Warning;
-
-            if (LogLevel > logLevel)
+            if (LogLevel > LogLevel.Information)
             {
                 return;
             }
 
-            Dictionary<string, object> d = GetDictionary(message, logLevel);
+            Dictionary<string, object> d = GetDictionary(message, LogLevel.Information);
+            WriteLog(d, ConsoleColor.Green);
+        }
 
+        public void LogWarning(string message)
+        {
+            if (LogLevel > LogLevel.Warning)
+            {
+                return;
+            }
+
+            Dictionary<string, object> d = GetDictionary(message, LogLevel.Warning);
             WriteLog(d, ConsoleColor.Yellow);
         }
 
         public void LogError(string message, Exception ex = null)
         {
-            const LogLevel logLevel = LogLevel.Error;
-
-            if (LogLevel > logLevel)
+            if (LogLevel > LogLevel.Error)
             {
                 return;
             }
 
-            Dictionary<string, object> d = GetDictionary(message, logLevel);
+            Dictionary<string, object> d = GetDictionary(message, LogLevel.Error);
 
             if (ex != null)
             {
