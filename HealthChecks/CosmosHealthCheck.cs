@@ -12,6 +12,7 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 using Ngsa.DataService.DataAccessLayer;
 using Ngsa.DataService.Model;
+using Ngsa.Middleware;
 
 namespace Ngsa.DataService
 {
