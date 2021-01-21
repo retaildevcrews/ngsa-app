@@ -123,7 +123,7 @@ namespace Ngsa.Middleware
 
             StringBuilder val;
 
-            foreach (var key in log.Keys)
+            foreach (string key in log.Keys)
             {
                 if (log[key] != null)
                 {
