@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.CorrelationVector;
@@ -70,9 +71,7 @@ namespace Ngsa.Middleware
             {
                 Dictionary<string, object> d = GetDictionary(message, logLevel);
 
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine(JsonSerializer.Serialize(d, Options));
-                Console.ResetColor();
+                WriteLog(d, ConsoleColor.Green);
             }
         }
 
@@ -87,9 +86,7 @@ namespace Ngsa.Middleware
 
             Dictionary<string, object> d = GetDictionary(message, logLevel);
 
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine(JsonSerializer.Serialize(d, Options));
-            Console.ResetColor();
+            WriteLog(d, ConsoleColor.Yellow);
         }
 
         public void LogError(string message, Exception ex = null)
@@ -107,20 +104,85 @@ namespace Ngsa.Middleware
             {
                 d.Add("ExceptionType", ex.GetType());
                 d.Add("ExceptionMessage", ex.Message);
-
-                //d.Add("exceptionText", ex.ToString());
             }
             else if (Exception != null)
             {
                 d.Add("ExceptionType", Exception.GetType().FullName);
                 d.Add("ExceptionMessage", Exception.Message);
-
-                //d.Add("exceptionText", Exception.ToString());
             }
 
             // display the error
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.Error.WriteLine(JsonSerializer.Serialize(d, Options));
+            WriteLog(d, ConsoleColor.Red);
+        }
+
+        private static void WriteLog(Dictionary<string, object> log, ConsoleColor color)
+        {
+            // todo - temporary workaround for XSS error
+
+            StringBuilder sb = new StringBuilder("{");
+
+            StringBuilder val;
+
+            foreach (var key in log.Keys)
+            {
+                if (log[key] != null)
+                {
+                    val = new StringBuilder();
+
+                    switch (log[key].GetType().Name)
+                    {
+                        case "DateTime":
+                            val.Append('"');
+                            val.Append(((DateTime)log[key]).ToString("o"));
+                            val.Append('"');
+                            break;
+
+                        case "Int16":
+                        case "Int32":
+                        case "Int64":
+                        case "Double":
+                        case "Single":
+                        case "Decimal":
+                            val.Append(log[key]);
+                            break;
+
+                        default:
+                            val.Append('"');
+                            val.Append(log[key].ToString().Trim().Replace("\"", string.Empty));
+                            val.Append('"');
+                            break;
+                    }
+
+                    if (val != null && val.Length > 0)
+                    {
+                        if (sb.Length > 1)
+                        {
+                            sb.Append(',');
+                        }
+
+                        sb.Append(" \"");
+                        sb.Append(key);
+                        sb.Append("\": ");
+                        sb.Append(val);
+                    }
+                }
+            }
+
+            sb.Append(" }");
+
+            Console.ForegroundColor = color;
+
+            if (color == ConsoleColor.Red)
+            {
+                // Console.Error.WriteLine(JsonSerializer.Serialize(log, Options));
+                Console.Error.WriteLine(sb);
+            }
+            else
+            {
+                // Console.WriteLine(JsonSerializer.Serialize(log, Options));
+                Console.WriteLine(sb);
+            }
+
             Console.ResetColor();
         }
 
