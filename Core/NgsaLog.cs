@@ -102,7 +102,7 @@ namespace Ngsa.Middleware
 
             if (ex != null)
             {
-                d.Add("ExceptionType", ex.GetType());
+                d.Add("ExceptionType", ex.GetType().FullName);
                 d.Add("ExceptionMessage", ex.Message);
             }
             else if (Exception != null)
