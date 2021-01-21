@@ -25,7 +25,6 @@ namespace Ngsa.DataService.Controllers
         };
 
         private readonly IDAL dal;
-        private readonly Random rand = new Random(DateTime.Now.Millisecond);
 
         /// <summary>
         /// Initializes a new instance of the <see cref="FeaturedController"/> class.
@@ -51,7 +50,7 @@ namespace Ngsa.DataService.Controllers
             if (featuredMovies != null && featuredMovies.Count > 0)
             {
                 // get random featured movie by movieId
-                string movieId = featuredMovies[rand.Next(0, featuredMovies.Count - 1)];
+                string movieId = featuredMovies[DateTime.UtcNow.Millisecond % featuredMovies.Count];
 
                 // get movie by movieId
                 IActionResult res = await ResultHandler.Handle(dal.GetMovieAsync(movieId), nLogger).ConfigureAwait(false);

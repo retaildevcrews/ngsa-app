@@ -3,15 +3,9 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
-CosmosKey
-AppInsightsKey
+CosmosKey*
 
 dotFiles/.**
-
-# User-specific helm override files
-*helm-config.yaml
-
-*NGSA_Dashboard.json
 
 # User-specific files
 *.suo

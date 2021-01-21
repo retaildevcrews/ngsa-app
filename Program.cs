@@ -85,11 +85,23 @@ namespace Ngsa.DataService
                 cmd.Contains("-d") ||
                 cmd.Contains("--dry-run")))
             {
-#if DEBUG
-                await AsciiArt.DisplayAsciiArt("Core/ascii-art.txt", ConsoleColor.DarkMagenta, AsciiArt.Animation.TwoColor).ConfigureAwait(false);
-#else
-                await AsciiArt.DisplayAsciiArt("Core/ascii-art.txt", ConsoleColor.DarkMagenta, AsciiArt.Animation.None).ConfigureAwait(false);
-#endif
+                const string file = "Core/ascii-art.txt";
+
+                try
+                {
+                    if (File.Exists(file))
+                    {
+                        string txt = File.ReadAllText(file);
+
+                        Console.ForegroundColor = ConsoleColor.DarkMagenta;
+                        Console.WriteLine(txt);
+                        Console.ResetColor();
+                    }
+                }
+                catch
+                {
+                    // ignore any errors
+                }
             }
 
             // run the app
