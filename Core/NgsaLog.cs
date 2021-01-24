@@ -87,59 +87,6 @@ namespace Ngsa.Middleware
 
         private void WriteLog()
         {
-            // todo - temporary workaround for XSS error
-
-            //StringBuilder sb = new StringBuilder("{");
-
-            //StringBuilder val;
-
-            //foreach (string key in Data.Keys)
-            //{
-            //    if (Data[key] != null)
-            //    {
-            //        val = new StringBuilder();
-
-            //        switch (Data[key].GetType().Name)
-            //        {
-            //            case "DateTime":
-            //                val.Append('"');
-            //                val.Append(((DateTime)Data[key]).ToString("o"));
-            //                val.Append('"');
-            //                break;
-
-            //            case "Int16":
-            //            case "Int32":
-            //            case "Int64":
-            //            case "Double":
-            //            case "Single":
-            //            case "Decimal":
-            //                val.Append(Data[key]);
-            //                break;
-
-            //            default:
-            //                val.Append('"');
-            //                val.Append(Data[key].ToString().Trim().Replace("\"", string.Empty));
-            //                val.Append('"');
-            //                break;
-            //        }
-
-            //        if (val != null && val.Length > 0)
-            //        {
-            //            if (sb.Length > 1)
-            //            {
-            //                sb.Append(',');
-            //            }
-
-            //            sb.Append(" \"");
-            //            sb.Append(key);
-            //            sb.Append("\": ");
-            //            sb.Append(val);
-            //        }
-            //    }
-            //}
-
-            //sb.Append(" }");
-
             Console.ForegroundColor = LogLevel >= LogLevel.Error ? ConsoleColor.Red :
                 LogLevel == LogLevel.Warning ? ConsoleColor.Yellow :
                 LogLevel == LogLevel.Information ? ConsoleColor.Green : Console.ForegroundColor;
@@ -147,12 +94,10 @@ namespace Ngsa.Middleware
             if (LogLevel >= LogLevel.Error)
             {
                 Console.Error.WriteLine(JsonSerializer.Serialize(Data, Options));
-                // Console.Error.WriteLine(sb);
             }
             else
             {
                 Console.WriteLine(JsonSerializer.Serialize(Data, Options));
-                // Console.WriteLine(sb);
             }
 
             Console.ResetColor();
