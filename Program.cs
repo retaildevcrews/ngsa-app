@@ -45,14 +45,7 @@ namespace Ngsa.DataService
         public static string CosmosName { get; set; } = string.Empty;
         public static bool UseCache => Cache || Ngsa.Middleware.RequestLogger.RequestsPerSecond > Constants.MaxReqSecBeforeCache;
 
-        /// <summary>
-        /// Gets or sets LogLevel
-        /// </summary>
-        public static LogLevel AppLogLevel { get; set; } = LogLevel.Warning;
-        public static bool InMemory { get; set; }
-        public static bool NoCache { get; set; }
-        public static int PerfCache { get; set; }
-        public static int CacheDuration { get; set; }
+        public static Config Config { get; } = new Config();
 
         /// <summary>
         /// Gets or sets a value indicating whether LogLevel is set in command line or env var
@@ -75,7 +68,7 @@ namespace Ngsa.DataService
         {
             // build the System.CommandLine.RootCommand
             RootCommand root = BuildRootCommand();
-            root.Handler = CommandHandler.Create<string, LogLevel, bool, bool, bool, int, int>(RunApp);
+            root.Handler = CommandHandler.Create<Config>(RunApp);
 
             List<string> cmd = CombineEnvVarsWithCommandLine(args);
 
@@ -202,19 +195,19 @@ namespace Ngsa.DataService
             // configure logger based on command line
             builder.ConfigureLogging(logger =>
             {
-                AppLogLevel = AppLogLevel <= LogLevel.Information ? LogLevel.Information : AppLogLevel;
+                Config.LogLevel = Config.LogLevel <= LogLevel.Information ? LogLevel.Information : Config.LogLevel;
 
                 logger.ClearProviders();
-                logger.AddNgsaLogger(config => { config.LogLevel = AppLogLevel; });
+                logger.AddNgsaLogger(config => { config.LogLevel = Config.LogLevel; });
 
                 // if you specify the --log-level option, it will override the appsettings.json options
                 // remove any or all of the code below that you don't want to override
                 if (App.IsLogLevelSet)
                 {
-                    logger.AddFilter("Microsoft", AppLogLevel)
-                    .AddFilter("System", AppLogLevel)
-                    .AddFilter("Default", AppLogLevel)
-                    .AddFilter("Ngsa.DataService", AppLogLevel);
+                    logger.AddFilter("Microsoft", Config.LogLevel)
+                    .AddFilter("System", Config.LogLevel)
+                    .AddFilter("Default", Config.LogLevel)
+                    .AddFilter("Ngsa.DataService", Config.LogLevel);
                 }
             });
 

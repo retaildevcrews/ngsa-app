@@ -48,6 +48,8 @@ namespace Ngsa.Middleware
         public static string CosmosName { get; set; } = string.Empty;
         public static string CosmosQueryId { get; set; } = string.Empty;
         public static double CosmosRUs { get; set; } = 0;
+        public static string Zone { get; set; } = string.Empty;
+        public static string Region { get; set; } = string.Empty;
 
         public static int RequestsPerSecond => RPS.Count > 0 ? RPS[0] : counter;
 
@@ -133,6 +135,16 @@ namespace Ngsa.Middleware
                 { "CVector", cv.Value },
                 { "CVectorBase", cv.GetBase() },
             };
+
+            if (!string.IsNullOrWhiteSpace(Zone))
+            {
+                log.Add("Zone", Zone);
+            }
+
+            if (!string.IsNullOrWhiteSpace(Region))
+            {
+                log.Add("Region", Region);
+            }
 
             if (!string.IsNullOrWhiteSpace(CosmosName))
             {

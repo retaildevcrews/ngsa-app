@@ -53,13 +53,13 @@ namespace Ngsa.DataService
 
             // log http responses to the console
             // this should be first as it "wraps" all requests
-            if (App.AppLogLevel != LogLevel.None)
+            if (App.Config.LogLevel != LogLevel.None)
             {
                 app.UseRequestLogger(new RequestLoggerOptions
                 {
-                    Log2xx = App.AppLogLevel <= LogLevel.Information,
-                    Log3xx = App.AppLogLevel <= LogLevel.Information,
-                    Log4xx = App.AppLogLevel <= LogLevel.Warning,
+                    Log2xx = App.Config.LogLevel <= LogLevel.Information,
+                    Log3xx = App.Config.LogLevel <= LogLevel.Information,
+                    Log4xx = App.Config.LogLevel <= LogLevel.Warning,
                     Log5xx = true,
                 });
             }

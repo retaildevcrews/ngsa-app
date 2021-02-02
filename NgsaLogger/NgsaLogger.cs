@@ -16,7 +16,6 @@ namespace Ngsa.Middleware
     /// </summary>
     public class NgsaLogger : ILogger
     {
-        private readonly ConsoleColor origColor = Console.ForegroundColor;
         private readonly string name;
         private readonly NgsaLoggerConfiguration config;
 
@@ -30,6 +29,9 @@ namespace Ngsa.Middleware
             this.name = name;
             this.config = config;
         }
+
+        public static string Zone { get; set; } = string.Empty;
+        public static string Region { get; set; } = string.Empty;
 
         public IDisposable BeginScope<TState>(TState state)
         {
@@ -55,6 +57,16 @@ namespace Ngsa.Middleware
                 { "eventId", eventId.Id },
                 { "eventName", eventId.Name },
             };
+
+            if (!string.IsNullOrEmpty(Zone))
+            {
+                d.Add("Zone", Zone);
+            }
+
+            if (!string.IsNullOrEmpty(Region))
+            {
+                d.Add("Region", Region);
+            }
 
             // convert state to list
             if (state is IReadOnlyList<KeyValuePair<string, object>> roList)
