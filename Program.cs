@@ -45,7 +45,7 @@ namespace Ngsa.DataService
         public static string CosmosName { get; set; } = string.Empty;
         public static bool UseCache => Cache || Ngsa.Middleware.RequestLogger.RequestsPerSecond > Constants.MaxReqSecBeforeCache;
 
-        public static Config Config { get; set; } = new Config();
+        public static Config Config { get; } = new Config();
 
         /// <summary>
         /// Gets or sets a value indicating whether LogLevel is set in command line or env var
