@@ -16,7 +16,7 @@ namespace Ngsa.DataService.Controllers
         private static readonly NgsaLog Logger = new NgsaLog
         {
             Name = typeof(GenresController).FullName,
-            LogLevel = App.AppLogLevel,
+            LogLevel = App.Config.LogLevel,
             ErrorMessage = "GenreControllerException",
         };
 

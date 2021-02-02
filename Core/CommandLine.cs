@@ -41,6 +41,8 @@ namespace Ngsa.DataService
             cmd.AddFromEnvironment("--perf-cache");
             cmd.AddFromEnvironment("--secrets-volume");
             cmd.AddFromEnvironment("--log-level", "-l");
+            cmd.AddFromEnvironment("--zone");
+            cmd.AddFromEnvironment("--region");
 
             // was log level set
             IsLogLevelSet = cmd.Contains("--log-level") || cmd.Contains("-l");
@@ -68,6 +70,8 @@ namespace Ngsa.DataService
             root.AddOption(new Option<int>(new string[] { "--perf-cache" }, "Cache only when load exceeds value"));
             root.AddOption(new Option<string>(new string[] { "--secrets-volume" }, () => "secrets", "Secrets Volume Path"));
             root.AddOption(new Option<LogLevel>(new string[] { "-l", "--log-level" }, () => LogLevel.Warning, "Log Level"));
+            root.AddOption(new Option<string>(new string[] { "--zone" }, "Zone for log"));
+            root.AddOption(new Option<string>(new string[] { "--region" }, "Region for log"));
             root.AddOption(new Option<bool>(new string[] { "-d", "--dry-run" }, "Validates configuration"));
 
             // validate dependencies
@@ -79,26 +83,31 @@ namespace Ngsa.DataService
         /// <summary>
         /// Run the app
         /// </summary>
-        /// <param name="secretsVolume">k8s Secrets Volume Path</param>
-        /// <param name="logLevel">Log Level</param>
-        /// <param name="dryRun">Dry Run flag</param>
-        /// <param name="inMemory">Use in-memory DB</param>
-        /// <param name="noCache">don't cache results</param>
-        /// <param name="perfCache">cache results under load</param>
-        /// <param name="cacheDuration">cache duration (seconds)</param>
+        /// <param name="config">command line config</param>
         /// <returns>status</returns>
-        public static async Task<int> RunApp(string secretsVolume, LogLevel logLevel, bool dryRun, bool inMemory, bool noCache, int perfCache, int cacheDuration)
+        public static async Task<int> RunApp(Config config)
         {
             try
             {
                 // assign command line values
-                AppLogLevel = logLevel;
-                CacheDuration = cacheDuration;
-                InMemory = inMemory;
-                NoCache = noCache;
-                PerfCache = perfCache;
+                Config.LogLevel = config.LogLevel;
+                Config.CacheDuration = config.CacheDuration;
+                Config.InMemory = config.InMemory;
+                Config.NoCache = config.NoCache;
+                Config.PerfCache = config.PerfCache;
+                Config.Zone = string.IsNullOrEmpty(config.Zone) ? string.Empty : config.Zone.Trim();
+                Config.Region = string.IsNullOrEmpty(config.Region) ? string.Empty : config.Region.Trim();
 
-                LoadSecrets(secretsVolume);
+                RequestLogger.Zone = Config.Zone;
+                RequestLogger.Region = Config.Region;
+
+                NgsaLogger.Zone = Config.Zone;
+                NgsaLogger.Region = Config.Region;
+
+                NgsaLog.Zone = Config.Zone;
+                NgsaLog.Region = Config.Region;
+
+                LoadSecrets(Config.SecretsVolume);
 
                 // load the cache
                 CacheDal = new DataAccessLayer.InMemoryDal();
@@ -134,7 +143,7 @@ namespace Ngsa.DataService
                 }
 
                 // display dry run message
-                if (dryRun)
+                if (config.DryRun)
                 {
                     return DoDryRun();
                 }
@@ -173,7 +182,7 @@ namespace Ngsa.DataService
         // load secrets
         private static void LoadSecrets(string secretsVolume)
         {
-            if (InMemory)
+            if (Config.InMemory)
             {
                 Secrets = new Secrets
                 {
@@ -278,16 +287,18 @@ namespace Ngsa.DataService
         private static int DoDryRun()
         {
             Console.WriteLine($"Version            {Ngsa.Middleware.VersionExtension.Version}");
-            Console.WriteLine($"Log Level          {AppLogLevel}");
-            Console.WriteLine($"In Memory          {InMemory}");
-            Console.WriteLine($"No Cache           {NoCache}");
-            Console.WriteLine($"Perf Cache         {PerfCache}");
+            Console.WriteLine($"Log Level          {Config.LogLevel}");
+            Console.WriteLine($"In Memory          {Config.InMemory}");
+            Console.WriteLine($"No Cache           {Config.NoCache}");
+            Console.WriteLine($"Perf Cache         {Config.PerfCache}");
             Console.WriteLine($"Secrets Volume     {Secrets.Volume}");
             Console.WriteLine($"Use in memory DB   {Secrets.UseInMemoryDb}");
             Console.WriteLine($"Cosmos Server      {Secrets.CosmosServer}");
             Console.WriteLine($"Cosmos Database    {Secrets.CosmosDatabase}");
             Console.WriteLine($"Cosmos Collection  {Secrets.CosmosCollection}");
             Console.WriteLine($"Cosmos Key         Length({Secrets.CosmosKey.Length})");
+            Console.WriteLine($"Zone               {Config.Zone}");
+            Console.WriteLine($"Region             {Config.Region}");
 
             // always return 0 (success)
             return 0;

@@ -17,6 +17,9 @@ namespace Ngsa.Middleware
             IgnoreNullValues = true,
         };
 
+        public static string Zone { get; set; } = string.Empty;
+        public static string Region { get; set; } = string.Empty;
+
         public string Name { get; set; } = string.Empty;
         public LogLevel LogLevel { get; set; } = LogLevel.Information;
         public string ErrorMessage { get; set; } = string.Empty;
@@ -117,6 +120,16 @@ namespace Ngsa.Middleware
             SetDataValue("Method", Method);
             SetDataValue("Message", message);
             SetDataValue("LogLevel", logLevel);
+
+            if (!string.IsNullOrEmpty(Zone))
+            {
+                SetDataValue("Zone", Zone);
+            }
+
+            if (!string.IsNullOrEmpty(Region))
+            {
+                SetDataValue("Region", Region);
+            }
 
             if (EventId.Id > 0)
             {
