@@ -32,7 +32,7 @@ namespace Ngsa.DataService.Controllers
             // return exception if task is null
             if (task == null)
             {
-                logger.LogError("Handle<T>", "Exception: task is null", new LogEventId((int)HttpStatusCode.InternalServerError, "Exception"), ex: new ArgumentNullException(nameof(task)));
+                logger.LogError("Handle<T>", "Exception: task is null", NgsaLog.Log500, ex: new ArgumentNullException(nameof(task)));
 
                 return CreateResult(logger.ErrorMessage, HttpStatusCode.InternalServerError);
             }
@@ -58,7 +58,7 @@ namespace Ngsa.DataService.Controllers
             catch (Exception ex)
             {
                 // log and return exception
-                logger.LogError("Handle<T>", "Exception", new LogEventId((int)HttpStatusCode.InternalServerError, "Exception"), ex: ex);
+                logger.LogError("Handle<T>", "Exception", NgsaLog.Log500, ex: ex);
 
                 // return 500 error
                 return CreateResult("Internal Server Error", HttpStatusCode.InternalServerError);

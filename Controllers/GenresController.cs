@@ -41,7 +41,7 @@ namespace Ngsa.DataService.Controllers
                 // use cache dal on Cosmos 429 errors
                 if (App.Config.Cache && res is JsonResult jres && jres.StatusCode == 429)
                 {
-                    Logger.LogWarning(nameof(GetGenresAsync), "Served from cache", new LogEventId(429, "Cosmos 429 Result"), HttpContext);
+                    Logger.Log429(nameof(GetGenresAsync), HttpContext);
 
                     res = await ResultHandler.Handle(App.CacheDal.GetGenresAsync(), Logger).ConfigureAwait(false);
                 }

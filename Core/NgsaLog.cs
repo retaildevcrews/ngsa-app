@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.CorrelationVector;
@@ -12,6 +13,9 @@ namespace Ngsa.Middleware
 {
     public class NgsaLog
     {
+        public const string Message429 = "Served from cache";
+        public const string MessageInvalidQueryString = "Invalid query string";
+
         private static readonly JsonSerializerOptions Options = new JsonSerializerOptions
         {
             IgnoreNullValues = true,
@@ -20,6 +24,11 @@ namespace Ngsa.Middleware
         public static LogLevel LogLevel { get; set; } = LogLevel.Information;
         public static string Zone { get; set; } = string.Empty;
         public static string Region { get; set; } = string.Empty;
+
+        public static LogEventId LogEvent429 { get; } = new LogEventId(429, "Cosmos 429 Result");
+        public static LogEventId Log400 { get; } = new LogEventId((int)HttpStatusCode.BadRequest, HttpStatusCode.BadRequest.ToString());
+        public static LogEventId Log404 { get; } = new LogEventId((int)HttpStatusCode.NotFound, HttpStatusCode.NotFound.ToString());
+        public static LogEventId Log500 { get; } = new LogEventId((int)HttpStatusCode.InternalServerError, "Exception");
 
         public string Name { get; set; } = string.Empty;
         public string ErrorMessage { get; set; } = string.Empty;
@@ -53,6 +62,14 @@ namespace Ngsa.Middleware
             if (LogLevel <= LogLevel.Warning)
             {
                 WriteLog(LogLevel.Warning, GetDictionary(method, message, LogLevel.Warning, eventId, context, dictionary));
+            }
+        }
+
+        public void Log429(string method, HttpContext context = null, Dictionary<string, object> dictionary = null)
+        {
+            if (LogLevel <= LogLevel.Warning)
+            {
+                WriteLog(LogLevel.Warning, GetDictionary(method, Message429, LogLevel.Warning, LogEvent429, context, dictionary));
             }
         }
 
