@@ -98,6 +98,8 @@ namespace Ngsa.DataService
                 Config.Zone = string.IsNullOrEmpty(config.Zone) ? string.Empty : config.Zone.Trim();
                 Config.Region = string.IsNullOrEmpty(config.Region) ? string.Empty : config.Region.Trim();
 
+                Config.LogLevel = config.LogLevel <= LogLevel.Information ? LogLevel.Information : config.LogLevel;
+
                 RequestLogger.Zone = Config.Zone;
                 RequestLogger.Region = Config.Region;
 
@@ -106,6 +108,7 @@ namespace Ngsa.DataService
 
                 NgsaLog.Zone = Config.Zone;
                 NgsaLog.Region = Config.Region;
+                NgsaLog.LogLevel = Config.LogLevel;
 
                 LoadSecrets(Config.SecretsVolume);
 
