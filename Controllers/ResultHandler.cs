@@ -33,7 +33,7 @@ namespace Ngsa.DataService.Controllers
             // return exception if task is null
             if (task == null)
             {
-                logger.LogError(new EventId((int)HttpStatusCode.InternalServerError, "Exception"), "Handle<T>", "Exception: task is null", ex: new ArgumentNullException(nameof(task)));
+                logger.LogError("Handle<T>", "Exception: task is null", new LogEventId((int)HttpStatusCode.InternalServerError, "Exception"), ex: new ArgumentNullException(nameof(task)));
 
                 return CreateResult(logger.ErrorMessage, HttpStatusCode.InternalServerError);
             }
@@ -48,18 +48,18 @@ namespace Ngsa.DataService.Controllers
                 // log and return Cosmos status code
                 if (ce.StatusCode == HttpStatusCode.NotFound)
                 {
-                    logger.LogWarning(new EventId((int)ce.StatusCode, string.Empty), "Handle<T>", logger.NotFoundError);
+                    logger.LogWarning("Handle<T>", logger.NotFoundError, new LogEventId((int)ce.StatusCode, string.Empty));
                     return CreateResult(logger.NotFoundError, ce.StatusCode);
                 }
 
-                logger.LogError(new EventId((int)ce.StatusCode, "CosmosException"), "Handle<T>", ce.ActivityId, ex: ce);
+                logger.LogError("Handle<T>", ce.ActivityId, new LogEventId((int)ce.StatusCode, "CosmosException"), ex: ce);
 
                 return CreateResult(logger.ErrorMessage, ce.StatusCode);
             }
             catch (Exception ex)
             {
                 // log and return exception
-                logger.LogError(new EventId((int)HttpStatusCode.InternalServerError, "Exception"), "Handle<T>", "Exception", ex: ex);
+                logger.LogError("Handle<T>", "Exception", new LogEventId((int)HttpStatusCode.InternalServerError, "Exception"), ex: ex);
 
                 // return 500 error
                 return CreateResult("Internal Server Error", HttpStatusCode.InternalServerError);

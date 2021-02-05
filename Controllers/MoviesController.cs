@@ -54,7 +54,7 @@ namespace Ngsa.DataService.Controllers
 
             if (list.Count > 0)
             {
-                Logger.LogWarning(new EventId((int)HttpStatusCode.BadRequest, HttpStatusCode.BadRequest.ToString()), nameof(GetMoviesAsync), "Invalid query string", HttpContext);
+                Logger.LogWarning(nameof(GetMoviesAsync), "Invalid query string", new LogEventId((int)HttpStatusCode.BadRequest, HttpStatusCode.BadRequest.ToString()), HttpContext);
 
                 return ResultHandler.CreateResult(list, Request.Path.ToString() + (Request.QueryString.HasValue ? Request.QueryString.Value : string.Empty));
             }
@@ -73,7 +73,7 @@ namespace Ngsa.DataService.Controllers
                 // use cache dal on Cosmos 429 errors
                 if (App.Config.Cache && res is JsonResult jres && jres.StatusCode == 429)
                 {
-                    Logger.LogWarning(new EventId(429, "Cosmos 429 Result"), nameof(GetMoviesAsync), "Served from cache", HttpContext);
+                    Logger.LogWarning(nameof(GetMoviesAsync), "Served from cache", new LogEventId(429, "Cosmos 429 Result"), HttpContext);
 
                     res = await ResultHandler.Handle(App.CacheDal.GetMoviesAsync(movieQueryParameters), Logger).ConfigureAwait(false);
                 }
@@ -99,7 +99,7 @@ namespace Ngsa.DataService.Controllers
 
             if (list.Count > 0)
             {
-                Logger.LogWarning(new EventId((int)HttpStatusCode.BadRequest, HttpStatusCode.BadRequest.ToString()), nameof(GetMoviesAsync), "Invalid Movie Id", HttpContext);
+                Logger.LogWarning(nameof(GetMoviesAsync), "Invalid Movie Id", new LogEventId((int)HttpStatusCode.BadRequest, HttpStatusCode.BadRequest.ToString()), HttpContext);
 
                 return ResultHandler.CreateResult(list, Request.Path.ToString() + (Request.QueryString.HasValue ? Request.QueryString.Value : string.Empty));
             }
@@ -117,7 +117,7 @@ namespace Ngsa.DataService.Controllers
                 // use cache dal on Cosmos 429 errors
                 if (App.Config.Cache && res is JsonResult jres && jres.StatusCode == 429)
                 {
-                    Logger.LogWarning(new EventId(429, "Cosmos 429 Result"), nameof(GetMovieByIdAsync), "Served from cache", HttpContext);
+                    Logger.LogWarning(nameof(GetMovieByIdAsync), "Served from cache", new LogEventId(429, "Cosmos 429 Result"), HttpContext);
 
                     res = await ResultHandler.Handle(App.CacheDal.GetMovieAsync(movieId), Logger).ConfigureAwait(false);
                 }

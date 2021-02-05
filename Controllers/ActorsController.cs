@@ -56,7 +56,7 @@ namespace Ngsa.DataService.Controllers
 
             if (list.Count > 0)
             {
-                Logger.LogWarning(new EventId((int)HttpStatusCode.BadRequest, HttpStatusCode.BadRequest.ToString()), nameof(GetActorsAsync), "Invalid query string", HttpContext);
+                Logger.LogWarning(nameof(GetActorsAsync), "Invalid query string", new LogEventId((int)HttpStatusCode.BadRequest, HttpStatusCode.BadRequest.ToString()), HttpContext);
 
                 return ResultHandler.CreateResult(list, Request.Path.ToString() + (Request.QueryString.HasValue ? Request.QueryString.Value : string.Empty));
             }
@@ -74,7 +74,7 @@ namespace Ngsa.DataService.Controllers
                 // use cache dal on Cosmos 429 errors
                 if (App.Config.Cache && res is JsonResult jres && jres.StatusCode == 429)
                 {
-                    Logger.LogWarning(new EventId(429, "Cosmos 429 Result"), nameof(GetActorsAsync), "Served from cache", HttpContext);
+                    Logger.LogWarning(nameof(GetActorsAsync), "Served from cache", new LogEventId(429, "Cosmos 429 Result"), HttpContext);
 
                     res = await ResultHandler.Handle(App.CacheDal.GetActorsAsync(actorQueryParameters), Logger).ConfigureAwait(false);
                 }
@@ -101,7 +101,7 @@ namespace Ngsa.DataService.Controllers
 
             if (list.Count > 0)
             {
-                Logger.LogWarning(new EventId((int)HttpStatusCode.BadRequest, HttpStatusCode.BadRequest.ToString()), nameof(GetActorByIdAsync), "Invalid Actor Id", HttpContext);
+                Logger.LogWarning(nameof(GetActorByIdAsync), "Invalid Actor Id", new LogEventId((int)HttpStatusCode.BadRequest, HttpStatusCode.BadRequest.ToString()), HttpContext);
 
                 return ResultHandler.CreateResult(list, Request.Path.ToString() + (Request.QueryString.HasValue ? Request.QueryString.Value : string.Empty));
             }
@@ -120,7 +120,7 @@ namespace Ngsa.DataService.Controllers
                 // use cache dal on Cosmos 429 errors
                 if (App.Config.Cache && res is JsonResult jres && jres.StatusCode == 429)
                 {
-                    Logger.LogWarning(new EventId(429, "Cosmos 429 Result"), nameof(GetActorByIdAsync), "Served from cache", HttpContext);
+                    Logger.LogWarning(nameof(GetActorByIdAsync), "Served from cache", new LogEventId(429, "Cosmos 429 Result"), HttpContext);
 
                     res = await ResultHandler.Handle(App.CacheDal.GetActorAsync(actorId), Logger).ConfigureAwait(false);
                 }
