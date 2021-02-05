@@ -20,7 +20,9 @@ namespace Ngsa.Middleware
     {
         private const string IpHeader = "X-Client-IP";
 
-        private static readonly Counter RequestCount = Metrics.CreateCounter("requests", "Number of requests");
+        // todo - custom Prometheus counters
+        //private static readonly Counter RequestCount = Metrics.CreateCounter("requests", "Number of requests");
+        //private static readonly Summary DurationSummary = Metrics.CreateSummary("duration", "Summary of duration (in ms) over last 10 minutes");
 
         private static readonly List<int> RPS = new List<int>();
         private static int counter;
@@ -87,7 +89,8 @@ namespace Ngsa.Middleware
             double ttfb = 0;
 
             cv = CorrelationVectorExtensions.Extend(context);
-            RequestCount.Inc();
+
+            //todo RequestCount.Inc();
 
             // Invoke next handler
             if (next != null)
@@ -104,6 +107,8 @@ namespace Ngsa.Middleware
             {
                 return;
             }
+
+            // todo DurationSummary.Observe(duration);
 
             LogRequest(context, cv, ttfb, duration);
         }

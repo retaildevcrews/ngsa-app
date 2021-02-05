@@ -78,7 +78,7 @@ namespace Ngsa.DataService
 
             // use routing
             app.UseRouting();
-            //app.UseHttpMetrics();
+            app.UseHttpMetrics();
 
             // map the controllers
             app.UseEndpoints(ep =>
