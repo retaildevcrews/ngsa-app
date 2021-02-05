@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Ngsa.Middleware;
@@ -29,12 +30,21 @@ namespace Ngsa.DataService.Controllers
         {
             NgsaLog nLogger = Logger.GetLogger(nameof(GetGenresAsync), HttpContext);
 
-            IActionResult res = await ResultHandler.Handle(App.CosmosDal.GetGenresAsync(), nLogger).ConfigureAwait(false);
+            IActionResult res;
 
-            // use cache dal on Cosmos 429 errors
-            if (res is JsonResult jres && jres.StatusCode == 429)
+            if (App.Config.AppType == AppType.WebAPI)
             {
-                res = await ResultHandler.Handle(App.CacheDal.GetGenresAsync(), nLogger).ConfigureAwait(false);
+                res = await DataService.Read<List<string>>(Request).ConfigureAwait(false);
+            }
+            else
+            {
+                res = await ResultHandler.Handle(App.CosmosDal.GetGenresAsync(), nLogger).ConfigureAwait(false);
+
+                // use cache dal on Cosmos 429 errors
+                if (App.Config.Cache && res is JsonResult jres && jres.StatusCode == 429)
+                {
+                    res = await ResultHandler.Handle(App.CacheDal.GetGenresAsync(), nLogger).ConfigureAwait(false);
+                }
             }
 
             return res;

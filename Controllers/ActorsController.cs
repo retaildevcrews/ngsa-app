@@ -2,12 +2,15 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
+using Imdb.Model;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Ngsa.DataService.DataAccessLayer;
 using Ngsa.Middleware;
+using Ngsa.Middleware.Validation;
 
 namespace Ngsa.DataService.Controllers
 {
@@ -51,7 +54,7 @@ namespace Ngsa.DataService.Controllers
 
             NgsaLog nLogger = Logger.GetLogger(nameof(GetActorsAsync), HttpContext);
 
-            System.Collections.Generic.List<Middleware.Validation.ValidationError> list = actorQueryParameters.Validate();
+            List<ValidationError> list = actorQueryParameters.Validate();
 
             if (list.Count > 0)
             {
@@ -61,12 +64,21 @@ namespace Ngsa.DataService.Controllers
                 return ResultHandler.CreateResult(list, Request.Path.ToString() + (Request.QueryString.HasValue ? Request.QueryString.Value : string.Empty));
             }
 
-            IActionResult res = await ResultHandler.Handle(dal.GetActorsAsync(actorQueryParameters), nLogger).ConfigureAwait(false);
+            IActionResult res;
 
-            // use cache dal on Cosmos 429 errors
-            if (res is JsonResult jres && jres.StatusCode == 429)
+            if (App.Config.AppType == AppType.WebAPI)
             {
-                res = await ResultHandler.Handle(App.CacheDal.GetActorsAsync(actorQueryParameters), nLogger).ConfigureAwait(false);
+                res = await DataService.Read<List<Actor>>(Request).ConfigureAwait(false);
+            }
+            else
+            {
+                res = await ResultHandler.Handle(dal.GetActorsAsync(actorQueryParameters), nLogger).ConfigureAwait(false);
+
+                // use cache dal on Cosmos 429 errors
+                if (App.Config.Cache && res is JsonResult jres && jres.StatusCode == 429)
+                {
+                    res = await ResultHandler.Handle(App.CacheDal.GetActorsAsync(actorQueryParameters), nLogger).ConfigureAwait(false);
+                }
             }
 
             return res;
@@ -88,7 +100,7 @@ namespace Ngsa.DataService.Controllers
 
             NgsaLog nLogger = Logger.GetLogger(nameof(GetActorByIdAsync), HttpContext);
 
-            System.Collections.Generic.List<Middleware.Validation.ValidationError> list = ActorQueryParameters.ValidateActorId(actorId);
+            List<Middleware.Validation.ValidationError> list = ActorQueryParameters.ValidateActorId(actorId);
 
             if (list.Count > 0)
             {
@@ -98,13 +110,22 @@ namespace Ngsa.DataService.Controllers
                 return ResultHandler.CreateResult(list, Request.Path.ToString() + (Request.QueryString.HasValue ? Request.QueryString.Value : string.Empty));
             }
 
-            // return result
-            IActionResult res = await ResultHandler.Handle(dal.GetActorAsync(actorId), nLogger).ConfigureAwait(false);
+            IActionResult res;
 
-            // use cache dal on Cosmos 429 errors
-            if (res is JsonResult jres && jres.StatusCode == 429)
+            // return result
+            if (App.Config.AppType == AppType.WebAPI)
             {
-                res = await ResultHandler.Handle(App.CacheDal.GetActorAsync(actorId), nLogger).ConfigureAwait(false);
+                res = await DataService.Read<Actor>(Request).ConfigureAwait(false);
+            }
+            else
+            {
+                res = await ResultHandler.Handle(dal.GetActorAsync(actorId), nLogger).ConfigureAwait(false);
+
+                // use cache dal on Cosmos 429 errors
+                if (App.Config.Cache && res is JsonResult jres && jres.StatusCode == 429)
+                {
+                    res = await ResultHandler.Handle(App.CacheDal.GetActorAsync(actorId), nLogger).ConfigureAwait(false);
+                }
             }
 
             return res;
