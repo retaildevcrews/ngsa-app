@@ -23,35 +23,28 @@ namespace Ngsa.DataService.DataAccessLayer
         /// <summary>
         /// Initializes a new instance of the <see cref="CosmosDal"/> class.
         /// </summary>
-        /// <param name="cosmosUrl">CosmosDB Url</param>
-        /// <param name="cosmosKey">CosmosDB connection key</param>
-        /// <param name="cosmosDatabase">CosmosDB Database</param>
-        /// <param name="cosmosCollection">CosmosDB Collection</param>
-        public CosmosDal(Uri cosmosUrl, string cosmosKey, string cosmosDatabase, string cosmosCollection)
+        /// <param name="secrets">Cosmos connection info</param>
+        /// <param name="config">App config</param>
+        public CosmosDal(Secrets secrets, Config config)
         {
-            if (cosmosUrl == null)
+            if (secrets == null)
             {
-                throw new ArgumentNullException(nameof(cosmosUrl));
+                throw new ArgumentNullException(nameof(secrets));
             }
 
             cosmosDetails = new CosmosConfig
             {
-                CosmosCollection = cosmosCollection,
-                CosmosDatabase = cosmosDatabase,
-                CosmosKey = cosmosKey,
-                CosmosUrl = cosmosUrl.AbsoluteUri,
+                CosmosCollection = secrets.CosmosCollection,
+                CosmosDatabase = secrets.CosmosDatabase,
+                CosmosKey = secrets.CosmosKey,
+                CosmosUrl = secrets.CosmosServer,
+                Retries = config.Retries,
+                Timeout = config.Timeout,
             };
 
-            // turn off Cosmos retries for --no-cache
-            if (App.Config.NoCache)
-            {
-                cosmosDetails.Retries = 0;
-                cosmosDetails.Timeout = 10;
-            }
-
             // create the CosmosDB client and container
-            cosmosDetails.Client = OpenAndTestCosmosClient(cosmosUrl, cosmosKey, cosmosDatabase, cosmosCollection).GetAwaiter().GetResult();
-            cosmosDetails.Container = cosmosDetails.Client.GetContainer(cosmosDatabase, cosmosCollection);
+            cosmosDetails.Client = OpenAndTestCosmosClient(secrets.CosmosServer, secrets.CosmosKey, secrets.CosmosDatabase, secrets.CosmosCollection).GetAwaiter().GetResult();
+            cosmosDetails.Container = cosmosDetails.Client.GetContainer(secrets.CosmosDatabase, secrets.CosmosCollection);
         }
 
         /// <summary>
@@ -78,17 +71,17 @@ namespace Ngsa.DataService.DataAccessLayer
         /// <summary>
         /// Open and test the Cosmos Client / Container / Query
         /// </summary>
-        /// <param name="cosmosUrl">Cosmos URL</param>
+        /// <param name="cosmosServer">Cosmos URL</param>
         /// <param name="cosmosKey">Cosmos Key</param>
         /// <param name="cosmosDatabase">Cosmos Database</param>
         /// <param name="cosmosCollection">Cosmos Collection</param>
         /// <returns>An open and validated CosmosClient</returns>
-        private async Task<CosmosClient> OpenAndTestCosmosClient(Uri cosmosUrl, string cosmosKey, string cosmosDatabase, string cosmosCollection)
+        private async Task<CosmosClient> OpenAndTestCosmosClient(string cosmosServer, string cosmosKey, string cosmosDatabase, string cosmosCollection)
         {
             // validate required parameters
-            if (cosmosUrl == null)
+            if (cosmosServer == null)
             {
-                throw new ArgumentNullException(nameof(cosmosUrl));
+                throw new ArgumentNullException(nameof(cosmosServer));
             }
 
             if (string.IsNullOrWhiteSpace(cosmosKey))
@@ -107,7 +100,7 @@ namespace Ngsa.DataService.DataAccessLayer
             }
 
             // open and test a new client / container
-            CosmosClient c = new CosmosClient(cosmosUrl.AbsoluteUri, cosmosKey, cosmosDetails.CosmosClientOptions);
+            CosmosClient c = new CosmosClient(cosmosServer, cosmosKey, cosmosDetails.CosmosClientOptions);
             Container con = c.GetContainer(cosmosDatabase, cosmosCollection);
             await con.ReadItemAsync<dynamic>("action", new PartitionKey("0")).ConfigureAwait(false);
 
