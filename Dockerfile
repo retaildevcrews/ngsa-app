@@ -17,8 +17,8 @@ RUN dotnet publish -c Release -o /app
 ### Build the runtime container
 FROM mcr.microsoft.com/dotnet/core/aspnet:3.1-alpine AS release
 
-### if port is changed, also update value in Constants.cs
-EXPOSE 8080
+### if port is changed, also update value in Config
+EXPOSE 8080 4120
 WORKDIR /app
 
 ### create a user
@@ -34,4 +34,4 @@ USER ngsa
 ### copy the app
 COPY --from=test /app .
 
-ENTRYPOINT [ "dotnet",  "aspnetapp.dll", "--in-memory" ]
+ENTRYPOINT [ "dotnet",  "aspnetapp.dll" ]
