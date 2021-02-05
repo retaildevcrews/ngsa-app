@@ -31,11 +31,12 @@ namespace Ngsa.Middleware
         /// <param name="method">method to log</param>
         /// <param name="message">message to log</param>
         /// <param name="context">http context</param>
-        public void LogInformation(string method, string message, HttpContext context = null)
+        /// <param name="dictionary">optional dictionary</param>
+        public void LogInformation(string method, string message, HttpContext context = null, Dictionary<string, object> dictionary = null)
         {
             if (LogLevel <= LogLevel.Information)
             {
-                WriteLog(LogLevel.Information, GetDictionary(method, message, LogLevel.Information, context));
+                WriteLog(LogLevel.Information, GetDictionary(method, message, LogLevel.Information, null, context, dictionary));
             }
         }
 
@@ -44,72 +45,46 @@ namespace Ngsa.Middleware
         /// </summary>
         /// <param name="method">method to log</param>
         /// <param name="message">message to log</param>
-        /// <param name="context">http context</param>
-        public void LogWarning(string method, string message, HttpContext context = null)
-        {
-            if (LogLevel <= LogLevel.Warning)
-            {
-                WriteLog(LogLevel.Warning, GetDictionary(method, message, LogLevel.Warning, context));
-            }
-        }
-
-        /// <summary>
-        /// Log warning
-        /// </summary>
         /// <param name="eventId">Event ID</param>
-        /// <param name="method">method to log</param>
-        /// <param name="message">message to log</param>
         /// <param name="context">http context</param>
-        public void LogWarning(EventId eventId, string method, string message, HttpContext context = null)
+        /// <param name="dictionary">optional dictionary</param>
+        public void LogWarning(string method, string message, LogEventId eventId = null, HttpContext context = null, Dictionary<string, object> dictionary = null)
         {
             if (LogLevel <= LogLevel.Warning)
             {
-                WriteLog(LogLevel.Warning, GetDictionary(eventId, method, message, LogLevel.Warning, context));
+                WriteLog(LogLevel.Warning, GetDictionary(method, message, LogLevel.Warning, eventId, context, dictionary));
             }
         }
 
         /// <summary>
         /// Log error
         /// </summary>
-        /// <param name="eventId">Event ID</param>
         /// <param name="method">method to log</param>
         /// <param name="message">message to log</param>
+        /// <param name="eventId">Event ID</param>
         /// <param name="context">http context</param>
         /// <param name="ex">exception</param>
-        public void LogError(EventId eventId, string method, string message, HttpContext context = null, Exception ex = null)
+        /// <param name="dictionary">optional dictionary</param>
+        public void LogError(string method, string message, LogEventId eventId = null, HttpContext context = null, Exception ex = null, Dictionary<string, object> dictionary = null)
         {
             if (LogLevel <= LogLevel.Error)
             {
-                Dictionary<string, object> d = GetDictionary(eventId, method, message, LogLevel.Error, context);
+                Dictionary<string, object> d = GetDictionary(method, message, LogLevel.Error, eventId, context);
 
+                // add exception
                 if (ex != null)
                 {
                     d.Add("ExceptionType", ex.GetType().FullName);
                     d.Add("ExceptionMessage", ex.Message);
                 }
 
-                // log the error
-                WriteLog(LogLevel.Error, d);
-            }
-        }
-
-        /// <summary>
-        /// Log error
-        /// </summary>
-        /// <param name="method">method to log</param>
-        /// <param name="message">message to log</param>
-        /// <param name="context">http context</param>
-        /// <param name="ex">exception</param>
-        public void LogError(string method, string message, HttpContext context = null, Exception ex = null)
-        {
-            if (LogLevel <= LogLevel.Error)
-            {
-                Dictionary<string, object> d = GetDictionary(method, message, LogLevel.Error, context);
-
-                if (ex != null)
+                // add dictionary
+                if (dictionary != null && dictionary.Count > 0)
                 {
-                    d.Add("ExceptionType", ex.GetType().FullName);
-                    d.Add("ExceptionMessage", ex.Message);
+                    foreach (var kv in dictionary)
+                    {
+                        d.Add(kv.Key, kv.Value);
+                    }
                 }
 
                 // log the error
@@ -140,35 +115,7 @@ namespace Ngsa.Middleware
         }
 
         // convert log to dictionary
-        private Dictionary<string, object> GetDictionary(EventId eventId, string method, string message, LogLevel logLevel, HttpContext context = null)
-        {
-            Dictionary<string, object> data = GetDictionary(method, message, logLevel, context);
-
-            if (eventId.Id > 0)
-            {
-                data.Add("EventId", eventId.Id);
-            }
-
-            if (!string.IsNullOrWhiteSpace(eventId.Name))
-            {
-                data.Add("EventName", eventId.Name);
-            }
-
-            if (!string.IsNullOrEmpty(Zone))
-            {
-                data.Add("Zone", Zone);
-            }
-
-            if (!string.IsNullOrEmpty(Region))
-            {
-                data.Add("Region", Region);
-            }
-
-            return data;
-        }
-
-        // convert log to dictionary
-        private Dictionary<string, object> GetDictionary(string method, string message, LogLevel logLevel, HttpContext context = null)
+        private Dictionary<string, object> GetDictionary(string method, string message, LogLevel logLevel, LogEventId eventId = null, HttpContext context = null, Dictionary<string, object> dictionary = null)
         {
             Dictionary<string, object> data = new Dictionary<string, object>
             {
@@ -181,7 +128,9 @@ namespace Ngsa.Middleware
 
             if (context != null && context.Items != null)
             {
-                data.Add("Path", context.Request.Path + (string.IsNullOrWhiteSpace(context.Request.QueryString.Value) ? string.Empty : context.Request.QueryString.Value));
+                // todo - this causes an xss error
+                // data.Add("Path", context.Request.Path + (string.IsNullOrWhiteSpace(context.Request.QueryString.Value) ? string.Empty : context.Request.QueryString.Value));
+                data.Add("Path", context.Request.Path);
 
                 if (context.Items != null)
                 {
@@ -191,6 +140,37 @@ namespace Ngsa.Middleware
                     {
                         data.Add("CVector", cv.Value);
                     }
+                }
+            }
+
+            // add LogEventId
+            if (eventId != null && eventId.Id > 0)
+            {
+                data.Add("EventId", eventId.Id);
+            }
+
+            if (eventId != null && !string.IsNullOrWhiteSpace(eventId.Name))
+            {
+                data.Add("EventName", eventId.Name);
+            }
+
+            // add Zone and Region
+            if (!string.IsNullOrEmpty(Zone))
+            {
+                data.Add("Zone", Zone);
+            }
+
+            if (!string.IsNullOrEmpty(Region))
+            {
+                data.Add("Region", Region);
+            }
+
+            // add dictionary
+            if (dictionary != null && dictionary.Count > 0)
+            {
+                foreach (var kv in dictionary)
+                {
+                    data.Add(kv.Key, kv.Value);
                 }
             }
 
