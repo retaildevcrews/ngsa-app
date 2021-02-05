@@ -26,5 +26,7 @@ namespace Ngsa.DataService
         public string Zone { get; set; } = string.Empty;
         public string Region { get; set; } = string.Empty;
         public int Port { get; set; } = 8080;
+        public int Retries { get; set; }
+        public int Timeout { get; set; }
     }
 }
