@@ -7,7 +7,6 @@ using System.Net;
 using System.Threading.Tasks;
 using Imdb.Model;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using Ngsa.DataService.DataAccessLayer;
 using Ngsa.Middleware;
 using Ngsa.Middleware.Validation;
@@ -52,14 +51,11 @@ namespace Ngsa.DataService.Controllers
                 throw new ArgumentNullException(nameof(actorQueryParameters));
             }
 
-            NgsaLog nLogger = Logger.GetLogger(nameof(GetActorsAsync), HttpContext);
-
             List<ValidationError> list = actorQueryParameters.Validate();
 
             if (list.Count > 0)
             {
-                nLogger.EventId = new EventId((int)HttpStatusCode.BadRequest, HttpStatusCode.BadRequest.ToString());
-                nLogger.LogWarning("Invalid query string");
+                Logger.LogWarning(nameof(GetActorsAsync), NgsaLog.MessageInvalidQueryString, NgsaLog.LogEvent400, HttpContext);
 
                 return ResultHandler.CreateResult(list, Request.Path.ToString() + (Request.QueryString.HasValue ? Request.QueryString.Value : string.Empty));
             }
@@ -72,14 +68,14 @@ namespace Ngsa.DataService.Controllers
             }
             else
             {
-                res = await ResultHandler.Handle(dal.GetActorsAsync(actorQueryParameters), nLogger).ConfigureAwait(false);
+                res = await ResultHandler.Handle(dal.GetActorsAsync(actorQueryParameters), Logger).ConfigureAwait(false);
 
                 // use cache dal on Cosmos 429 errors
                 if (App.Config.Cache && res is JsonResult jres && jres.StatusCode == 429)
                 {
-                    nLogger.EventId = new EventId(429, "Cosmos 429 Result");
-                    nLogger.LogWarning("Served from cache");
-                    res = await ResultHandler.Handle(App.CacheDal.GetActorsAsync(actorQueryParameters), nLogger).ConfigureAwait(false);
+                    Logger.Log429(nameof(GetActorsAsync), HttpContext);
+
+                    res = await ResultHandler.Handle(App.CacheDal.GetActorsAsync(actorQueryParameters), Logger).ConfigureAwait(false);
                 }
             }
 
@@ -100,14 +96,11 @@ namespace Ngsa.DataService.Controllers
                 throw new ArgumentNullException(nameof(actorId));
             }
 
-            NgsaLog nLogger = Logger.GetLogger(nameof(GetActorByIdAsync), HttpContext);
-
             List<Middleware.Validation.ValidationError> list = ActorQueryParameters.ValidateActorId(actorId);
 
             if (list.Count > 0)
             {
-                nLogger.EventId = new EventId((int)HttpStatusCode.BadRequest, HttpStatusCode.BadRequest.ToString());
-                nLogger.LogWarning("Invalid Actor Id");
+                Logger.LogWarning(nameof(GetActorByIdAsync), "Invalid Actor Id", NgsaLog.LogEvent400, HttpContext);
 
                 return ResultHandler.CreateResult(list, Request.Path.ToString() + (Request.QueryString.HasValue ? Request.QueryString.Value : string.Empty));
             }
@@ -121,15 +114,14 @@ namespace Ngsa.DataService.Controllers
             }
             else
             {
-                res = await ResultHandler.Handle(dal.GetActorAsync(actorId), nLogger).ConfigureAwait(false);
+                res = await ResultHandler.Handle(dal.GetActorAsync(actorId), Logger).ConfigureAwait(false);
 
                 // use cache dal on Cosmos 429 errors
                 if (App.Config.Cache && res is JsonResult jres && jres.StatusCode == 429)
                 {
-                    nLogger.EventId = new EventId(429, "Cosmos 429 Result");
-                    nLogger.LogWarning("Served from cache");
+                    Logger.Log429(nameof(GetActorByIdAsync), HttpContext);
 
-                    res = await ResultHandler.Handle(App.CacheDal.GetActorAsync(actorId), nLogger).ConfigureAwait(false);
+                    res = await ResultHandler.Handle(App.CacheDal.GetActorAsync(actorId), Logger).ConfigureAwait(false);
                 }
             }
 

@@ -17,7 +17,7 @@ namespace Ngsa.DataService.DataAccessLayer
     {
         private readonly CacheItemPolicy cachePolicy = new CacheItemPolicy { SlidingExpiration = TimeSpan.FromMinutes(5) };
         private readonly MemoryCache cache = new MemoryCache("cache");
-        private CosmosConfig cosmosDetails;
+        private readonly CosmosConfig cosmosDetails;
         private bool disposedValue;
 
         /// <summary>

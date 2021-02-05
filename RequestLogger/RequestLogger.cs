@@ -194,7 +194,12 @@ namespace Ngsa.Middleware
         /// <returns>string</returns>
         private static string GetPathAndQuerystring(HttpRequest request)
         {
-            return request?.Path.ToString() + request?.QueryString.Value;
+            if (request == null)
+            {
+                return string.Empty;
+            }
+
+            return request.Path.ToString() + (request.QueryString.HasValue ? request.QueryString.Value : string.Empty);
         }
     }
 }

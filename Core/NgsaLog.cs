@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.CorrelationVector;
@@ -12,153 +13,185 @@ namespace Ngsa.Middleware
 {
     public class NgsaLog
     {
+        public const string Message429 = "Cosmos Retry - served from cache";
+        public const string MessageInvalidQueryString = "Invalid query string";
+
         private static readonly JsonSerializerOptions Options = new JsonSerializerOptions
         {
             IgnoreNullValues = true,
         };
 
         public static LogLevel LogLevel { get; set; } = LogLevel.Information;
-
         public static string Zone { get; set; } = string.Empty;
         public static string Region { get; set; } = string.Empty;
+
+        public static LogEventId LogEvent429 { get; } = new LogEventId(429, "Cosmos 429 Result");
+        public static LogEventId LogEvent400 { get; } = new LogEventId((int)HttpStatusCode.BadRequest, HttpStatusCode.BadRequest.ToString());
+        public static LogEventId LogEvent404 { get; } = new LogEventId((int)HttpStatusCode.NotFound, HttpStatusCode.NotFound.ToString());
+        public static LogEventId LogEvent500 { get; } = new LogEventId((int)HttpStatusCode.InternalServerError, "Exception");
 
         public string Name { get; set; } = string.Empty;
         public string ErrorMessage { get; set; } = string.Empty;
         public string NotFoundError { get; set; } = string.Empty;
-        public string Method { get; set; } = string.Empty;
-        public string Message { get; set; } = string.Empty;
-        public Exception Exception { get; set; } = null;
-        public EventId EventId { get; set; } = new EventId(-1, string.Empty);
-        public HttpContext Context { get; set; } = null;
-        public Dictionary<string, object> Data { get; } = new Dictionary<string, object>();
 
-        public NgsaLog GetLogger(string method, HttpContext context = null)
+        /// <summary>
+        /// Log information message
+        /// </summary>
+        /// <param name="method">method to log</param>
+        /// <param name="message">message to log</param>
+        /// <param name="context">http context</param>
+        /// <param name="dictionary">optional dictionary</param>
+        public void LogInformation(string method, string message, HttpContext context = null, Dictionary<string, object> dictionary = null)
         {
-            NgsaLog logger = new NgsaLog
+            if (LogLevel <= LogLevel.Information)
             {
-                Name = Name,
-                ErrorMessage = ErrorMessage,
-                NotFoundError = NotFoundError,
-                Method = method,
-                Context = context,
+                WriteLog(LogLevel.Information, GetDictionary(method, message, LogLevel.Information, null, context, dictionary));
+            }
+        }
+
+        /// <summary>
+        /// Log warning
+        /// </summary>
+        /// <param name="method">method to log</param>
+        /// <param name="message">message to log</param>
+        /// <param name="eventId">Event ID</param>
+        /// <param name="context">http context</param>
+        /// <param name="dictionary">optional dictionary</param>
+        public void LogWarning(string method, string message, LogEventId eventId = null, HttpContext context = null, Dictionary<string, object> dictionary = null)
+        {
+            if (LogLevel <= LogLevel.Warning)
+            {
+                WriteLog(LogLevel.Warning, GetDictionary(method, message, LogLevel.Warning, eventId, context, dictionary));
+            }
+        }
+
+        public void Log429(string method, HttpContext context = null, Dictionary<string, object> dictionary = null)
+        {
+            if (LogLevel <= LogLevel.Warning)
+            {
+                WriteLog(LogLevel.Warning, GetDictionary(method, Message429, LogLevel.Warning, LogEvent429, context, dictionary));
+            }
+        }
+
+        /// <summary>
+        /// Log error
+        /// </summary>
+        /// <param name="method">method to log</param>
+        /// <param name="message">message to log</param>
+        /// <param name="eventId">Event ID</param>
+        /// <param name="context">http context</param>
+        /// <param name="ex">exception</param>
+        /// <param name="dictionary">optional dictionary</param>
+        public void LogError(string method, string message, LogEventId eventId = null, HttpContext context = null, Exception ex = null, Dictionary<string, object> dictionary = null)
+        {
+            if (LogLevel <= LogLevel.Error)
+            {
+                Dictionary<string, object> d = GetDictionary(method, message, LogLevel.Error, eventId, context);
+
+                // add exception
+                if (ex != null)
+                {
+                    d.Add("ExceptionType", ex.GetType().FullName);
+                    d.Add("ExceptionMessage", ex.Message);
+                }
+
+                // add dictionary
+                if (dictionary != null && dictionary.Count > 0)
+                {
+                    foreach (KeyValuePair<string, object> kv in dictionary)
+                    {
+                        d.Add(kv.Key, kv.Value);
+                    }
+                }
+
+                // log the error
+                WriteLog(LogLevel.Error, d);
+            }
+        }
+
+        // write the log to console or console.error
+        private static void WriteLog(LogLevel logLevel, Dictionary<string, object> data)
+        {
+            Console.ForegroundColor = logLevel switch
+            {
+                LogLevel.Error => ConsoleColor.Red,
+                LogLevel.Warning => ConsoleColor.Yellow,
+                _ => ConsoleColor.Green,
             };
 
-            return logger;
-        }
-
-        public void LogInformation(string message)
-        {
-            if (LogLevel > LogLevel.Information)
+            if (logLevel == LogLevel.Error)
             {
-                return;
-            }
-
-            UpdateDictionary(message, LogLevel.Information);
-            WriteLog(LogLevel.Information);
-        }
-
-        public void LogWarning(string message)
-        {
-            if (LogLevel > LogLevel.Warning)
-            {
-                return;
-            }
-
-            UpdateDictionary(message, LogLevel.Warning);
-            WriteLog(LogLevel.Warning);
-        }
-
-        public void LogError(string message, Exception ex = null)
-        {
-            if (LogLevel > LogLevel.Error)
-            {
-                return;
-            }
-
-            // set the exception
-            if (ex != null)
-            {
-                Exception = ex;
-            }
-
-            UpdateDictionary(message, LogLevel.Error);
-
-            // display the error
-            WriteLog(LogLevel.Error);
-        }
-
-        private void WriteLog(LogLevel logLevel)
-        {
-            Console.ForegroundColor = logLevel >= LogLevel.Error ? ConsoleColor.Red :
-                logLevel == LogLevel.Warning ? ConsoleColor.Yellow :
-                logLevel == LogLevel.Information ? ConsoleColor.Green : Console.ForegroundColor;
-
-            if (logLevel >= LogLevel.Error)
-            {
-                Console.Error.WriteLine(JsonSerializer.Serialize(Data, Options));
+                Console.Error.WriteLine(JsonSerializer.Serialize(data, Options));
             }
             else
             {
-                Console.WriteLine(JsonSerializer.Serialize(Data, Options));
+                Console.WriteLine(JsonSerializer.Serialize(data, Options));
             }
 
             Console.ResetColor();
         }
 
-        private void SetDataValue(string key, object value)
+        // convert log to dictionary
+        private Dictionary<string, object> GetDictionary(string method, string message, LogLevel logLevel, LogEventId eventId = null, HttpContext context = null, Dictionary<string, object> dictionary = null)
         {
-            if (!Data.TryAdd(key, value))
+            Dictionary<string, object> data = new Dictionary<string, object>
             {
-                Data[key] = value;
+                { "Date", DateTime.UtcNow },
+                { "LogName", Name },
+                { "Method", method },
+                { "Message", message },
+                { "LogLevel", logLevel.ToString() },
+            };
+
+            if (context != null && context.Items != null)
+            {
+                // todo - this causes an xss error
+                // data.Add("Path", context.Request.Path + (Request.QueryString.HasValue ? Request.QueryString.Value : string.Empty);
+                data.Add("Path", context.Request.Path);
+
+                if (context.Items != null)
+                {
+                    CorrelationVector cv = CorrelationVectorExtensions.GetCorrelationVectorFromContext(context);
+
+                    if (cv != null)
+                    {
+                        data.Add("CVector", cv.Value);
+                    }
+                }
             }
-        }
 
-        private void UpdateDictionary(string message, LogLevel logLevel)
-        {
-            SetDataValue("Date", DateTime.UtcNow);
-            SetDataValue("LogName", Name);
-            SetDataValue("Method", Method);
-            SetDataValue("Message", message);
-            SetDataValue("LogLevel", logLevel);
+            // add LogEventId
+            if (eventId != null && eventId.Id > 0)
+            {
+                data.Add("EventId", eventId.Id);
+            }
 
+            if (eventId != null && !string.IsNullOrWhiteSpace(eventId.Name))
+            {
+                data.Add("EventName", eventId.Name);
+            }
+
+            // add Zone and Region
             if (!string.IsNullOrEmpty(Zone))
             {
-                SetDataValue("Zone", Zone);
+                data.Add("Zone", Zone);
             }
 
             if (!string.IsNullOrEmpty(Region))
             {
-                SetDataValue("Region", Region);
+                data.Add("Region", Region);
             }
 
-            if (EventId.Id > 0)
+            // add dictionary
+            if (dictionary != null && dictionary.Count > 0)
             {
-                SetDataValue("EventId", EventId.Id);
-            }
-
-            if (!string.IsNullOrWhiteSpace(EventId.Name))
-            {
-                SetDataValue("EventName", EventId.Name);
-            }
-
-            if (Exception != null)
-            {
-                SetDataValue("ExceptionType", Exception.GetType().FullName);
-                SetDataValue("ExceptionMessage", Exception.Message);
-            }
-
-            if (Context != null && Context.Items != null)
-            {
-                // todo - causing xss error
-                // SetDataValue("Path", Context.Request.Path + (string.IsNullOrWhiteSpace(Context.Request.QueryString.Value) ? string.Empty : Context.Request.QueryString.Value));
-
-                CorrelationVector cv = CorrelationVectorExtensions.GetCorrelationVectorFromContext(Context);
-
-                if (cv != null)
+                foreach (KeyValuePair<string, object> kv in dictionary)
                 {
-                    SetDataValue("CVector", cv.Value);
+                    data.Add(kv.Key, kv.Value);
                 }
             }
+
+            return data;
         }
     }
 }
