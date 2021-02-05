@@ -4,6 +4,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Ngsa.Middleware;
 
 namespace Ngsa.DataService.Controllers
@@ -43,6 +44,9 @@ namespace Ngsa.DataService.Controllers
                 // use cache dal on Cosmos 429 errors
                 if (App.Config.Cache && res is JsonResult jres && jres.StatusCode == 429)
                 {
+                    nLogger.EventId = new EventId(429, "Cosmos 429 Result");
+                    nLogger.LogWarning("Served from cache");
+
                     res = await ResultHandler.Handle(App.CacheDal.GetGenresAsync(), nLogger).ConfigureAwait(false);
                 }
             }

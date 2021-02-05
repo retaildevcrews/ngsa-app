@@ -77,6 +77,9 @@ namespace Ngsa.DataService.Controllers
                 // use cache dal on Cosmos 429 errors
                 if (App.Config.Cache && res is JsonResult jres && jres.StatusCode == 429)
                 {
+                    nLogger.EventId = new EventId(429, "Cosmos 429 Result");
+                    nLogger.LogWarning("Served from cache");
+
                     res = await ResultHandler.Handle(App.CacheDal.GetMoviesAsync(movieQueryParameters), nLogger).ConfigureAwait(false);
                 }
             }
@@ -123,6 +126,9 @@ namespace Ngsa.DataService.Controllers
                 // use cache dal on Cosmos 429 errors
                 if (App.Config.Cache && res is JsonResult jres && jres.StatusCode == 429)
                 {
+                    nLogger.EventId = new EventId(429, "Cosmos 429 Result");
+                    nLogger.LogWarning("Served from cache");
+
                     res = await ResultHandler.Handle(App.CacheDal.GetMovieAsync(movieId), nLogger).ConfigureAwait(false);
                 }
             }
