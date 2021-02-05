@@ -81,7 +81,7 @@ namespace Ngsa.Middleware
                 // add dictionary
                 if (dictionary != null && dictionary.Count > 0)
                 {
-                    foreach (var kv in dictionary)
+                    foreach (KeyValuePair<string, object> kv in dictionary)
                     {
                         d.Add(kv.Key, kv.Value);
                     }
@@ -168,7 +168,7 @@ namespace Ngsa.Middleware
             // add dictionary
             if (dictionary != null && dictionary.Count > 0)
             {
-                foreach (var kv in dictionary)
+                foreach (KeyValuePair<string, object> kv in dictionary)
                 {
                     data.Add(kv.Key, kv.Value);
                 }
