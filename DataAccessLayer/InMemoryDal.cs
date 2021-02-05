@@ -480,12 +480,5 @@ namespace Ngsa.DataService.DataAccessLayer
                 return GetMovies(movieQueryParameters);
             });
         }
-
-        // Part of IDal Interface - not used
-        public Task Reconnect(Uri cosmosUrl, string cosmosKey, string cosmosDatabase, string cosmosCollection, bool force = false)
-        {
-            // do nothing
-            return Task.CompletedTask;
-        }
     }
 }

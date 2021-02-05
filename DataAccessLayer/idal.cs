@@ -20,6 +20,5 @@ namespace Ngsa.DataService.DataAccessLayer
         Task<Movie> GetMovieAsync(string movieId);
         Task<IEnumerable<Movie>> GetMoviesAsync(MovieQueryParameters movieQueryParameters);
         Task<List<string>> GetFeaturedMovieListAsync();
-        Task Reconnect(Uri cosmosUrl, string cosmosKey, string cosmosDatabase, string cosmosCollection, bool force = false);
     }
 }

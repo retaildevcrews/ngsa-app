@@ -55,45 +55,6 @@ namespace Ngsa.DataService.DataAccessLayer
         }
 
         /// <summary>
-        /// Recreate the Cosmos Client / Container (after a key rotation)
-        /// </summary>
-        /// <param name="cosmosUrl">Cosmos URL</param>
-        /// <param name="cosmosKey">Cosmos Key</param>
-        /// <param name="cosmosDatabase">Cosmos Database</param>
-        /// <param name="cosmosCollection">Cosmos Collection</param>
-        /// <param name="force">force reconnection even if no params changed</param>
-        /// <returns>Task</returns>
-        public async Task Reconnect(Uri cosmosUrl, string cosmosKey, string cosmosDatabase, string cosmosCollection, bool force = false)
-        {
-            if (cosmosUrl == null)
-            {
-                throw new ArgumentNullException(nameof(cosmosUrl));
-            }
-
-            if (force ||
-                cosmosDetails.CosmosCollection != cosmosCollection ||
-                cosmosDetails.CosmosDatabase != cosmosDatabase ||
-                cosmosDetails.CosmosKey != cosmosKey ||
-                cosmosDetails.CosmosUrl != cosmosUrl.AbsoluteUri)
-            {
-                CosmosConfig d = new CosmosConfig
-                {
-                    CosmosCollection = cosmosCollection,
-                    CosmosDatabase = cosmosDatabase,
-                    CosmosKey = cosmosKey,
-                    CosmosUrl = cosmosUrl.AbsoluteUri,
-                };
-
-                // open and test a new client / container
-                d.Client = await OpenAndTestCosmosClient(cosmosUrl, cosmosKey, cosmosDatabase, cosmosCollection).ConfigureAwait(false);
-                d.Container = d.Client.GetContainer(cosmosDatabase, cosmosCollection);
-
-                // set the current CosmosDetail
-                cosmosDetails = d;
-            }
-        }
-
-        /// <summary>
         /// Returnt the generic Cosmos DB results
         /// </summary>
         /// <typeparam name="T">generic type</typeparam>
