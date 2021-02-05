@@ -54,7 +54,7 @@ namespace Ngsa.Middleware
             }
 
             UpdateDictionary(message, LogLevel.Information);
-            WriteLog();
+            WriteLog(LogLevel.Information);
         }
 
         public void LogWarning(string message)
@@ -65,7 +65,7 @@ namespace Ngsa.Middleware
             }
 
             UpdateDictionary(message, LogLevel.Warning);
-            WriteLog();
+            WriteLog(LogLevel.Warning);
         }
 
         public void LogError(string message, Exception ex = null)
@@ -84,16 +84,16 @@ namespace Ngsa.Middleware
             UpdateDictionary(message, LogLevel.Error);
 
             // display the error
-            WriteLog();
+            WriteLog(LogLevel.Error);
         }
 
-        private void WriteLog()
+        private void WriteLog(LogLevel logLevel)
         {
-            Console.ForegroundColor = LogLevel >= LogLevel.Error ? ConsoleColor.Red :
-                LogLevel == LogLevel.Warning ? ConsoleColor.Yellow :
-                LogLevel == LogLevel.Information ? ConsoleColor.Green : Console.ForegroundColor;
+            Console.ForegroundColor = logLevel >= LogLevel.Error ? ConsoleColor.Red :
+                logLevel == LogLevel.Warning ? ConsoleColor.Yellow :
+                logLevel == LogLevel.Information ? ConsoleColor.Green : Console.ForegroundColor;
 
-            if (LogLevel >= LogLevel.Error)
+            if (logLevel >= LogLevel.Error)
             {
                 Console.Error.WriteLine(JsonSerializer.Serialize(Data, Options));
             }
