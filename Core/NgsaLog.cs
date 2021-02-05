@@ -17,11 +17,12 @@ namespace Ngsa.Middleware
             IgnoreNullValues = true,
         };
 
+        public static LogLevel LogLevel { get; set; } = LogLevel.Information;
+
         public static string Zone { get; set; } = string.Empty;
         public static string Region { get; set; } = string.Empty;
 
         public string Name { get; set; } = string.Empty;
-        public LogLevel LogLevel { get; set; } = LogLevel.Information;
         public string ErrorMessage { get; set; } = string.Empty;
         public string NotFoundError { get; set; } = string.Empty;
         public string Method { get; set; } = string.Empty;
@@ -38,7 +39,6 @@ namespace Ngsa.Middleware
                 Name = Name,
                 ErrorMessage = ErrorMessage,
                 NotFoundError = NotFoundError,
-                LogLevel = LogLevel,
                 Method = method,
                 Context = context,
             };
