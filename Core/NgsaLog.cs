@@ -13,7 +13,7 @@ namespace Ngsa.Middleware
 {
     public class NgsaLog
     {
-        public const string Message429 = "Served from cache";
+        public const string Message429 = "Cosmos Retry - served from cache";
         public const string MessageInvalidQueryString = "Invalid query string";
 
         private static readonly JsonSerializerOptions Options = new JsonSerializerOptions
