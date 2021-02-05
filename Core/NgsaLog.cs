@@ -26,9 +26,9 @@ namespace Ngsa.Middleware
         public static string Region { get; set; } = string.Empty;
 
         public static LogEventId LogEvent429 { get; } = new LogEventId(429, "Cosmos 429 Result");
-        public static LogEventId Log400 { get; } = new LogEventId((int)HttpStatusCode.BadRequest, HttpStatusCode.BadRequest.ToString());
-        public static LogEventId Log404 { get; } = new LogEventId((int)HttpStatusCode.NotFound, HttpStatusCode.NotFound.ToString());
-        public static LogEventId Log500 { get; } = new LogEventId((int)HttpStatusCode.InternalServerError, "Exception");
+        public static LogEventId LogEvent400 { get; } = new LogEventId((int)HttpStatusCode.BadRequest, HttpStatusCode.BadRequest.ToString());
+        public static LogEventId LogEvent404 { get; } = new LogEventId((int)HttpStatusCode.NotFound, HttpStatusCode.NotFound.ToString());
+        public static LogEventId LogEvent500 { get; } = new LogEventId((int)HttpStatusCode.InternalServerError, "Exception");
 
         public string Name { get; set; } = string.Empty;
         public string ErrorMessage { get; set; } = string.Empty;
