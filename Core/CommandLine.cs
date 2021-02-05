@@ -43,6 +43,7 @@ namespace Ngsa.DataService
             cmd.AddFromEnvironment("--log-level", "-l");
             cmd.AddFromEnvironment("--zone");
             cmd.AddFromEnvironment("--region");
+            cmd.AddFromEnvironment("--app-type");
 
             // was log level set
             IsLogLevelSet = cmd.Contains("--log-level") || cmd.Contains("-l");
@@ -64,6 +65,7 @@ namespace Ngsa.DataService
             };
 
             // add the options
+            root.AddOption(new Option<AppType>(new string[] { "--app-type" }, () => AppType.Integrated, "Application Type"));
             root.AddOption(new Option<int>(new string[] { "--cache-duration" }, () => 300, "Cache for duration (seconds)"));
             root.AddOption(new Option<bool>(new string[] { "--in-memory" }, "Use in-memory database"));
             root.AddOption(new Option<bool>(new string[] { "--no-cache" }, "Don't cache results"));
@@ -90,6 +92,7 @@ namespace Ngsa.DataService
             try
             {
                 // assign command line values
+                Config.AppType = config.AppType;
                 Config.LogLevel = config.LogLevel;
                 Config.CacheDuration = config.CacheDuration;
                 Config.InMemory = config.InMemory;
@@ -289,8 +292,9 @@ namespace Ngsa.DataService
         // Display the dry run message
         private static int DoDryRun()
         {
-            Console.WriteLine($"Version            {Ngsa.Middleware.VersionExtension.Version}");
+            Console.WriteLine($"Version            {VersionExtension.Version}");
             Console.WriteLine($"Log Level          {Config.LogLevel}");
+            Console.WriteLine($"Application Type   {Config.AppType}");
             Console.WriteLine($"In Memory          {Config.InMemory}");
             Console.WriteLine($"No Cache           {Config.NoCache}");
             Console.WriteLine($"Perf Cache         {Config.PerfCache}");

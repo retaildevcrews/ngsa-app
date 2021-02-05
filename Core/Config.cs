@@ -14,8 +14,11 @@ using Ngsa.Middleware;
 
 namespace Ngsa.DataService
 {
+    public enum AppType { Integrated, WebAPI, DataService }
+
     public class Config
     {
+        public AppType AppType { get; set; } = AppType.Integrated;
         public string SecretsVolume { get; set; }
         public LogLevel LogLevel { get; set; }
         public bool DryRun { get; set; }
