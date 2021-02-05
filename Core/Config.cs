@@ -14,18 +14,22 @@ using Ngsa.Middleware;
 
 namespace Ngsa.DataService
 {
-    public enum AppType { Integrated, WebAPI, DataService }
+    public enum AppType
+    {
+        DataService,
+        WebAPI,
+    }
 
     public class Config
     {
-        public AppType AppType { get; set; } = AppType.Integrated;
-        public string SecretsVolume { get; set; }
-        public LogLevel LogLevel { get; set; }
+        public AppType AppType { get; set; } = AppType.DataService;
+        public string SecretsVolume { get; set; } = "secrets";
+        public LogLevel LogLevel { get; set; } = LogLevel.Warning;
         public bool DryRun { get; set; }
         public bool InMemory { get; set; }
         public bool NoCache { get; set; }
         public int PerfCache { get; set; }
-        public int CacheDuration { get; set; }
+        public int CacheDuration { get; set; } = 300;
         public string Zone { get; set; } = string.Empty;
         public string Region { get; set; } = string.Empty;
     }
