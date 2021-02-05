@@ -35,16 +35,18 @@ namespace Ngsa.DataService
             List<string> cmd = new List<string>(args);
 
             // add values from environment
-            cmd.AddFromEnvironment("--data-service");
-            cmd.AddFromEnvironment("--cache-duration");
-            cmd.AddFromEnvironment("--in-memory");
-            cmd.AddFromEnvironment("--no-cache");
-            cmd.AddFromEnvironment("--perf-cache");
-            cmd.AddFromEnvironment("--secrets-volume");
+            cmd.AddFromEnvironment("--data-service", "-s");
+            cmd.AddFromEnvironment("--cache-duration", "-d");
+            cmd.AddFromEnvironment("--in-memory", "-m");
+            cmd.AddFromEnvironment("--no-cache", "-n");
+            cmd.AddFromEnvironment("--perf-cache", "-p");
+            cmd.AddFromEnvironment("--secrets-volume", "-v");
             cmd.AddFromEnvironment("--log-level", "-l");
-            cmd.AddFromEnvironment("--zone");
-            cmd.AddFromEnvironment("--region");
-            cmd.AddFromEnvironment("--app-type");
+            cmd.AddFromEnvironment("--zone", "-z");
+            cmd.AddFromEnvironment("--region", "-r");
+            cmd.AddFromEnvironment("--app-type", "-a");
+            cmd.AddFromEnvironment("--retries");
+            cmd.AddFromEnvironment("--timeout");
 
             // was log level set
             IsLogLevelSet = cmd.Contains("--log-level") || cmd.Contains("-l");
@@ -72,6 +74,8 @@ namespace Ngsa.DataService
             root.AddOption(new Option<bool>(new string[] { "-m", "--in-memory" }, "Use in-memory database"));
             root.AddOption(new Option<bool>(new string[] { "-n", "--no-cache" }, "Don't cache results"));
             root.AddOption(new Option<int>(new string[] { "-p", "--perf-cache" }, "Cache only when load exceeds value"));
+            root.AddOption(new Option<int>(new string[] { "--retries" }, () => 5, "Cosmos 429 retries"));
+            root.AddOption(new Option<int>(new string[] { "--timeout" }, () => 30, "Data timeout"));
             root.AddOption(new Option<string>(new string[] { "-v", "--secrets-volume" }, () => "secrets", "Secrets Volume Path"));
             root.AddOption(new Option<LogLevel>(new string[] { "-l", "--log-level" }, () => LogLevel.Warning, "Log Level"));
             root.AddOption(new Option<string>(new string[] { "-z", "--zone" }, () => string.Empty, "Zone for log"));
@@ -102,6 +106,8 @@ namespace Ngsa.DataService
                 Config.NoCache = config.NoCache;
                 Config.PerfCache = config.PerfCache;
                 Config.SecretsVolume = config.SecretsVolume;
+                Config.Retries = config.Retries;
+                Config.Timeout = config.Timeout;
                 Config.Zone = string.IsNullOrEmpty(config.Zone) ? string.Empty : config.Zone.Trim();
                 Config.Region = string.IsNullOrEmpty(config.Region) ? string.Empty : config.Region.Trim();
 
@@ -137,7 +143,7 @@ namespace Ngsa.DataService
                     }
                     else
                     {
-                        CosmosDal = new DataAccessLayer.CosmosDal(new Uri(Secrets.CosmosServer), Secrets.CosmosKey, Secrets.CosmosDatabase, Secrets.CosmosCollection);
+                        CosmosDal = new DataAccessLayer.CosmosDal(Secrets, Config);
                     }
 
                     // set the logger info
@@ -243,6 +249,8 @@ namespace Ngsa.DataService
                 string secrets = !(result.Children.FirstOrDefault(c => c.Symbol.Name == "secrets-volume") is OptionResult secretsRes) ? string.Empty : secretsRes.GetValueOrDefault<string>();
 
                 // todo - validate --data-service
+                // validate retries
+                // validate timeout
 
                 // validate secrets volume
                 if (string.IsNullOrWhiteSpace(secrets))
