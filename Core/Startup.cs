@@ -11,6 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Ngsa.Middleware;
+using Prometheus;
 
 namespace Ngsa.DataService
 {
@@ -77,9 +78,14 @@ namespace Ngsa.DataService
 
             // use routing
             app.UseRouting();
+            //app.UseHttpMetrics();
 
             // map the controllers
-            app.UseEndpoints(ep => { ep.MapControllers(); });
+            app.UseEndpoints(ep =>
+            {
+                ep.MapControllers();
+                ep.MapMetrics();
+            });
 
             // rewrite root to /index.html
             app.UseSwaggerRoot();
