@@ -98,6 +98,7 @@ namespace Ngsa.DataService
                 Config.InMemory = config.InMemory;
                 Config.NoCache = config.NoCache;
                 Config.PerfCache = config.PerfCache;
+                Config.SecretsVolume = config.SecretsVolume;
                 Config.Zone = string.IsNullOrEmpty(config.Zone) ? string.Empty : config.Zone.Trim();
                 Config.Region = string.IsNullOrEmpty(config.Region) ? string.Empty : config.Region.Trim();
 
