@@ -11,23 +11,23 @@ namespace Ngsa.DataService.DataAccessLayer
     /// </summary>
     internal class CosmosConfig
     {
-        public CosmosClient Client;
-        public Container Container;
-
-        // default values for Cosmos Options
-        public int MaxRows = 1000;
-        public int Timeout = 60;
-        public int Retries = 1;
-
-        // Cosmos connection fields
-        public string CosmosUrl;
-        public string CosmosKey;
-        public string CosmosDatabase;
-        public string CosmosCollection;
-
         // member variables
         private QueryRequestOptions queryRequestOptions;
         private CosmosClientOptions cosmosClientOptions;
+
+        public CosmosClient Client { get; set; }
+        public Container Container { get; set; }
+
+        // default values for Cosmos Options
+        public int MaxRows { get; set; } = 10000;
+        public int Timeout { get; set; } = 30;
+        public int Retries { get; set; } = 5;
+
+        // Cosmos connection fields
+        public string CosmosUrl { get; set; }
+        public string CosmosKey { get; set; }
+        public string CosmosDatabase { get; set; }
+        public string CosmosCollection { get; set; }
 
         // CosmosDB query request options
         public QueryRequestOptions QueryRequestOptions

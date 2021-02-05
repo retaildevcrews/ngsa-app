@@ -46,7 +46,7 @@ namespace Ngsa.DataService.DataAccessLayer
 
             Actor res = await cosmosDetails.Container.ReadItemAsync<Actor>(actorId, new PartitionKey(Actor.ComputePartitionKey(actorId))).ConfigureAwait(false);
 
-            cache.Add(new System.Runtime.Caching.CacheItem(key, res), cachePolicy);
+            cache.Add(new CacheItem(key, res), cachePolicy);
 
             return res;
         }

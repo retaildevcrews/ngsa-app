@@ -17,11 +17,12 @@ namespace Ngsa.Middleware
             IgnoreNullValues = true,
         };
 
+        public static LogLevel LogLevel { get; set; } = LogLevel.Information;
+
         public static string Zone { get; set; } = string.Empty;
         public static string Region { get; set; } = string.Empty;
 
         public string Name { get; set; } = string.Empty;
-        public LogLevel LogLevel { get; set; } = LogLevel.Information;
         public string ErrorMessage { get; set; } = string.Empty;
         public string NotFoundError { get; set; } = string.Empty;
         public string Method { get; set; } = string.Empty;
@@ -38,7 +39,6 @@ namespace Ngsa.Middleware
                 Name = Name,
                 ErrorMessage = ErrorMessage,
                 NotFoundError = NotFoundError,
-                LogLevel = LogLevel,
                 Method = method,
                 Context = context,
             };
@@ -54,7 +54,7 @@ namespace Ngsa.Middleware
             }
 
             UpdateDictionary(message, LogLevel.Information);
-            WriteLog();
+            WriteLog(LogLevel.Information);
         }
 
         public void LogWarning(string message)
@@ -65,7 +65,7 @@ namespace Ngsa.Middleware
             }
 
             UpdateDictionary(message, LogLevel.Warning);
-            WriteLog();
+            WriteLog(LogLevel.Warning);
         }
 
         public void LogError(string message, Exception ex = null)
@@ -84,16 +84,16 @@ namespace Ngsa.Middleware
             UpdateDictionary(message, LogLevel.Error);
 
             // display the error
-            WriteLog();
+            WriteLog(LogLevel.Error);
         }
 
-        private void WriteLog()
+        private void WriteLog(LogLevel logLevel)
         {
-            Console.ForegroundColor = LogLevel >= LogLevel.Error ? ConsoleColor.Red :
-                LogLevel == LogLevel.Warning ? ConsoleColor.Yellow :
-                LogLevel == LogLevel.Information ? ConsoleColor.Green : Console.ForegroundColor;
+            Console.ForegroundColor = logLevel >= LogLevel.Error ? ConsoleColor.Red :
+                logLevel == LogLevel.Warning ? ConsoleColor.Yellow :
+                logLevel == LogLevel.Information ? ConsoleColor.Green : Console.ForegroundColor;
 
-            if (LogLevel >= LogLevel.Error)
+            if (logLevel >= LogLevel.Error)
             {
                 Console.Error.WriteLine(JsonSerializer.Serialize(Data, Options));
             }

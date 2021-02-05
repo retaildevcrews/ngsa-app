@@ -81,7 +81,10 @@ namespace Ngsa.DataService
 
             try
             {
-                _ = (await dal.GetGenresAsync().ConfigureAwait(false)).ToList<string>();
+                if (App.Config.AppType == AppType.DataService)
+                {
+                    _ = (await dal.GetGenresAsync().ConfigureAwait(false)).ToList<string>();
+                }
 
                 return BuildHealthzCheck(path, MaxResponseTime, null, data, name);
             }
@@ -107,7 +110,10 @@ namespace Ngsa.DataService
 
             try
             {
-                await dal.GetMovieAsync(movieId).ConfigureAwait(false);
+                if (App.Config.AppType == AppType.DataService)
+                {
+                    _ = await dal.GetMovieAsync(movieId).ConfigureAwait(false);
+                }
 
                 return BuildHealthzCheck(path, MaxResponseTime / 2, null, data, name);
             }
@@ -136,7 +142,10 @@ namespace Ngsa.DataService
 
             try
             {
-                _ = (await dal.GetMoviesAsync(movieQuery).ConfigureAwait(false)).ToList<Movie>();
+                if (App.Config.AppType == AppType.DataService)
+                {
+                    _ = (await dal.GetMoviesAsync(movieQuery).ConfigureAwait(false)).ToList<Movie>();
+                }
 
                 return BuildHealthzCheck(path, MaxResponseTime, null, data, name);
             }
@@ -162,7 +171,11 @@ namespace Ngsa.DataService
 
             try
             {
-                await dal.GetActorAsync(actorId).ConfigureAwait(false);
+                if (App.Config.AppType == AppType.DataService)
+                {
+                    _ = await dal.GetActorAsync(actorId).ConfigureAwait(false);
+                }
+
                 return BuildHealthzCheck(path, MaxResponseTime / 2, null, data, name);
             }
             catch (Exception ex)
@@ -190,7 +203,10 @@ namespace Ngsa.DataService
 
             try
             {
-                _ = (await dal.GetActorsAsync(actorQuery).ConfigureAwait(false)).ToList<Actor>();
+                if (App.Config.AppType == AppType.DataService)
+                {
+                    _ = (await dal.GetActorsAsync(actorQuery).ConfigureAwait(false)).ToList<Actor>();
+                }
 
                 return BuildHealthzCheck(path, MaxResponseTime, null, data, name);
             }

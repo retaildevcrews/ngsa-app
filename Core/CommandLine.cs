@@ -35,14 +35,18 @@ namespace Ngsa.DataService
             List<string> cmd = new List<string>(args);
 
             // add values from environment
-            cmd.AddFromEnvironment("--cache-duration");
-            cmd.AddFromEnvironment("--in-memory");
-            cmd.AddFromEnvironment("--no-cache");
-            cmd.AddFromEnvironment("--perf-cache");
-            cmd.AddFromEnvironment("--secrets-volume");
+            cmd.AddFromEnvironment("--data-service", "-s");
+            cmd.AddFromEnvironment("--cache-duration", "-d");
+            cmd.AddFromEnvironment("--in-memory", "-m");
+            cmd.AddFromEnvironment("--no-cache", "-n");
+            cmd.AddFromEnvironment("--perf-cache", "-p");
+            cmd.AddFromEnvironment("--secrets-volume", "-v");
             cmd.AddFromEnvironment("--log-level", "-l");
-            cmd.AddFromEnvironment("--zone");
-            cmd.AddFromEnvironment("--region");
+            cmd.AddFromEnvironment("--zone", "-z");
+            cmd.AddFromEnvironment("--region", "-r");
+            cmd.AddFromEnvironment("--app-type", "-a");
+            cmd.AddFromEnvironment("--retries");
+            cmd.AddFromEnvironment("--timeout");
 
             // was log level set
             IsLogLevelSet = cmd.Contains("--log-level") || cmd.Contains("-l");
@@ -64,15 +68,19 @@ namespace Ngsa.DataService
             };
 
             // add the options
-            root.AddOption(new Option<int>(new string[] { "--cache-duration" }, () => 300, "Cache for duration (seconds)"));
-            root.AddOption(new Option<bool>(new string[] { "--in-memory" }, "Use in-memory database"));
-            root.AddOption(new Option<bool>(new string[] { "--no-cache" }, "Don't cache results"));
-            root.AddOption(new Option<int>(new string[] { "--perf-cache" }, "Cache only when load exceeds value"));
-            root.AddOption(new Option<string>(new string[] { "--secrets-volume" }, () => "secrets", "Secrets Volume Path"));
+            root.AddOption(new Option<AppType>(new string[] { "-a", "--app-type" }, () => AppType.DataService, "Application Type"));
+            root.AddOption(new Option<string>(new string[] { "-s", "--data-service" }, () => "http://localhost:8080", "Data Service URL"));
+            root.AddOption(new Option<int>(new string[] { "-d", "--cache-duration" }, () => 300, "Cache for duration (seconds)"));
+            root.AddOption(new Option<bool>(new string[] { "-m", "--in-memory" }, "Use in-memory database"));
+            root.AddOption(new Option<bool>(new string[] { "-n", "--no-cache" }, "Don't cache results"));
+            root.AddOption(new Option<int>(new string[] { "-p", "--perf-cache" }, "Cache only when load exceeds value"));
+            root.AddOption(new Option<int>(new string[] { "--retries" }, () => 5, "Cosmos 429 retries"));
+            root.AddOption(new Option<int>(new string[] { "--timeout" }, () => 30, "Data timeout"));
+            root.AddOption(new Option<string>(new string[] { "-v", "--secrets-volume" }, () => "secrets", "Secrets Volume Path"));
             root.AddOption(new Option<LogLevel>(new string[] { "-l", "--log-level" }, () => LogLevel.Warning, "Log Level"));
-            root.AddOption(new Option<string>(new string[] { "--zone" }, "Zone for log"));
-            root.AddOption(new Option<string>(new string[] { "--region" }, "Region for log"));
-            root.AddOption(new Option<bool>(new string[] { "-d", "--dry-run" }, "Validates configuration"));
+            root.AddOption(new Option<string>(new string[] { "-z", "--zone" }, () => string.Empty, "Zone for log"));
+            root.AddOption(new Option<string>(new string[] { "-r", "--region" }, () => string.Empty, "Region for log"));
+            root.AddOption(new Option<bool>(new string[] { "--dry-run" }, "Validates configuration"));
 
             // validate dependencies
             root.AddValidator(ValidateDependencies);
@@ -90,13 +98,20 @@ namespace Ngsa.DataService
             try
             {
                 // assign command line values
+                Config.AppType = config.AppType;
+                Config.DataService = config.DataService;
                 Config.LogLevel = config.LogLevel;
                 Config.CacheDuration = config.CacheDuration;
                 Config.InMemory = config.InMemory;
                 Config.NoCache = config.NoCache;
                 Config.PerfCache = config.PerfCache;
+                Config.SecretsVolume = config.SecretsVolume;
+                Config.Retries = config.Retries;
+                Config.Timeout = config.Timeout;
                 Config.Zone = string.IsNullOrEmpty(config.Zone) ? string.Empty : config.Zone.Trim();
                 Config.Region = string.IsNullOrEmpty(config.Region) ? string.Empty : config.Region.Trim();
+
+                Config.LogLevel = config.LogLevel <= LogLevel.Information ? LogLevel.Information : config.LogLevel;
 
                 RequestLogger.Zone = Config.Zone;
                 RequestLogger.Region = Config.Region;
@@ -106,33 +121,43 @@ namespace Ngsa.DataService
 
                 NgsaLog.Zone = Config.Zone;
                 NgsaLog.Region = Config.Region;
+                NgsaLog.LogLevel = Config.LogLevel;
 
-                LoadSecrets(Config.SecretsVolume);
-
-                // load the cache
-                CacheDal = new DataAccessLayer.InMemoryDal();
-
-                // create the cosomos data access layer
-                if (App.Secrets.UseInMemoryDb)
+                if (Config.AppType == AppType.WebAPI)
                 {
-                    CosmosDal = CacheDal;
+                    Config.Port = 4120;
+                    RequestLogger.CosmosName = string.Empty;
+                    RequestLogger.DataService = Config.DataService.Replace("http://", string.Empty).Replace("https://", string.Empty);
                 }
                 else
                 {
-                    CosmosDal = new DataAccessLayer.CosmosDal(new Uri(Secrets.CosmosServer), Secrets.CosmosKey, Secrets.CosmosDatabase, Secrets.CosmosCollection);
+                    LoadSecrets(Config.SecretsVolume);
+
+                    // load the cache
+                    CacheDal = new DataAccessLayer.InMemoryDal();
+
+                    // create the cosomos data access layer
+                    if (Secrets.UseInMemoryDb)
+                    {
+                        CosmosDal = CacheDal;
+                    }
+                    else
+                    {
+                        CosmosDal = new DataAccessLayer.CosmosDal(Secrets, Config);
+                    }
+
+                    // set the logger info
+                    RequestLogger.CosmosName = Secrets.CosmosServer;
+
+                    // remove prefix and suffix
+                    RequestLogger.CosmosName = RequestLogger.CosmosName.Replace("https://", string.Empty);
+                    if (RequestLogger.CosmosName.IndexOf(".documents.azure.com") > 0)
+                    {
+                        RequestLogger.CosmosName = RequestLogger.CosmosName.Substring(0, RequestLogger.CosmosName.IndexOf(".documents.azure.com"));
+                    }
+
+                    RequestLogger.DataService = string.Empty;
                 }
-
-                // set the logger info
-                RequestLogger.CosmosName = Secrets.CosmosServer;
-
-                // remove prefix and suffix
-                RequestLogger.CosmosName = RequestLogger.CosmosName.Replace("https://", string.Empty);
-                if (RequestLogger.CosmosName.IndexOf(".documents.azure.com") > 0)
-                {
-                    RequestLogger.CosmosName = RequestLogger.CosmosName.Substring(0, RequestLogger.CosmosName.IndexOf(".documents.azure.com"));
-                }
-
-                RequestLogger.DataService = string.Empty;
 
                 // build the host
                 host = BuildHost();
@@ -158,7 +183,7 @@ namespace Ngsa.DataService
                 Task w = host.RunAsync();
 
                 // start request count timer
-                Ngsa.Middleware.RequestLogger.StartCounterTime(5000, 1000);
+                RequestLogger.StartCounterTime(5000, 1000);
 
                 // this doesn't return except on ctl-c
                 await w.ConfigureAwait(false);
@@ -216,11 +241,16 @@ namespace Ngsa.DataService
 
             try
             {
+                AppType appType = !(result.Children.FirstOrDefault(c => c.Symbol.Name == "app-type") is OptionResult appTypeRes) ? AppType.DataService : appTypeRes.GetValueOrDefault<AppType>();
                 int? cacheDuration = !(result.Children.FirstOrDefault(c => c.Symbol.Name == "cache-duration") is OptionResult cacheDurationRes) ? null : cacheDurationRes.GetValueOrDefault<int?>();
                 int? perfCache = !(result.Children.FirstOrDefault(c => c.Symbol.Name == "perf-cache") is OptionResult perfCacheRes) ? null : perfCacheRes.GetValueOrDefault<int?>();
                 bool inMemory = result.Children.FirstOrDefault(c => c.Symbol.Name == "in-memory") is OptionResult inMemoryRes && inMemoryRes.GetValueOrDefault<bool>();
                 bool noCache = result.Children.FirstOrDefault(c => c.Symbol.Name == "no-cache") is OptionResult noCacheRes && noCacheRes.GetValueOrDefault<bool>();
                 string secrets = !(result.Children.FirstOrDefault(c => c.Symbol.Name == "secrets-volume") is OptionResult secretsRes) ? string.Empty : secretsRes.GetValueOrDefault<string>();
+
+                // todo - validate --data-service
+                // validate retries
+                // validate timeout
 
                 // validate secrets volume
                 if (string.IsNullOrWhiteSpace(secrets))
@@ -286,8 +316,9 @@ namespace Ngsa.DataService
         // Display the dry run message
         private static int DoDryRun()
         {
-            Console.WriteLine($"Version            {Ngsa.Middleware.VersionExtension.Version}");
+            Console.WriteLine($"Version            {VersionExtension.Version}");
             Console.WriteLine($"Log Level          {Config.LogLevel}");
+            Console.WriteLine($"Application Type   {Config.AppType}");
             Console.WriteLine($"In Memory          {Config.InMemory}");
             Console.WriteLine($"No Cache           {Config.NoCache}");
             Console.WriteLine($"Perf Cache         {Config.PerfCache}");

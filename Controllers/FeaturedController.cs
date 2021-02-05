@@ -4,7 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Imdb.Model;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Ngsa.DataService.DataAccessLayer;
 using Ngsa.Middleware;
 
@@ -19,7 +21,6 @@ namespace Ngsa.DataService.Controllers
         private static readonly NgsaLog Logger = new NgsaLog
         {
             Name = typeof(FeaturedController).FullName,
-            LogLevel = App.Config.LogLevel,
             ErrorMessage = "FeaturedControllerException",
             NotFoundError = "Movie Not Found",
         };
@@ -45,26 +46,40 @@ namespace Ngsa.DataService.Controllers
         {
             NgsaLog nLogger = Logger.GetLogger(nameof(GetFeaturedMovieAsync), HttpContext);
 
-            List<string> featuredMovies = await App.CacheDal.GetFeaturedMovieListAsync().ConfigureAwait(false);
+            IActionResult res;
 
-            if (featuredMovies != null && featuredMovies.Count > 0)
+            if (App.Config.AppType == AppType.WebAPI)
             {
-                // get random featured movie by movieId
-                string movieId = featuredMovies[DateTime.UtcNow.Millisecond % featuredMovies.Count];
+                res = await DataService.Read<Movie>(Request).ConfigureAwait(false);
+            }
+            else
+            {
+                List<string> featuredMovies = await App.CacheDal.GetFeaturedMovieListAsync().ConfigureAwait(false);
 
-                // get movie by movieId
-                IActionResult res = await ResultHandler.Handle(dal.GetMovieAsync(movieId), nLogger).ConfigureAwait(false);
-
-                // use cache dal on Cosmos 429 errors
-                if (res is JsonResult jres && jres.StatusCode == 429)
+                if (featuredMovies != null && featuredMovies.Count > 0)
                 {
-                    res = await ResultHandler.Handle(App.CacheDal.GetMovieAsync(movieId), nLogger).ConfigureAwait(false);
-                }
+                    // get random featured movie by movieId
+                    string movieId = featuredMovies[DateTime.UtcNow.Millisecond % featuredMovies.Count];
 
-                return res;
+                    // get movie by movieId
+                    res = await ResultHandler.Handle(dal.GetMovieAsync(movieId), nLogger).ConfigureAwait(false);
+
+                    // use cache dal on Cosmos 429 errors
+                    if (App.Config.Cache && res is JsonResult jres && jres.StatusCode == 429)
+                    {
+                        nLogger.EventId = new EventId(429, "Cosmos 429 Result");
+                        nLogger.LogWarning("Served from cache");
+
+                        res = await ResultHandler.Handle(App.CacheDal.GetMovieAsync(movieId), nLogger).ConfigureAwait(false);
+                    }
+                }
+                else
+                {
+                    return NotFound();
+                }
             }
 
-            return NotFound();
+            return res;
         }
     }
 }
