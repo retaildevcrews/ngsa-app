@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.CorrelationVector;
 using Microsoft.Extensions.Options;
+using Prometheus;
 
 namespace Ngsa.Middleware
 {
@@ -18,6 +19,8 @@ namespace Ngsa.Middleware
     public class RequestLogger
     {
         private const string IpHeader = "X-Client-IP";
+
+        private static readonly Counter RequestCount = Metrics.CreateCounter("requests", "Number of requests");
 
         private static readonly List<int> RPS = new List<int>();
         private static int counter;
@@ -84,6 +87,7 @@ namespace Ngsa.Middleware
             double ttfb = 0;
 
             cv = CorrelationVectorExtensions.Extend(context);
+            RequestCount.Inc();
 
             // Invoke next handler
             if (next != null)
