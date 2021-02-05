@@ -36,24 +36,23 @@ namespace Ngsa.DataService.DataAccessLayer
 
             cosmosDetails = new CosmosConfig
             {
-                MaxRows = MaxPageSize,
-
-                Timeout = CosmosTimeout,
                 CosmosCollection = cosmosCollection,
                 CosmosDatabase = cosmosDatabase,
                 CosmosKey = cosmosKey,
                 CosmosUrl = cosmosUrl.AbsoluteUri,
             };
 
+            // turn off Cosmos retries for --no-cache
+            if (App.Config.NoCache)
+            {
+                cosmosDetails.Retries = 0;
+                cosmosDetails.Timeout = 10;
+            }
+
             // create the CosmosDB client and container
             cosmosDetails.Client = OpenAndTestCosmosClient(cosmosUrl, cosmosKey, cosmosDatabase, cosmosCollection).GetAwaiter().GetResult();
             cosmosDetails.Container = cosmosDetails.Client.GetContainer(cosmosDatabase, cosmosCollection);
         }
-
-        public int DefaultPageSize { get; set; } = 100;
-        public int MaxPageSize { get; set; } = 1000;
-        public int CosmosTimeout { get; set; } = 60;
-        public int CosmosMaxRetries { get; set; } = 10;
 
         /// <summary>
         /// Recreate the Cosmos Client / Container (after a key rotation)
