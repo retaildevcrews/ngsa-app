@@ -8,9 +8,6 @@ namespace Ngsa.DataService
     /// </summary>
     public sealed class Constants
     {
-        // if port is changed, also update value in the Dockerfiles
-        public const string Port = "8080";
-
         public const int DefaultPageSize = 100;
         public const int MaxPageSize = 1000;
         public const int MaxReqSecBeforeCache = 50;
