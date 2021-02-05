@@ -65,16 +65,16 @@ namespace Ngsa.DataService
             };
 
             // add the options
-            root.AddOption(new Option<AppType>(new string[] { "--app-type" }, () => AppType.Integrated, "Application Type"));
-            root.AddOption(new Option<int>(new string[] { "--cache-duration" }, () => 300, "Cache for duration (seconds)"));
-            root.AddOption(new Option<bool>(new string[] { "--in-memory" }, "Use in-memory database"));
-            root.AddOption(new Option<bool>(new string[] { "--no-cache" }, "Don't cache results"));
-            root.AddOption(new Option<int>(new string[] { "--perf-cache" }, "Cache only when load exceeds value"));
-            root.AddOption(new Option<string>(new string[] { "--secrets-volume" }, () => "secrets", "Secrets Volume Path"));
+            root.AddOption(new Option<AppType>(new string[] { "-a", "--app-type" }, () => AppType.Integrated, "Application Type"));
+            root.AddOption(new Option<int>(new string[] { "-d", "--cache-duration" }, () => 300, "Cache for duration (seconds)"));
+            root.AddOption(new Option<bool>(new string[] { "-m", "--in-memory" }, "Use in-memory database"));
+            root.AddOption(new Option<bool>(new string[] { "-n", "--no-cache" }, "Don't cache results"));
+            root.AddOption(new Option<int>(new string[] { "-p", "--perf-cache" }, "Cache only when load exceeds value"));
+            root.AddOption(new Option<string>(new string[] { "-v", "--secrets-volume" }, () => "secrets", "Secrets Volume Path"));
             root.AddOption(new Option<LogLevel>(new string[] { "-l", "--log-level" }, () => LogLevel.Warning, "Log Level"));
-            root.AddOption(new Option<string>(new string[] { "--zone" }, "Zone for log"));
-            root.AddOption(new Option<string>(new string[] { "--region" }, "Region for log"));
-            root.AddOption(new Option<bool>(new string[] { "-d", "--dry-run" }, "Validates configuration"));
+            root.AddOption(new Option<string>(new string[] { "-z", "--zone" }, "Zone for log"));
+            root.AddOption(new Option<string>(new string[] { "-r", "--region" }, "Region for log"));
+            root.AddOption(new Option<bool>(new string[] { "--dry-run" }, "Validates configuration"));
 
             // validate dependencies
             root.AddValidator(ValidateDependencies);
@@ -223,11 +223,18 @@ namespace Ngsa.DataService
 
             try
             {
+                AppType appType = !(result.Children.FirstOrDefault(c => c.Symbol.Name == "app-type") is OptionResult appTypeRes) ? AppType.Integrated : appTypeRes.GetValueOrDefault<AppType>();
                 int? cacheDuration = !(result.Children.FirstOrDefault(c => c.Symbol.Name == "cache-duration") is OptionResult cacheDurationRes) ? null : cacheDurationRes.GetValueOrDefault<int?>();
                 int? perfCache = !(result.Children.FirstOrDefault(c => c.Symbol.Name == "perf-cache") is OptionResult perfCacheRes) ? null : perfCacheRes.GetValueOrDefault<int?>();
                 bool inMemory = result.Children.FirstOrDefault(c => c.Symbol.Name == "in-memory") is OptionResult inMemoryRes && inMemoryRes.GetValueOrDefault<bool>();
                 bool noCache = result.Children.FirstOrDefault(c => c.Symbol.Name == "no-cache") is OptionResult noCacheRes && noCacheRes.GetValueOrDefault<bool>();
                 string secrets = !(result.Children.FirstOrDefault(c => c.Symbol.Name == "secrets-volume") is OptionResult secretsRes) ? string.Empty : secretsRes.GetValueOrDefault<string>();
+
+                // todo - remove this
+                if (appType == AppType.WebAPI)
+                {
+                    msg += "--app-type WebApi not implemented\n";
+                }
 
                 // validate secrets volume
                 if (string.IsNullOrWhiteSpace(secrets))
