@@ -29,8 +29,6 @@ namespace Ngsa.DataService.Controllers
         [HttpGet]
         public async Task<IActionResult> GetGenresAsync()
         {
-            NgsaLog nLogger = Logger.GetLogger(nameof(GetGenresAsync), HttpContext);
-
             IActionResult res;
 
             if (App.Config.AppType == AppType.WebAPI)
@@ -39,15 +37,14 @@ namespace Ngsa.DataService.Controllers
             }
             else
             {
-                res = await ResultHandler.Handle(App.CosmosDal.GetGenresAsync(), nLogger).ConfigureAwait(false);
+                res = await ResultHandler.Handle(App.CosmosDal.GetGenresAsync(), Logger).ConfigureAwait(false);
 
                 // use cache dal on Cosmos 429 errors
                 if (App.Config.Cache && res is JsonResult jres && jres.StatusCode == 429)
                 {
-                    nLogger.EventId = new EventId(429, "Cosmos 429 Result");
-                    nLogger.LogWarning("Served from cache");
+                    Logger.LogWarning(new EventId(429, "Cosmos 429 Result"), nameof(GetGenresAsync), "Served from cache", HttpContext);
 
-                    res = await ResultHandler.Handle(App.CacheDal.GetGenresAsync(), nLogger).ConfigureAwait(false);
+                    res = await ResultHandler.Handle(App.CacheDal.GetGenresAsync(), Logger).ConfigureAwait(false);
                 }
             }
 
