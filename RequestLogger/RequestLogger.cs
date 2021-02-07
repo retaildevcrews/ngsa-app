@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.CorrelationVector;
 using Microsoft.Extensions.Options;
+using Ngsa.Middleware.Validation;
 using Prometheus;
 
 namespace Ngsa.Middleware
@@ -20,9 +21,15 @@ namespace Ngsa.Middleware
     {
         private const string IpHeader = "X-Client-IP";
 
-        // todo - custom Prometheus counters
-        //private static readonly Counter RequestCount = Metrics.CreateCounter("requests", "Number of requests");
-        //private static readonly Summary DurationSummary = Metrics.CreateSummary("duration", "Summary of duration (in ms) over last 10 minutes");
+        private static readonly Histogram RequestDuration = Metrics.CreateHistogram(
+            "NgsaAppDuration",
+            "Histogram of NGSA App request duration",
+            new HistogramConfiguration
+            {
+                Buckets = Histogram.ExponentialBuckets(1, 2, 10),
+                LabelNames = new string[] { "category" },
+            });
+
 
         private static readonly List<int> RPS = new List<int>();
         private static int counter;
@@ -90,8 +97,6 @@ namespace Ngsa.Middleware
 
             cv = CorrelationVectorExtensions.Extend(context);
 
-            //todo RequestCount.Inc();
-
             // Invoke next handler
             if (next != null)
             {
@@ -108,7 +113,7 @@ namespace Ngsa.Middleware
                 return;
             }
 
-            // todo DurationSummary.Observe(duration);
+            RequestDuration.WithLabels(ValidationError.GetCategory(context)).Observe(duration);
 
             LogRequest(context, cv, ttfb, duration);
         }
