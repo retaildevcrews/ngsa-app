@@ -84,7 +84,7 @@ namespace Ngsa.DataService
             app.UseEndpoints(ep =>
             {
                 ep.MapControllers();
-                ep.MapMetrics();
+                // ep.MapMetrics();
             });
 
             // rewrite root to /index.html
