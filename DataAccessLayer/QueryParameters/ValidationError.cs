@@ -79,7 +79,7 @@ namespace Ngsa.Middleware.Validation
             return s;
         }
 
-        public static string GetCategory(HttpContext context)
+        public static string GetCategory(HttpContext context, out string mode)
         {
             string s;
 
@@ -108,29 +108,40 @@ namespace Ngsa.Middleware.Validation
                 }
                 else
                 {
-                    s = "MovieSearch";
+                    s = "Movies";
                 }
 
-                if (path.Contains("pagesize=100"))
+                if (s.EndsWith("10") && path.Contains("pagesize=100"))
                 {
                     s += "0";
                 }
+
+                mode = "Query";
             }
             else if (path.StartsWith("/api/movies"))
             {
-                s = "DirectRead";
+                s = "Movies";
+                mode = "Direct";
             }
             else if (path.StartsWith("/api/actors?") || path.StartsWith("/api/actors/?"))
             {
-                s = "ActorSearch";
+                s = "Actors";
+                mode = "Query";
             }
             else if (path.StartsWith("/api/actors"))
             {
-                s = "DirectRead";
+                s = "Actors";
+                mode = "Direct";
+            }
+            else if (path.StartsWith("/api/genres"))
+            {
+                s = "Genres";
+                mode = "Query";
             }
             else
             {
                 s = "Static";
+                mode = "Static";
             }
 
             return s;

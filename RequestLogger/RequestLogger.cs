@@ -27,7 +27,7 @@ namespace Ngsa.Middleware
             new HistogramConfiguration
             {
                 Buckets = Histogram.ExponentialBuckets(1, 2, 10),
-                LabelNames = new string[] { "category", "code" },
+                LabelNames = new string[] { "code", "category", "mode" },
             });
 
 
@@ -113,8 +113,6 @@ namespace Ngsa.Middleware
                 return;
             }
 
-            RequestDuration.WithLabels(ValidationError.GetCategory(context), context.Response.StatusCode.ToString()).Observe(duration);
-
             LogRequest(context, cv, ttfb, duration);
         }
 
@@ -134,6 +132,8 @@ namespace Ngsa.Middleware
         {
             DateTime dt = DateTime.UtcNow;
 
+            string category = ValidationError.GetCategory(context, out string mode);
+
             Dictionary<string, object> log = new Dictionary<string, object>
             {
                 { "Date", dt },
@@ -148,6 +148,8 @@ namespace Ngsa.Middleware
                 { "UserAgent", context.Request.Headers["User-Agent"].ToString() },
                 { "CVector", cv.Value },
                 { "CVectorBase", cv.GetBase() },
+                { "Category", category },
+                { "Mode", mode },
             };
 
             if (!string.IsNullOrWhiteSpace(Zone))
@@ -184,6 +186,8 @@ namespace Ngsa.Middleware
 
             // write the results to the console
             Console.WriteLine(JsonSerializer.Serialize(log));
+
+            RequestDuration.WithLabels(context.Response.StatusCode.ToString(), category, mode).Observe(duration);
         }
 
         // get the client IP address from the request / headers
