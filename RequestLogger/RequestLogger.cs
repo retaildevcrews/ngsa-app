@@ -27,7 +27,7 @@ namespace Ngsa.Middleware
             new HistogramConfiguration
             {
                 Buckets = Histogram.ExponentialBuckets(1, 2, 10),
-                LabelNames = new string[] { "category" },
+                LabelNames = new string[] { "category", "code" },
             });
 
 
@@ -113,7 +113,7 @@ namespace Ngsa.Middleware
                 return;
             }
 
-            RequestDuration.WithLabels(ValidationError.GetCategory(context)).Observe(duration);
+            RequestDuration.WithLabels(ValidationError.GetCategory(context), context.Response.StatusCode.ToString()).Observe(duration);
 
             LogRequest(context, cv, ttfb, duration);
         }
