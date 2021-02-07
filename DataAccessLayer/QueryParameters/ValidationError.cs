@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
+using Microsoft.AspNetCore.Http;
+
 namespace Ngsa.Middleware.Validation
 {
     /// <summary>
@@ -55,6 +57,8 @@ namespace Ngsa.Middleware.Validation
         {
             string s = "https://github.com/retaildevcrews/ngsa/blob/main/docs/ParameterValidation.md";
 
+            path = path.ToLowerInvariant();
+
             if (path.StartsWith("/api/movies?") || path.StartsWith("/api/movies/?"))
             {
                 s += "#movies-api";
@@ -70,6 +74,63 @@ namespace Ngsa.Middleware.Validation
             else if (path.StartsWith("/api/actors"))
             {
                 s += "#actors-direct-read";
+            }
+
+            return s;
+        }
+
+        public static string GetCategory(HttpContext context)
+        {
+            string s;
+
+            string path = context.Request.Path.ToString();
+
+            if (context.Request.QueryString.HasValue)
+            {
+                path += context.Request.QueryString.ToString();
+            }
+
+            path = path.ToLowerInvariant();
+
+            if (path.StartsWith("/api/movies?") || path.StartsWith("/api/movies/?"))
+            {
+                if (path.Contains("year="))
+                {
+                    s = "Year10";
+                }
+                else if (path.Contains("rating="))
+                {
+                    s = "Rating10";
+                }
+                else if (path.Contains("genre="))
+                {
+                    s = "Genre10";
+                }
+                else
+                {
+                    s = "MovieSearch";
+                }
+
+                if (path.Contains("pagesize=100"))
+                {
+                    s += "0";
+                }
+            }
+            else if (path.StartsWith("/api/movies"))
+            {
+                s = "DirectRead";
+            }
+            else if (path.StartsWith("/api/actors?") || path.StartsWith("/api/actors/?"))
+            {
+                s = "ActorSearch";
+            }
+            else if (path.StartsWith("/api/actors"))
+            {
+                s = "DirectRead";
+            }
+            else
+            {
+                s = "Static";
             }
 
             return s;
