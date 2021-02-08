@@ -287,6 +287,7 @@ namespace Ngsa.Middleware.CommandLine
         {
             return result.Parent.Symbol.Name switch
             {
+                "perf-cache" => -1,
                 "cache-duration" => 300,
                 "retries" => 5,
                 "timeout" => 30,

@@ -39,7 +39,7 @@ namespace Ngsa.DataService
             root.AddOption(new Option<int>(new string[] { "-d", "--cache-duration" }, Parsers.ParseIntGTZero, true, "Cache for duration (seconds)"));
             root.AddOption(new Option<bool>(new string[] { "-m", "--in-memory" }, Parsers.ParseBool, true, "Use in-memory database"));
             root.AddOption(new Option<bool>(new string[] { "-n", "--no-cache" }, Parsers.ParseBool, true, "Don't cache results"));
-            root.AddOption(new Option<int>(new string[] { "-p", "--perf-cache" }, Parsers.ParseIntGTZero, true, "Cache only when load exceeds value"));
+            root.AddOption(new Option<int>(new string[] { "-p", "--perf-cache" }, "Cache only when load exceeds value"));
             root.AddOption(new Option<int>(new string[] { "--retries" }, Parsers.ParseIntGTZero, true, "Cosmos 429 retries"));
             root.AddOption(new Option<int>(new string[] { "--timeout" }, Parsers.ParseIntGTZero, true, "Data timeout"));
             root.AddOption(new Option<string>(new string[] { "-v", "--secrets-volume" }, () => "secrets", "Secrets Volume Path"));
