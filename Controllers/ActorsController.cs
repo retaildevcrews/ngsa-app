@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Net;
 using System.Threading.Tasks;
 using Imdb.Model;
 using Microsoft.AspNetCore.Mvc;
@@ -57,7 +56,7 @@ namespace Ngsa.DataService.Controllers
             {
                 Logger.LogWarning(nameof(GetActorsAsync), NgsaLog.MessageInvalidQueryString, NgsaLog.LogEvent400, HttpContext);
 
-                return ResultHandler.CreateResult(list, Request.Path.ToString() + (Request.QueryString.HasValue ? Request.QueryString.Value : string.Empty));
+                return ResultHandler.CreateResult(list, RequestLogger.GetPathAndQuerystring(Request));
             }
 
             IActionResult res;
@@ -102,7 +101,7 @@ namespace Ngsa.DataService.Controllers
             {
                 Logger.LogWarning(nameof(GetActorByIdAsync), "Invalid Actor Id", NgsaLog.LogEvent400, HttpContext);
 
-                return ResultHandler.CreateResult(list, Request.Path.ToString() + (Request.QueryString.HasValue ? Request.QueryString.Value : string.Empty));
+                return ResultHandler.CreateResult(list, RequestLogger.GetPathAndQuerystring(Request));
             }
 
             IActionResult res;

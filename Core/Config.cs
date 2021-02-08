@@ -28,5 +28,7 @@ namespace Ngsa.DataService
         public int Port { get; set; } = 8080;
         public int Retries { get; set; }
         public int Timeout { get; set; }
+        public bool Prometheus { get; set; }
+        public LogLevel RequestLogLevel { get; set; } = LogLevel.Information;
     }
 }

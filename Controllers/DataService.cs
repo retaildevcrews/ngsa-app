@@ -93,14 +93,7 @@ namespace Ngsa.DataService.Controllers
                 throw new ArgumentNullException(nameof(request));
             }
 
-            string path = request.Path.ToString().Trim();
-
-            if (request.QueryString.HasValue)
-            {
-                path += request.QueryString.Value;
-            }
-
-            return await Read<T>(path, Middleware.CorrelationVectorExtensions.GetCorrelationVectorFromContext(request.HttpContext)).ConfigureAwait(false);
+            return await Read<T>(RequestLogger.GetPathAndQuerystring(request), Middleware.CorrelationVectorExtensions.GetCorrelationVectorFromContext(request.HttpContext)).ConfigureAwait(false);
         }
 
         /// <summary>

@@ -8,7 +8,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.CorrelationVector;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Ngsa.DataService;
+using Ngsa.Middleware.Validation;
+using Prometheus;
 
 namespace Ngsa.Middleware
 {
@@ -20,6 +24,7 @@ namespace Ngsa.Middleware
         private const string IpHeader = "X-Client-IP";
 
         private static readonly List<int> RPS = new List<int>();
+        private static Histogram requestDuration = null;
         private static int counter;
 
         // next action to Invoke
@@ -42,6 +47,18 @@ namespace Ngsa.Middleware
                 // use default
                 this.options = new RequestLoggerOptions();
             }
+
+            if (App.Config.Prometheus)
+            {
+                requestDuration = Metrics.CreateHistogram(
+                            "NgsaAppDuration",
+                            "Histogram of NGSA App request duration",
+                            new HistogramConfiguration
+                            {
+                                Buckets = Histogram.ExponentialBuckets(1, 2, 10),
+                                LabelNames = new string[] { "code", "category", "subcategory", "mode", "zone", "region" },
+                            });
+            }
         }
 
         public static string DataService { get; set; } = string.Empty;
@@ -52,6 +69,22 @@ namespace Ngsa.Middleware
         public static string Region { get; set; } = string.Empty;
 
         public static int RequestsPerSecond => RPS.Count > 0 ? RPS[0] : counter;
+
+        /// <summary>
+        /// Return the path and query string if it exists
+        /// todo move to utility class
+        /// </summary>
+        /// <param name="request">HttpRequest</param>
+        /// <returns>string</returns>
+        public static string GetPathAndQuerystring(HttpRequest request)
+        {
+            if (request == null || !request.Path.HasValue)
+            {
+                return string.Empty;
+            }
+
+            return request.Path.Value + (request.QueryString.HasValue ? request.QueryString.Value : string.Empty);
+        }
 
         /// <summary>
         /// Start a timer that summarizes the requests every period
@@ -120,59 +153,76 @@ namespace Ngsa.Middleware
         {
             DateTime dt = DateTime.UtcNow;
 
-            Dictionary<string, object> log = new Dictionary<string, object>
-            {
-                { "Date", dt },
-                { "LogName", "Ngsa.RequestLog" },
-                { "StatusCode", context.Response.StatusCode },
-                { "TTFB", ttfb },
-                { "Duration", duration },
-                { "Verb", context.Request.Method },
-                { "Path", GetPathAndQuerystring(context.Request) },
-                { "Host", context.Request.Headers["Host"].ToString() },
-                { "ClientIP", GetClientIp(context) },
-                { "UserAgent", context.Request.Headers["User-Agent"].ToString() },
-                { "CVector", cv.Value },
-                { "CVectorBase", cv.GetBase() },
-            };
+            string category = ValidationError.GetCategory(context, out string subCategory, out string mode);
 
-            if (!string.IsNullOrWhiteSpace(Zone))
+            if (App.Config.RequestLogLevel != LogLevel.None &&
+                (App.Config.RequestLogLevel <= LogLevel.Information ||
+                (App.Config.RequestLogLevel == LogLevel.Warning && context.Response.StatusCode >= 400) ||
+                context.Response.StatusCode >= 500))
             {
-                log.Add("Zone", Zone);
-            }
+                Dictionary<string, object> log = new Dictionary<string, object>
+                {
+                    { "Date", dt },
+                    { "LogName", "Ngsa.RequestLog" },
+                    { "StatusCode", context.Response.StatusCode },
+                    { "TTFB", ttfb },
+                    { "Duration", duration },
+                    { "Verb", context.Request.Method },
+                    { "Path", GetPathAndQuerystring(context.Request) },
+                    { "Host", context.Request.Headers["Host"].ToString() },
+                    { "ClientIP", GetClientIp(context) },
+                    { "UserAgent", context.Request.Headers["User-Agent"].ToString() },
+                    { "CVector", cv.Value },
+                    { "CVectorBase", cv.GetBase() },
+                    { "Category", category },
+                    { "Subcategory", subCategory },
+                    { "Mode", mode },
+                };
 
-            if (!string.IsNullOrWhiteSpace(Region))
-            {
-                log.Add("Region", Region);
-            }
+                if (!string.IsNullOrWhiteSpace(Zone))
+                {
+                    log.Add("Zone", Zone);
+                }
 
-            if (!string.IsNullOrWhiteSpace(CosmosName))
-            {
-                log.Add("CosmosName", CosmosName);
-            }
+                if (!string.IsNullOrWhiteSpace(Region))
+                {
+                    log.Add("Region", Region);
+                }
 
-            if (!string.IsNullOrWhiteSpace(CosmosQueryId))
-            {
-                log.Add("CosmosQueryId", CosmosQueryId);
-            }
+                if (!string.IsNullOrWhiteSpace(CosmosName))
+                {
+                    log.Add("CosmosName", CosmosName);
+                }
 
-            if (CosmosRUs > 0)
-            {
-                log.Add("CosmosRUs", CosmosRUs);
-            }
+                if (!string.IsNullOrWhiteSpace(CosmosQueryId))
+                {
+                    log.Add("CosmosQueryId", CosmosQueryId);
+                }
 
-            if (!string.IsNullOrWhiteSpace(DataService))
-            {
-                log.Add("DataService", DataService);
+                if (CosmosRUs > 0)
+                {
+                    log.Add("CosmosRUs", CosmosRUs);
+                }
+
+                if (!string.IsNullOrWhiteSpace(DataService))
+                {
+                    log.Add("DataService", DataService);
+                }
+
+                // write the results to the console
+                Console.WriteLine(JsonSerializer.Serialize(log));
             }
 
             Interlocked.Increment(ref counter);
 
-            // write the results to the console
-            Console.WriteLine(JsonSerializer.Serialize(log));
+            if (App.Config.Prometheus && requestDuration != null)
+            {
+                requestDuration.WithLabels(context.Response.StatusCode.ToString(), category, subCategory, mode, App.Config.Zone, App.Config.Region).Observe(duration);
+            }
         }
 
         // get the client IP address from the request / headers
+        // todo move to utility class
         private static string GetClientIp(HttpContext context)
         {
             string clientIp = context.Connection.RemoteIpAddress.ToString();
@@ -185,21 +235,6 @@ namespace Ngsa.Middleware
 
             // remove IP6 local address
             return clientIp.Replace("::ffff:", string.Empty);
-        }
-
-        /// <summary>
-        /// Return the path and query string if it exists
-        /// </summary>
-        /// <param name="request">HttpRequest</param>
-        /// <returns>string</returns>
-        private static string GetPathAndQuerystring(HttpRequest request)
-        {
-            if (request == null)
-            {
-                return string.Empty;
-            }
-
-            return request.Path.ToString() + (request.QueryString.HasValue ? request.QueryString.Value : string.Empty);
         }
     }
 }

@@ -70,7 +70,7 @@ namespace Ngsa.DataService
             RootCommand root = BuildRootCommand();
             root.Handler = CommandHandler.Create<Config>(RunApp);
 
-            List<string> cmd = CombineEnvVarsWithCommandLine(args);
+            List<string> cmd = new List<string>(args);
 
             if (!cmd.Contains("--version") &&
                 (cmd.Contains("-h") ||

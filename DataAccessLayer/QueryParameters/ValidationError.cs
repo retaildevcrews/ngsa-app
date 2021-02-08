@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
+using Microsoft.AspNetCore.Http;
+
 namespace Ngsa.Middleware.Validation
 {
     /// <summary>
@@ -55,6 +57,8 @@ namespace Ngsa.Middleware.Validation
         {
             string s = "https://github.com/retaildevcrews/ngsa/blob/main/docs/ParameterValidation.md";
 
+            path = path.ToLowerInvariant();
+
             if (path.StartsWith("/api/movies?") || path.StartsWith("/api/movies/?"))
             {
                 s += "#movies-api";
@@ -73,6 +77,97 @@ namespace Ngsa.Middleware.Validation
             }
 
             return s;
+        }
+
+        public static string GetCategory(HttpContext context, out string subCategory, out string mode)
+        {
+            string category;
+
+            string path = RequestLogger.GetPathAndQuerystring(context.Request).ToLowerInvariant();
+
+            if (path.StartsWith("/api/movies?") || path.StartsWith("/api/movies/?"))
+            {
+                category = "Movies";
+                mode = "Query";
+
+                if (path.Contains("year="))
+                {
+                    subCategory = "Year10";
+                }
+                else if (path.Contains("rating="))
+                {
+                    subCategory = "Rating10";
+                }
+                else if (path.Contains("genre="))
+                {
+                    subCategory = "Genre10";
+                }
+                else
+                {
+                    subCategory = "Movies";
+                }
+
+                if (subCategory.EndsWith("10") && path.Contains("pagesize=100"))
+                {
+                    subCategory += "0";
+                }
+            }
+            else if (path.StartsWith("/api/movies/"))
+            {
+                category = "Movies";
+                subCategory = "Movies";
+                mode = "Direct";
+            }
+            else if (path.StartsWith("/api/movies"))
+            {
+                category = "Movies";
+                subCategory = "Movies";
+                mode = "Query";
+            }
+            else if (path.StartsWith("/api/actors?") || path.StartsWith("/api/actors/?"))
+            {
+                category = "Actors";
+                subCategory = "Actors";
+                mode = "Query";
+            }
+            else if (path.StartsWith("/api/actors/"))
+            {
+                category = "Actors";
+                subCategory = "Actors";
+                mode = "Direct";
+            }
+            else if (path.StartsWith("/api/actors"))
+            {
+                category = "Actors";
+                subCategory = "Actors";
+                mode = "Query";
+            }
+            else if (path.StartsWith("/api/genres"))
+            {
+                category = "Genres";
+                subCategory = "Genres";
+                mode = "Query";
+            }
+            else if (path.StartsWith("/healthz"))
+            {
+                category = "Healthz";
+                subCategory = "Healthz";
+                mode = "Healthz";
+            }
+            else if (path.StartsWith("/metrics"))
+            {
+                category = "Metrics";
+                subCategory = "Metrics";
+                mode = "Metrics";
+            }
+            else
+            {
+                category = "Static";
+                subCategory = "Static";
+                mode = "Static";
+            }
+
+            return category;
         }
     }
 }
