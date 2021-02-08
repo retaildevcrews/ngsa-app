@@ -161,6 +161,12 @@ namespace Ngsa.Middleware.Validation
                 subCategory = "Healthz";
                 mode = "Healthz";
             }
+            else if (path.StartsWith("/metrics"))
+            {
+                category = "Metrics";
+                subCategory = "Metrics";
+                mode = "Metrics";
+            }
             else
             {
                 category = "Static";
