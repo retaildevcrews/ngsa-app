@@ -72,6 +72,7 @@ namespace Ngsa.Middleware
 
         /// <summary>
         /// Return the path and query string if it exists
+        /// todo move to utility class
         /// </summary>
         /// <param name="request">HttpRequest</param>
         /// <returns>string</returns>
@@ -156,8 +157,8 @@ namespace Ngsa.Middleware
 
             if (App.Config.RequestLogLevel != LogLevel.None &&
                 (App.Config.RequestLogLevel <= LogLevel.Information ||
-                (App.Config.RequestLogLevel == LogLevel.Warning && (int)context.Response.StatusCode >= 400) ||
-                (int)context.Response.StatusCode >= 500))
+                (App.Config.RequestLogLevel == LogLevel.Warning && context.Response.StatusCode >= 400) ||
+                context.Response.StatusCode >= 500))
             {
                 Dictionary<string, object> log = new Dictionary<string, object>
                 {
@@ -221,6 +222,7 @@ namespace Ngsa.Middleware
         }
 
         // get the client IP address from the request / headers
+        // todo move to utility class
         private static string GetClientIp(HttpContext context)
         {
             string clientIp = context.Connection.RemoteIpAddress.ToString();
