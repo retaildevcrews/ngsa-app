@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Logging;
 using Ngsa.Middleware;
+using Ngsa.Middleware.CommandLine;
 
 namespace Ngsa.DataService
 {
@@ -19,41 +20,6 @@ namespace Ngsa.DataService
     /// </summary>
     public sealed partial class App
     {
-        /// <summary>
-        /// Combine env vars and command line values
-        ///   env vars take precedent
-        /// </summary>
-        /// <param name="args">command line args</param>
-        /// <returns>string[]</returns>
-        public static List<string> CombineEnvVarsWithCommandLine(string[] args)
-        {
-            if (args == null)
-            {
-                args = Array.Empty<string>();
-            }
-
-            List<string> cmd = new List<string>(args);
-
-            // add values from environment
-            cmd.AddFromEnvironment("--data-service", "-s");
-            cmd.AddFromEnvironment("--cache-duration", "-d");
-            cmd.AddFromEnvironment("--in-memory", "-m");
-            cmd.AddFromEnvironment("--no-cache", "-n");
-            cmd.AddFromEnvironment("--perf-cache", "-p");
-            cmd.AddFromEnvironment("--secrets-volume", "-v");
-            cmd.AddFromEnvironment("--log-level", "-l");
-            cmd.AddFromEnvironment("--zone", "-z");
-            cmd.AddFromEnvironment("--region", "-r");
-            cmd.AddFromEnvironment("--app-type", "-a");
-            cmd.AddFromEnvironment("--retries");
-            cmd.AddFromEnvironment("--timeout");
-
-            // was log level set
-            IsLogLevelSet = cmd.Contains("--log-level") || cmd.Contains("-l");
-
-            return cmd;
-        }
-
         /// <summary>
         /// Build the RootCommand for parsing
         /// </summary>
@@ -68,18 +34,18 @@ namespace Ngsa.DataService
             };
 
             // add the options
-            root.AddOption(new Option<AppType>(new string[] { "-a", "--app-type" }, () => AppType.DataService, "Application Type"));
-            root.AddOption(new Option<string>(new string[] { "-s", "--data-service" }, () => "http://localhost:8080", "Data Service URL"));
-            root.AddOption(new Option<int>(new string[] { "-d", "--cache-duration" }, () => 300, "Cache for duration (seconds)"));
-            root.AddOption(new Option<bool>(new string[] { "-m", "--in-memory" }, "Use in-memory database"));
-            root.AddOption(new Option<bool>(new string[] { "-n", "--no-cache" }, "Don't cache results"));
-            root.AddOption(new Option<int>(new string[] { "-p", "--perf-cache" }, "Cache only when load exceeds value"));
-            root.AddOption(new Option<int>(new string[] { "--retries" }, () => 5, "Cosmos 429 retries"));
-            root.AddOption(new Option<int>(new string[] { "--timeout" }, () => 30, "Data timeout"));
+            root.AddOption(new Option<AppType>(new string[] { "-a", "--app-type" }, Parsers.ParseAppType, true, "Application Type"));
+            root.AddOption(new Option<string>(new string[] { "-s", "--data-service" }, Parsers.ParseString, true, "Data Service URL"));
+            root.AddOption(new Option<int>(new string[] { "-d", "--cache-duration" }, Parsers.ParseIntGTZero, true, "Cache for duration (seconds)"));
+            root.AddOption(new Option<bool>(new string[] { "-m", "--in-memory" }, Parsers.ParseBool, true, "Use in-memory database"));
+            root.AddOption(new Option<bool>(new string[] { "-n", "--no-cache" }, Parsers.ParseBool, true, "Don't cache results"));
+            root.AddOption(new Option<int>(new string[] { "-p", "--perf-cache" }, Parsers.ParseIntGTZero, true, "Cache only when load exceeds value"));
+            root.AddOption(new Option<int>(new string[] { "--retries" }, Parsers.ParseIntGTZero, true, "Cosmos 429 retries"));
+            root.AddOption(new Option<int>(new string[] { "--timeout" }, Parsers.ParseIntGTZero, true, "Data timeout"));
             root.AddOption(new Option<string>(new string[] { "-v", "--secrets-volume" }, () => "secrets", "Secrets Volume Path"));
-            root.AddOption(new Option<LogLevel>(new string[] { "-l", "--log-level" }, () => LogLevel.Warning, "Log Level"));
-            root.AddOption(new Option<string>(new string[] { "-z", "--zone" }, () => string.Empty, "Zone for log"));
-            root.AddOption(new Option<string>(new string[] { "-r", "--region" }, () => string.Empty, "Region for log"));
+            root.AddOption(new Option<LogLevel>(new string[] { "-l", "--log-level" }, Parsers.ParseLogLevel, true, "Log Level"));
+            root.AddOption(new Option<string>(new string[] { "-z", "--zone" }, Parsers.ParseString, true, "Zone for log"));
+            root.AddOption(new Option<string>(new string[] { "-r", "--region" }, Parsers.ParseString, true, "Region for log"));
             root.AddOption(new Option<bool>(new string[] { "--dry-run" }, "Validates configuration"));
 
             // validate dependencies
