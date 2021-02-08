@@ -39,11 +39,13 @@ namespace Ngsa.DataService
             root.AddOption(new Option<int>(new string[] { "-d", "--cache-duration" }, Parsers.ParseIntGTZero, true, "Cache for duration (seconds)"));
             root.AddOption(new Option<bool>(new string[] { "-m", "--in-memory" }, Parsers.ParseBool, true, "Use in-memory database"));
             root.AddOption(new Option<bool>(new string[] { "-n", "--no-cache" }, Parsers.ParseBool, true, "Don't cache results"));
-            root.AddOption(new Option<int>(new string[] { "-p", "--perf-cache" }, "Cache only when load exceeds value"));
+            root.AddOption(new Option<int>(new string[] { "--perf-cache" }, "Cache only when load exceeds value"));
             root.AddOption(new Option<int>(new string[] { "--retries" }, Parsers.ParseIntGTZero, true, "Cosmos 429 retries"));
             root.AddOption(new Option<int>(new string[] { "--timeout" }, Parsers.ParseIntGTZero, true, "Data timeout"));
             root.AddOption(new Option<string>(new string[] { "-v", "--secrets-volume" }, () => "secrets", "Secrets Volume Path"));
             root.AddOption(new Option<LogLevel>(new string[] { "-l", "--log-level" }, Parsers.ParseLogLevel, true, "Log Level"));
+            root.AddOption(new Option<LogLevel>(new string[] { "-q", "--request-log-level" }, () => LogLevel.Information, "Request Log Level"));
+            root.AddOption(new Option<bool>(new string[] { "-p", "--prometheus" }, Parsers.ParseBool, true, "Send metrics to Prometheus"));
             root.AddOption(new Option<string>(new string[] { "-z", "--zone" }, Parsers.ParseString, true, "Zone for log"));
             root.AddOption(new Option<string>(new string[] { "-r", "--region" }, Parsers.ParseString, true, "Region for log"));
             root.AddOption(new Option<bool>(new string[] { "--dry-run" }, "Validates configuration"));

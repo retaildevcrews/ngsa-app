@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.CorrelationVector;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Ngsa.DataService;
 using Ngsa.Middleware.Validation;
@@ -135,61 +136,70 @@ namespace Ngsa.Middleware
 
             string category = ValidationError.GetCategory(context, out string subCategory, out string mode);
 
-            Dictionary<string, object> log = new Dictionary<string, object>
+            if (App.Config.RequestLogLevel != LogLevel.None &&
+                (App.Config.RequestLogLevel <= LogLevel.Information ||
+                (App.Config.RequestLogLevel == LogLevel.Warning && (int)context.Response.StatusCode >= 400) ||
+                (int)context.Response.StatusCode >= 500))
             {
-                { "Date", dt },
-                { "LogName", "Ngsa.RequestLog" },
-                { "StatusCode", context.Response.StatusCode },
-                { "TTFB", ttfb },
-                { "Duration", duration },
-                { "Verb", context.Request.Method },
-                { "Path", GetPathAndQuerystring(context.Request) },
-                { "Host", context.Request.Headers["Host"].ToString() },
-                { "ClientIP", GetClientIp(context) },
-                { "UserAgent", context.Request.Headers["User-Agent"].ToString() },
-                { "CVector", cv.Value },
-                { "CVectorBase", cv.GetBase() },
-                { "Category", category },
-                { "Subcategory", subCategory },
-                { "Mode", mode },
-            };
+                Dictionary<string, object> log = new Dictionary<string, object>
+                {
+                    { "Date", dt },
+                    { "LogName", "Ngsa.RequestLog" },
+                    { "StatusCode", context.Response.StatusCode },
+                    { "TTFB", ttfb },
+                    { "Duration", duration },
+                    { "Verb", context.Request.Method },
+                    { "Path", GetPathAndQuerystring(context.Request) },
+                    { "Host", context.Request.Headers["Host"].ToString() },
+                    { "ClientIP", GetClientIp(context) },
+                    { "UserAgent", context.Request.Headers["User-Agent"].ToString() },
+                    { "CVector", cv.Value },
+                    { "CVectorBase", cv.GetBase() },
+                    { "Category", category },
+                    { "Subcategory", subCategory },
+                    { "Mode", mode },
+                };
 
-            if (!string.IsNullOrWhiteSpace(Zone))
-            {
-                log.Add("Zone", Zone);
-            }
+                if (!string.IsNullOrWhiteSpace(Zone))
+                {
+                    log.Add("Zone", Zone);
+                }
 
-            if (!string.IsNullOrWhiteSpace(Region))
-            {
-                log.Add("Region", Region);
-            }
+                if (!string.IsNullOrWhiteSpace(Region))
+                {
+                    log.Add("Region", Region);
+                }
 
-            if (!string.IsNullOrWhiteSpace(CosmosName))
-            {
-                log.Add("CosmosName", CosmosName);
-            }
+                if (!string.IsNullOrWhiteSpace(CosmosName))
+                {
+                    log.Add("CosmosName", CosmosName);
+                }
 
-            if (!string.IsNullOrWhiteSpace(CosmosQueryId))
-            {
-                log.Add("CosmosQueryId", CosmosQueryId);
-            }
+                if (!string.IsNullOrWhiteSpace(CosmosQueryId))
+                {
+                    log.Add("CosmosQueryId", CosmosQueryId);
+                }
 
-            if (CosmosRUs > 0)
-            {
-                log.Add("CosmosRUs", CosmosRUs);
-            }
+                if (CosmosRUs > 0)
+                {
+                    log.Add("CosmosRUs", CosmosRUs);
+                }
 
-            if (!string.IsNullOrWhiteSpace(DataService))
-            {
-                log.Add("DataService", DataService);
+                if (!string.IsNullOrWhiteSpace(DataService))
+                {
+                    log.Add("DataService", DataService);
+                }
+
+                // write the results to the console
+                Console.WriteLine(JsonSerializer.Serialize(log));
             }
 
             Interlocked.Increment(ref counter);
 
-            // write the results to the console
-            Console.WriteLine(JsonSerializer.Serialize(log));
-
-            RequestDuration.WithLabels(context.Response.StatusCode.ToString(), category, subCategory, mode, App.Config.Zone, App.Config.Region).Observe(duration);
+            if (App.Config.Prometheus)
+            {
+                RequestDuration.WithLabels(context.Response.StatusCode.ToString(), category, subCategory, mode, App.Config.Zone, App.Config.Region).Observe(duration);
+            }
         }
 
         // get the client IP address from the request / headers
