@@ -83,7 +83,11 @@ namespace Ngsa.DataService
             app.UseEndpoints(ep =>
             {
                 ep.MapControllers();
-                ep.MapMetrics();
+
+                if (App.Config.Prometheus)
+                {
+                    ep.MapMetrics();
+                }
             });
 
             // rewrite root to /index.html

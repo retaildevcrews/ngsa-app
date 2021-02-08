@@ -23,17 +23,8 @@ namespace Ngsa.Middleware
     {
         private const string IpHeader = "X-Client-IP";
 
-        private static readonly Histogram RequestDuration = Metrics.CreateHistogram(
-            "NgsaAppDuration",
-            "Histogram of NGSA App request duration",
-            new HistogramConfiguration
-            {
-                Buckets = Histogram.ExponentialBuckets(1, 2, 10),
-                LabelNames = new string[] { "code", "category", "subcategory", "mode", "zone", "region" },
-            });
-
-
         private static readonly List<int> RPS = new List<int>();
+        private static Histogram requestDuration = null;
         private static int counter;
 
         // next action to Invoke
@@ -55,6 +46,18 @@ namespace Ngsa.Middleware
             {
                 // use default
                 this.options = new RequestLoggerOptions();
+            }
+
+            if (App.Config.Prometheus)
+            {
+                requestDuration = Metrics.CreateHistogram(
+                            "NgsaAppDuration",
+                            "Histogram of NGSA App request duration",
+                            new HistogramConfiguration
+                            {
+                                Buckets = Histogram.ExponentialBuckets(1, 2, 10),
+                                LabelNames = new string[] { "code", "category", "subcategory", "mode", "zone", "region" },
+                            });
             }
         }
 
@@ -79,7 +82,7 @@ namespace Ngsa.Middleware
                 return string.Empty;
             }
 
-            return RequestLogger.GetPathAndQuerystring(request);
+            return request.Path.Value + (request.QueryString.HasValue ? request.QueryString.Value : string.Empty);
         }
 
         /// <summary>
@@ -211,9 +214,9 @@ namespace Ngsa.Middleware
 
             Interlocked.Increment(ref counter);
 
-            if (App.Config.Prometheus)
+            if (App.Config.Prometheus && requestDuration != null)
             {
-                RequestDuration.WithLabels(context.Response.StatusCode.ToString(), category, subCategory, mode, App.Config.Zone, App.Config.Region).Observe(duration);
+                requestDuration.WithLabels(context.Response.StatusCode.ToString(), category, subCategory, mode, App.Config.Zone, App.Config.Region).Observe(duration);
             }
         }
 
