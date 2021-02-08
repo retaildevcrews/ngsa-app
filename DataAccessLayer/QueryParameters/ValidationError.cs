@@ -83,14 +83,7 @@ namespace Ngsa.Middleware.Validation
         {
             string category;
 
-            string path = context.Request.Path.ToString();
-
-            if (context.Request.QueryString.HasValue)
-            {
-                path += context.Request.QueryString.ToString();
-            }
-
-            path = path.ToLowerInvariant();
+            string path = RequestLogger.GetPathAndQuerystring(context.Request).ToLowerInvariant();
 
             if (path.StartsWith("/api/movies?") || path.StartsWith("/api/movies/?"))
             {

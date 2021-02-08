@@ -51,7 +51,7 @@ namespace Ngsa.Middleware
             builder.Use(async (context, next) =>
             {
                 // matches /version
-                if (context.Request.Path.Value.Equals("/version", StringComparison.OrdinalIgnoreCase))
+                if (context.Request.Path.StartsWithSegments("/version", StringComparison.OrdinalIgnoreCase))
                 {
                     // cache the version info for performance
                     if (responseBytes == null)

@@ -68,6 +68,21 @@ namespace Ngsa.Middleware
         public static int RequestsPerSecond => RPS.Count > 0 ? RPS[0] : counter;
 
         /// <summary>
+        /// Return the path and query string if it exists
+        /// </summary>
+        /// <param name="request">HttpRequest</param>
+        /// <returns>string</returns>
+        public static string GetPathAndQuerystring(HttpRequest request)
+        {
+            if (request == null || !request.Path.HasValue)
+            {
+                return string.Empty;
+            }
+
+            return RequestLogger.GetPathAndQuerystring(request);
+        }
+
+        /// <summary>
         /// Start a timer that summarizes the requests every period
         /// </summary>
         /// <param name="delay">initial delay (ms - min 5000)</param>
@@ -215,21 +230,6 @@ namespace Ngsa.Middleware
 
             // remove IP6 local address
             return clientIp.Replace("::ffff:", string.Empty);
-        }
-
-        /// <summary>
-        /// Return the path and query string if it exists
-        /// </summary>
-        /// <param name="request">HttpRequest</param>
-        /// <returns>string</returns>
-        private static string GetPathAndQuerystring(HttpRequest request)
-        {
-            if (request == null)
-            {
-                return string.Empty;
-            }
-
-            return request.Path.ToString() + (request.QueryString.HasValue ? request.QueryString.Value : string.Empty);
         }
     }
 }

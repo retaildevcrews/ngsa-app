@@ -146,8 +146,7 @@ namespace Ngsa.Middleware
             if (context != null && context.Items != null)
             {
                 // todo - this causes an xss error
-                // data.Add("Path", context.Request.Path + (Request.QueryString.HasValue ? Request.QueryString.Value : string.Empty);
-                data.Add("Path", context.Request.Path);
+                data.Add("Path", RequestLogger.GetPathAndQuerystring(context.Request));
 
                 if (context.Items != null)
                 {
