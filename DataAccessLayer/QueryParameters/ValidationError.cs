@@ -95,7 +95,6 @@ namespace Ngsa.Middleware.Validation
             if (path.StartsWith("/api/movies?") || path.StartsWith("/api/movies/?"))
             {
                 category = "Movies";
-                subCategory = "Query";
                 mode = "Query";
 
                 if (path.Contains("year="))
@@ -123,37 +122,37 @@ namespace Ngsa.Middleware.Validation
             else if (path.StartsWith("/api/movies/"))
             {
                 category = "Movies";
-                subCategory = "Direct";
+                subCategory = "Movies";
                 mode = "Direct";
             }
             else if (path.StartsWith("/api/movies"))
             {
                 category = "Movies";
-                subCategory = "Query";
-                mode = "Direct";
+                subCategory = "Movies";
+                mode = "Query";
             }
             else if (path.StartsWith("/api/actors?") || path.StartsWith("/api/actors/?"))
             {
                 category = "Actors";
-                subCategory = "Query";
+                subCategory = "Actors";
                 mode = "Query";
             }
             else if (path.StartsWith("/api/actors/"))
             {
                 category = "Actors";
-                subCategory = "Direct";
+                subCategory = "Actors";
                 mode = "Direct";
             }
             else if (path.StartsWith("/api/actors"))
             {
                 category = "Actors";
-                subCategory = "Query";
-                mode = "Direct";
+                subCategory = "Actors";
+                mode = "Query";
             }
             else if (path.StartsWith("/api/genres"))
             {
                 category = "Genres";
-                subCategory = "Query";
+                subCategory = "Genres";
                 mode = "Query";
             }
             else if (path.StartsWith("/healthz"))
