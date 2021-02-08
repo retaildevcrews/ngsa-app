@@ -42,6 +42,8 @@ namespace Ngsa.Middleware.CommandLine
                 {
                     "DATA_SERVICE" => "http://localhost:8080",
                     "SECRETS_VOLUME" => "secrets",
+                    "ZONE" => "dev",
+                    "REGION" => "dev",
                     _ => null,
                 };
             }

@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.CorrelationVector;
 using Microsoft.Extensions.Options;
+using Ngsa.DataService;
 using Ngsa.Middleware.Validation;
 using Prometheus;
 
@@ -27,7 +28,7 @@ namespace Ngsa.Middleware
             new HistogramConfiguration
             {
                 Buckets = Histogram.ExponentialBuckets(1, 2, 10),
-                LabelNames = new string[] { "code", "category", "subcategory", "mode" },
+                LabelNames = new string[] { "code", "category", "subcategory", "mode", "zone", "region" },
             });
 
 
@@ -188,7 +189,7 @@ namespace Ngsa.Middleware
             // write the results to the console
             Console.WriteLine(JsonSerializer.Serialize(log));
 
-            RequestDuration.WithLabels(context.Response.StatusCode.ToString(), category, subCategory, mode).Observe(duration);
+            RequestDuration.WithLabels(context.Response.StatusCode.ToString(), category, subCategory, mode, App.Config.Zone, App.Config.Region).Observe(duration);
         }
 
         // get the client IP address from the request / headers
