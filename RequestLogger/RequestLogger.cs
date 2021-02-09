@@ -56,7 +56,7 @@ namespace Ngsa.Middleware
                             new HistogramConfiguration
                             {
                                 Buckets = Histogram.ExponentialBuckets(1, 2, 10),
-                                LabelNames = new string[] { "code", "category", "subcategory", "mode", "zone", "region" },
+                                LabelNames = new string[] { "code", "category", "mode", "zone", "region", "cosmosname" },
                             });
             }
         }
@@ -217,7 +217,7 @@ namespace Ngsa.Middleware
 
             if (App.Config.Prometheus && requestDuration != null)
             {
-                requestDuration.WithLabels(context.Response.StatusCode.ToString(), category, subCategory, mode, App.Config.Zone, App.Config.Region).Observe(duration);
+                requestDuration.WithLabels(context.Response.StatusCode.ToString(), category, mode, App.Config.Zone, App.Config.Region, CosmosName).Observe(duration);
             }
         }
 
