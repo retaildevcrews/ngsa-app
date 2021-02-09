@@ -46,7 +46,10 @@ namespace Ngsa.DataService.DataAccessLayer
 
             Movie m = await cosmosDetails.Container.ReadItemAsync<Movie>(movieId, new PartitionKey(Movie.ComputePartitionKey(movieId))).ConfigureAwait(false);
 
-            cache.Add(new CacheItem(key, m), cachePolicy);
+            if (App.UseCache)
+            {
+                cache.Add(new CacheItem(key, m), cachePolicy);
+            }
 
             return m;
         }
@@ -75,8 +78,11 @@ namespace Ngsa.DataService.DataAccessLayer
                 movies = (List<Movie>)await InternalCosmosDBSqlQuery<Movie>(sql).ConfigureAwait(false);
             }
 
-            // add to cache
-            cache.Add(new CacheItem(key, movies), cachePolicy);
+            if (App.UseCache)
+            {
+                // add to cache
+                cache.Add(new CacheItem(key, movies), cachePolicy);
+            }
 
             return movies;
         }
