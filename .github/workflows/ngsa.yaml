@@ -35,7 +35,6 @@ jobs:
 
     - name: Docker Build
       run: |
-        cd .devcontainer/build
         docker build . -t image
         
     - name: Docker Tag and Push
