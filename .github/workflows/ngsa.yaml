@@ -47,4 +47,4 @@ jobs:
         docker tag image $DOCKER_REPO:beta-$VERSION-${{ github.run_number }}
 
         # Push to the repo
-        docker push $DOCKER_REPO
+        docker push -a $DOCKER_REPO
