@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Threading.Tasks;
 using Imdb.Model;
 using Microsoft.AspNetCore.Mvc;
@@ -119,6 +120,73 @@ namespace Ngsa.DataService.Controllers
 
                     res = await ResultHandler.Handle(App.CacheDal.GetMovieAsync(movieId), Logger).ConfigureAwait(false);
                 }
+            }
+
+            return res;
+        }
+
+        [HttpPost("{movieId}")]
+        public async Task<IActionResult> UpsertMovieAsync([FromRoute] string movieId)
+        {
+            try
+            {
+                Movie mOrig = App.CacheDal.GetMovie(movieId.Replace("zz", "tt"));
+
+                Movie m = mOrig.Clone() as Movie;
+
+                m.MovieId = movieId;
+                m.Id = movieId;
+                m.Type = "Movie-Dupe";
+
+                IActionResult res;
+
+                if (App.Config.AppType == AppType.WebAPI)
+                {
+                    // todo - implement
+                    res = await DataService.Read<Movie>(Request).ConfigureAwait(false);
+                }
+                else
+                {
+                    m = App.CacheDal.UpsertMovie(m, out HttpStatusCode status);
+
+                    if (status == HttpStatusCode.Created)
+                    {
+                        res = Created($"/api/movies/{m.MovieId}", m);
+                    }
+                    else
+                    {
+                        res = Ok(m);
+                    }
+                }
+
+                return res;
+            }
+            catch
+            {
+                return NotFound($"Movie ID Not Found: {movieId}");
+            }
+        }
+
+        /// <summary>
+        /// Delete a movie by movieId
+        /// </summary>
+        /// <param name="movieId">ID to delete</param>
+        /// <returns>IActionResult</returns>
+        [HttpDelete("{movieId}")]
+        public async Task<IActionResult> DeleteMovieAsync([FromRoute] string movieId)
+        {
+            IActionResult res;
+
+            if (App.Config.AppType == AppType.WebAPI)
+            {
+                // todo - implement
+                res = await DataService.Read<Movie>(Request).ConfigureAwait(false);
+            }
+            else
+            {
+                // todo - implement in Cosmos DB
+                App.CacheDal.DeleteMovie(movieId);
+                res = NoContent();
             }
 
             return res;
