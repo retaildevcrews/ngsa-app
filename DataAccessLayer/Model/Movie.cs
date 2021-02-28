@@ -7,7 +7,7 @@ using System.Globalization;
 
 namespace Imdb.Model
 {
-    public class Movie
+    public class Movie : ICloneable
     {
         public string Id { get; set; }
         public string PartitionKey { get; set; }
@@ -39,7 +39,7 @@ namespace Imdb.Model
             if (!string.IsNullOrWhiteSpace(id) &&
                 id.Length > 5 &&
                 id.StartsWith("tt", StringComparison.OrdinalIgnoreCase) &&
-                int.TryParse(id.Substring(2), out int idInt))
+                int.TryParse(id[2..], out int idInt))
             {
                 return (idInt % 10).ToString(CultureInfo.InvariantCulture);
             }
@@ -59,6 +59,11 @@ namespace Imdb.Model
             }
 
             return result;
+        }
+
+        public object Clone()
+        {
+            return this.MemberwiseClone();
         }
     }
 }
