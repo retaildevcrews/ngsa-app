@@ -130,6 +130,15 @@ namespace Ngsa.DataService.Controllers
         {
             try
             {
+                List<Middleware.Validation.ValidationError> list = MovieQueryParameters.ValidateMovieId(movieId);
+
+                if (list.Count > 0 || !movieId.StartsWith("zz"))
+                {
+                    Logger.LogWarning(nameof(UpsertMovieAsync), "Invalid Movie Id", NgsaLog.LogEvent400, HttpContext);
+
+                    return ResultHandler.CreateResult(list, RequestLogger.GetPathAndQuerystring(Request));
+                }
+
                 Movie mOrig = App.CacheDal.GetMovie(movieId.Replace("zz", "tt"));
 
                 Movie m = mOrig.Clone() as Movie;
@@ -175,6 +184,15 @@ namespace Ngsa.DataService.Controllers
         [HttpDelete("{movieId}")]
         public async Task<IActionResult> DeleteMovieAsync([FromRoute] string movieId)
         {
+            List<Middleware.Validation.ValidationError> list = MovieQueryParameters.ValidateMovieId(movieId);
+
+            if (list.Count > 0 || !movieId.StartsWith("zz"))
+            {
+                Logger.LogWarning(nameof(UpsertMovieAsync), "Invalid Movie Id", NgsaLog.LogEvent400, HttpContext);
+
+                return ResultHandler.CreateResult(list, RequestLogger.GetPathAndQuerystring(Request));
+            }
+
             IActionResult res;
 
             if (App.Config.AppType == AppType.WebAPI)
