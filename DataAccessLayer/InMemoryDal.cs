@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Imdb.Model;
@@ -479,6 +480,32 @@ namespace Ngsa.DataService.DataAccessLayer
             {
                 return GetMovies(movieQueryParameters);
             });
+        }
+
+        public Movie UpsertMovie(Movie m, out HttpStatusCode status)
+        {
+            if (MoviesIndex.ContainsKey(m.MovieId))
+            {
+                m = MoviesIndex[m.MovieId];
+                m.Votes++;
+                m.TotalScore += 9;
+                status = HttpStatusCode.OK;
+            }
+            else
+            {
+                MoviesIndex.Add(m.MovieId, m);
+                status = HttpStatusCode.Created;
+            }
+
+            return m;
+        }
+
+        public void DeleteMovie(string movieId)
+        {
+            if (MoviesIndex.ContainsKey(movieId))
+            {
+                MoviesIndex.Remove(movieId);
+            }
         }
     }
 }
