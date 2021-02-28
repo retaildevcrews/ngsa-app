@@ -117,6 +117,15 @@ namespace Ngsa.Middleware.Validation
                 category = "Movies";
                 subCategory = "Movies";
                 mode = "Direct";
+
+                if (context.Request.Method == "DELETE")
+                {
+                    mode = "Delete";
+                }
+                else if (context.Request.Method == "POST")
+                {
+                    mode = "Upsert";
+                }
             }
             else if (path.StartsWith("/api/movies"))
             {
