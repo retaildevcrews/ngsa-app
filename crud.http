@@ -1,11 +1,23 @@
+# first test should return 201
+# subsequent tests return 200
 POST http://localhost:8080/api/movies/zz1272878 HTTP/1.1
 
 ###
 
+# should return 200
 http://localhost:8080/api/movies/zz1272878
 
 ###
 
+# should return 204
 DELETE http://localhost:8080/api/movies/zz1272878 HTTP/1.1
 
 ###
+
+# should return 404
+http://localhost:8080/api/movies/zz1272878
+
+###
+
+# should return 404
+POST http://localhost:8080/api/movies/zz127287800 HTTP/1.1
