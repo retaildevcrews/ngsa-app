@@ -125,7 +125,7 @@ namespace Ngsa.DataService.Controllers
             return res;
         }
 
-        [HttpPost("{movieId}")]
+        [HttpPut("{movieId}")]
         public async Task<IActionResult> UpsertMovieAsync([FromRoute] string movieId)
         {
             try
