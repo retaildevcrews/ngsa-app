@@ -487,14 +487,12 @@ namespace Ngsa.DataService.DataAccessLayer
             if (MoviesIndex.ContainsKey(m.MovieId))
             {
                 m = MoviesIndex[m.MovieId];
-                m.Votes++;
-                m.TotalScore += 9;
                 status = HttpStatusCode.OK;
             }
             else
             {
                 MoviesIndex.Add(m.MovieId, m);
-                status = HttpStatusCode.Created;
+                status = HttpStatusCode.OK;
             }
 
             return m;

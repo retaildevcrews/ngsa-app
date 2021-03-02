@@ -1,5 +1,4 @@
-# first test should return 201
-# subsequent tests return 200
+#should return 200
 PUT http://localhost:8080/api/movies/zz1272878 HTTP/1.1
 
 ###
