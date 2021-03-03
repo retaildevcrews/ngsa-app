@@ -96,7 +96,6 @@ namespace Ngsa.DataService
 
                 if (Config.AppType == AppType.WebAPI)
                 {
-                    Config.Port = 4120;
                     RequestLogger.CosmosName = string.Empty;
                     RequestLogger.DataService = Config.DataService.Replace("http://", string.Empty).Replace("https://", string.Empty);
                 }
