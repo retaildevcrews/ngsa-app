@@ -35,21 +35,22 @@ namespace Ngsa.DataService.Controllers
         /// Call the data access layer proxy using a path and query string
         /// </summary>
         /// <typeparam name="T">Result Type</typeparam>
-        /// <param name="path">path</param>
-        /// <param name="cVector">Correlation Vector</param>
+        /// <param name="request">HTTP Request</param>
         /// <returns>IActionResult</returns>
-        public static async Task<IActionResult> Read<T>(string path, CorrelationVector cVector)
+        public static async Task<IActionResult> Read<T>(HttpRequest request)
         {
-            if (string.IsNullOrWhiteSpace(path))
+            if (request == null || !request.Path.HasValue)
             {
-                throw new ArgumentNullException(nameof(path));
+                throw new ArgumentNullException(nameof(request));
             }
 
-            string fullPath = path.Trim();
+            string path = RequestLogger.GetPathAndQuerystring(request);
+
+            CorrelationVector cVector = Middleware.CorrelationVectorExtensions.GetCorrelationVectorFromContext(request.HttpContext);
 
             try
             {
-                HttpRequestMessage req = new HttpRequestMessage(HttpMethod.Get, fullPath);
+                HttpRequestMessage req = new HttpRequestMessage(HttpMethod.Get, path);
 
                 if (cVector != null)
                 {
@@ -78,22 +79,6 @@ namespace Ngsa.DataService.Controllers
             {
                 return CreateResult(ex.Message, HttpStatusCode.InternalServerError);
             }
-        }
-
-        /// <summary>
-        /// Call the data access layer based on the path in the request
-        /// </summary>
-        /// <typeparam name="T">return type</typeparam>
-        /// <param name="request">http request</param>
-        /// <returns>IActionResult</returns>
-        public static async Task<IActionResult> Read<T>(HttpRequest request)
-        {
-            if (request == null || !request.Path.HasValue)
-            {
-                throw new ArgumentNullException(nameof(request));
-            }
-
-            return await Read<T>(RequestLogger.GetPathAndQuerystring(request), Middleware.CorrelationVectorExtensions.GetCorrelationVectorFromContext(request.HttpContext)).ConfigureAwait(false);
         }
 
         /// <summary>
