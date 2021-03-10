@@ -42,7 +42,7 @@ namespace Ngsa.DataService
 
         public static string CosmosName { get; set; } = string.Empty;
 
-        public static Config Config { get; set; } = new Config();
+        public static Config Config { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether LogLevel is set in command line or env var
