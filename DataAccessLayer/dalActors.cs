@@ -39,14 +39,14 @@ namespace Ngsa.DataService.DataAccessLayer
 
             string key = $"/api/actors/{actorId.ToUpperInvariant().Trim()}";
 
-            if (App.UseCache && cache.Contains(key) && cache.Get(key) is Actor ac)
+            if (App.Config.Cache && cache.Contains(key) && cache.Get(key) is Actor ac)
             {
                 return ac;
             }
 
             Actor res = await cosmosDetails.Container.ReadItemAsync<Actor>(actorId, new PartitionKey(Actor.ComputePartitionKey(actorId))).ConfigureAwait(false);
 
-            if (App.UseCache)
+            if (App.Config.Cache)
             {
                 cache.Add(new CacheItem(key, res), cachePolicy);
             }
@@ -71,7 +71,7 @@ namespace Ngsa.DataService.DataAccessLayer
 
             string key = actorQueryParameters.GetKey();
 
-            if (App.UseCache && cache.Contains(key) && cache.Get(key) is List<Actor> ac)
+            if (App.Config.Cache && cache.Contains(key) && cache.Get(key) is List<Actor> ac)
             {
                 return ac;
             }
@@ -88,7 +88,7 @@ namespace Ngsa.DataService.DataAccessLayer
                 res = new List<Actor>();
             }
 
-            if (App.UseCache)
+            if (App.Config.Cache)
             {
                 // add to cache
                 cache.Add(new CacheItem(key, res), cachePolicy);

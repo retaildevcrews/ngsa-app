@@ -34,7 +34,7 @@ namespace Ngsa.DataService.DataAccessLayer
 
             string key = $"/api/movies/{movieId.ToLowerInvariant().Trim()}";
 
-            if (App.UseCache && cache.Contains(key) && cache.Get(key) is Movie mc)
+            if (App.Config.Cache && cache.Contains(key) && cache.Get(key) is Movie mc)
             {
                 return mc;
             }
@@ -46,7 +46,7 @@ namespace Ngsa.DataService.DataAccessLayer
 
             Movie m = await cosmosDetails.Container.ReadItemAsync<Movie>(movieId, new PartitionKey(Movie.ComputePartitionKey(movieId))).ConfigureAwait(false);
 
-            if (App.UseCache)
+            if (App.Config.Cache)
             {
                 cache.Add(new CacheItem(key, m), cachePolicy);
             }
@@ -63,7 +63,7 @@ namespace Ngsa.DataService.DataAccessLayer
 
             string key = movieQueryParameters.GetKey();
 
-            if (App.UseCache && cache.Contains(key) && cache.Get(key) is List<Movie> m)
+            if (App.Config.Cache && cache.Contains(key) && cache.Get(key) is List<Movie> m)
             {
                 return m;
             }
@@ -78,7 +78,7 @@ namespace Ngsa.DataService.DataAccessLayer
                 movies = (List<Movie>)await InternalCosmosDBSqlQuery<Movie>(sql).ConfigureAwait(false);
             }
 
-            if (App.UseCache)
+            if (App.Config.Cache)
             {
                 // add to cache
                 cache.Add(new CacheItem(key, movies), cachePolicy);

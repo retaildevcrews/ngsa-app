@@ -111,12 +111,18 @@ namespace Ngsa.Middleware
                 return;
             }
 
-            CorrelationVector cv;
+            // don't log favicon.ico 404s
+            if (context.Request.Path.StartsWithSegments("/favicon.ico", StringComparison.OrdinalIgnoreCase))
+            {
+                context.Response.StatusCode = 404;
+                return;
+            }
+
             DateTime dtStart = DateTime.Now;
             double duration = 0;
             double ttfb = 0;
 
-            cv = CorrelationVectorExtensions.Extend(context);
+            CorrelationVector cv = CorrelationVectorExtensions.Extend(context);
 
             // Invoke next handler
             if (next != null)
@@ -124,15 +130,13 @@ namespace Ngsa.Middleware
                 await next.Invoke(context).ConfigureAwait(false);
             }
 
-            // compute request duration
             duration = Math.Round(DateTime.Now.Subtract(dtStart).TotalMilliseconds, 2);
             ttfb = ttfb == 0 ? duration : ttfb;
 
-            // don't log favicon.ico 404s
-            if (context.Request.Path.StartsWithSegments("/favicon.ico", StringComparison.OrdinalIgnoreCase))
-            {
-                return;
-            }
+            await context.Response.CompleteAsync();
+
+            // compute request duration
+            duration = Math.Round(DateTime.Now.Subtract(dtStart).TotalMilliseconds, 2);
 
             LogRequest(context, cv, ttfb, duration);
         }

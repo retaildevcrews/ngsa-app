@@ -65,23 +65,9 @@ namespace Ngsa.DataService
             try
             {
                 // assign command line values
-                Config.AppType = config.AppType;
-                Config.CacheDuration = config.CacheDuration;
-                Config.DataService = config.DataService;
-                Config.DryRun = config.DryRun;
-                Config.InMemory = config.InMemory;
-                Config.LogLevel = config.LogLevel;
-                Config.NoCache = config.NoCache;
-                Config.PerfCache = config.PerfCache;
-                Config.Port = config.Port;
-                Config.Prometheus = config.Prometheus;
+                Config = config;
                 Config.Region = string.IsNullOrEmpty(config.Region) ? string.Empty : config.Region.Trim();
-                Config.RequestLogLevel = config.RequestLogLevel;
-                Config.Retries = config.Retries;
-                Config.SecretsVolume = config.SecretsVolume;
-                Config.Timeout = config.Timeout;
                 Config.Zone = string.IsNullOrEmpty(config.Zone) ? string.Empty : config.Zone.Trim();
-
                 Config.LogLevel = config.LogLevel <= LogLevel.Information ? LogLevel.Information : config.LogLevel;
 
                 RequestLogger.Zone = Config.Zone;

@@ -24,8 +24,6 @@ namespace Ngsa.DataService
     /// </summary>
     public sealed partial class App
     {
-        private static readonly bool Cache = true;
-
         // ILogger instance
         private static readonly NgsaLog Logger = new NgsaLog { Name = typeof(App).FullName };
 
@@ -43,9 +41,8 @@ namespace Ngsa.DataService
         public static IDAL CosmosDal { get; set; }
 
         public static string CosmosName { get; set; } = string.Empty;
-        public static bool UseCache => Cache || Ngsa.Middleware.RequestLogger.RequestsPerSecond > Constants.MaxReqSecBeforeCache;
 
-        public static Config Config { get; } = new Config();
+        public static Config Config { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether LogLevel is set in command line or env var
