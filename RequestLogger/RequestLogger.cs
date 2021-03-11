@@ -23,9 +23,8 @@ namespace Ngsa.Middleware
     {
         private const string IpHeader = "X-Client-IP";
 
-        private static readonly List<int> RPS = new List<int>();
         private static Histogram requestDuration = null;
-        private static int counter;
+        private static Summary requestSummary = null;
 
         // next action to Invoke
         private readonly RequestDelegate next;
@@ -56,8 +55,19 @@ namespace Ngsa.Middleware
                             new HistogramConfiguration
                             {
                                 Buckets = Histogram.ExponentialBuckets(1, 2, 10),
-                                LabelNames = new string[] { "code", "category", "mode", "zone", "region", "cosmosname" },
+                                LabelNames = new string[] { "code", "cosmos", "mode", "region", "zone" },
                             });
+
+                requestSummary = Metrics.CreateSummary(
+                    "NgsaAppSummary",
+                    "Summary of NGSA App request duration",
+                    new SummaryConfiguration
+                    {
+                        SuppressInitialValue = true,
+                        MaxAge = TimeSpan.FromMinutes(5),
+                        Objectives = new List<QuantileEpsilonPair> { new QuantileEpsilonPair(.75, .01), new QuantileEpsilonPair(.9, .1), new QuantileEpsilonPair(.95, .1), new QuantileEpsilonPair(.98, .1), new QuantileEpsilonPair(.99, .1) },
+                        LabelNames = new string[] { "code", "cosmos", "mode", "region", "zone" },
+                    });
             }
         }
 
@@ -67,8 +77,6 @@ namespace Ngsa.Middleware
         public static double CosmosRUs { get; set; } = 0;
         public static string Zone { get; set; } = string.Empty;
         public static string Region { get; set; } = string.Empty;
-
-        public static int RequestsPerSecond => RPS.Count > 0 ? RPS[0] : counter;
 
         /// <summary>
         /// Return the path and query string if it exists
@@ -84,19 +92,6 @@ namespace Ngsa.Middleware
             }
 
             return request.Path.Value + (request.QueryString.HasValue ? request.QueryString.Value : string.Empty);
-        }
-
-        /// <summary>
-        /// Start a timer that summarizes the requests every period
-        /// </summary>
-        /// <param name="delay">initial delay (ms - min 5000)</param>
-        /// <param name="period">delay per run (ms - min 1000)</param>
-        public static void StartCounterTime(int delay, int period)
-        {
-            delay = delay < 5000 ? 5000 : delay;
-            period = period < 1000 ? 1000 : period;
-
-            _ = new Timer(RollCounter, null, delay - DateTime.UtcNow.Millisecond, period);
         }
 
         /// <summary>
@@ -139,17 +134,6 @@ namespace Ngsa.Middleware
             duration = Math.Round(DateTime.Now.Subtract(dtStart).TotalMilliseconds, 2);
 
             LogRequest(context, cv, ttfb, duration);
-        }
-
-        // roll request counter into list
-        private static void RollCounter(object state)
-        {
-            RPS.Insert(0, Interlocked.Exchange(ref counter, 0));
-
-            while (RPS.Count > 600)
-            {
-                RPS.RemoveAt(RPS.Count - 1);
-            }
         }
 
         // log the request
@@ -217,11 +201,26 @@ namespace Ngsa.Middleware
                 Console.WriteLine(JsonSerializer.Serialize(log));
             }
 
-            Interlocked.Increment(ref counter);
-
-            if (App.Config.Prometheus && requestDuration != null)
+            if (App.Config.Prometheus && requestDuration != null && (mode == "Direct" || mode == "Query"))
             {
-                requestDuration.WithLabels(context.Response.StatusCode.ToString(), category, mode, App.Config.Zone, App.Config.Region, CosmosName).Observe(duration);
+                requestDuration.WithLabels(GetPrometheusCode(context.Response.StatusCode), (!App.Config.InMemory).ToString(), mode, App.Config.Region, App.Config.Zone).Observe(duration);
+                requestSummary.WithLabels(GetPrometheusCode(context.Response.StatusCode), (!App.Config.InMemory).ToString(), mode, App.Config.Region, App.Config.Zone).Observe(duration);
+            }
+        }
+
+        private static string GetPrometheusCode(int statusCode)
+        {
+            if (statusCode >= 500)
+            {
+                return "Error";
+            }
+            else if (statusCode >= 400)
+            {
+                return "Warn";
+            }
+            else
+            {
+                return "OK";
             }
         }
 
