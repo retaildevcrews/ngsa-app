@@ -138,9 +138,6 @@ namespace Ngsa.DataService
                 // start the webserver
                 Task w = host.RunAsync();
 
-                // start request count timer
-                RequestLogger.StartCounterTime(5000, 1000);
-
                 // this doesn't return except on ctl-c
                 await w.ConfigureAwait(false);
 
