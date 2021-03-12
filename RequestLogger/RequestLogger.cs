@@ -214,6 +214,10 @@ namespace Ngsa.Middleware
             {
                 return "Error";
             }
+            else if (statusCode == 429)
+            {
+                return "Retry";
+            }
             else if (statusCode >= 400)
             {
                 return "Warn";
