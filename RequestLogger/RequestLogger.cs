@@ -64,7 +64,7 @@ namespace Ngsa.Middleware
                     new SummaryConfiguration
                     {
                         SuppressInitialValue = true,
-                        MaxAge = TimeSpan.FromMinutes(1),
+                        MaxAge = TimeSpan.FromMinutes(5),
                         Objectives = new List<QuantileEpsilonPair> { new QuantileEpsilonPair(.9, .0), new QuantileEpsilonPair(.95, .0), new QuantileEpsilonPair(.99, .0), new QuantileEpsilonPair(1.0, .0) },
                         LabelNames = new string[] { "code", "cosmos", "mode", "region", "zone" },
                     });
