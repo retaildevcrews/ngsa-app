@@ -15,11 +15,11 @@ deploy:
   namespace: ms-ngsa    
   stages:
     - name: dev
-      refs: [master,branch]
+      refs: [master]
       target:
         - cluster_id: [eus2-dev-a2]
     - name: dev-gke
-      refs: [master, branch]
+      refs: [master]
       target:
         - cluster_id: [useast4-dev-gke01]
   helm:
