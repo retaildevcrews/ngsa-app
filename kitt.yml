@@ -3,7 +3,7 @@ profiles:
 owner:
   group: wcnp-ms-ngsa
 services:
-  - path: service1/kitt.yml
+  - path: kitt-service.yml
 build:
   docker:
     app:
