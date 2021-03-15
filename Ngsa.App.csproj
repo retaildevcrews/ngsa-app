@@ -46,7 +46,6 @@
     </PackageReference>
     <PackageReference Include="Swashbuckle.AspNetCore.Swagger" Version="6.0.2" />
     <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUi" Version="6.0.2" />
-    <PackageReference Include="System.CommandLine" Version="2.0.0-beta1.20574.7" />
   </ItemGroup>
 
   <ItemGroup>
@@ -70,7 +69,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
 
-    <None Include="Core\*.txt">
+    <None Include="src\Core\*.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
