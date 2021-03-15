@@ -75,7 +75,7 @@ namespace Ngsa.Application
                 cmd.Contains("-d") ||
                 cmd.Contains("--dry-run")))
             {
-                const string file = "Core/ascii-art.txt";
+                const string file = "src/Core/ascii-art.txt";
 
                 try
                 {
