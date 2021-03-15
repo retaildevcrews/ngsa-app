@@ -23,7 +23,7 @@ namespace Ngsa.Middleware
     {
         private const string IpHeader = "X-Client-IP";
 
-        private static Histogram requestDuration = null;
+        private static Histogram requestHistogram = null;
         private static Summary requestSummary = null;
 
         // next action to Invoke
@@ -49,7 +49,7 @@ namespace Ngsa.Middleware
 
             if (App.Config.Prometheus)
             {
-                requestDuration = Metrics.CreateHistogram(
+                requestHistogram = Metrics.CreateHistogram(
                             "NgsaAppDuration",
                             "Histogram of NGSA App request duration",
                             new HistogramConfiguration
@@ -201,9 +201,9 @@ namespace Ngsa.Middleware
                 Console.WriteLine(JsonSerializer.Serialize(log));
             }
 
-            if (App.Config.Prometheus && requestDuration != null && (mode == "Direct" || mode == "Query"))
+            if (App.Config.Prometheus && requestHistogram != null && (mode == "Direct" || mode == "Query"))
             {
-                requestDuration.WithLabels(GetPrometheusCode(context.Response.StatusCode), (!App.Config.InMemory).ToString(), mode, App.Config.Region, App.Config.Zone).Observe(duration);
+                requestHistogram.WithLabels(GetPrometheusCode(context.Response.StatusCode), (!App.Config.InMemory).ToString(), mode, App.Config.Region, App.Config.Zone).Observe(duration);
                 requestSummary.WithLabels(GetPrometheusCode(context.Response.StatusCode), (!App.Config.InMemory).ToString(), mode, App.Config.Region, App.Config.Zone).Observe(duration);
             }
         }

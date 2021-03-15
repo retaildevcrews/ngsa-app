@@ -67,7 +67,7 @@ namespace Ngsa.Application.Controllers
         [HttpGet("ietf")]
         [Produces("application/health+json")]
         [ProducesResponseType(typeof(CosmosHealthCheck), 200)]
-        public async System.Threading.Tasks.Task RunIetfAsync()
+        public async Task RunIetfAsync()
         {
             logger.LogInformation(nameof(RunHealthzAsync));
 

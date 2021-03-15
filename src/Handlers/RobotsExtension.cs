@@ -32,7 +32,9 @@ namespace Ngsa.Middleware
 
                 // matches /robots*.txt (/robots.txt /robots123.txt etc)
                 // does not match /robots/robots.txt
-                if (!path.Contains("/") && path.StartsWith("robots", StringComparison.OrdinalIgnoreCase) && path.EndsWith(".txt", StringComparison.OrdinalIgnoreCase))
+                if (!path.Contains("/") &&
+                    path.StartsWith("robots", StringComparison.OrdinalIgnoreCase) &&
+                    path.EndsWith(".txt", StringComparison.OrdinalIgnoreCase))
                 {
                     // return the content
                     context.Response.ContentType = "text/plain";
