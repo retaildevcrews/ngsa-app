@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Ngsa.Middleware;
 
-namespace Ngsa.DataService.Controllers
+namespace Ngsa.Application.Controllers
 {
     /// <summary>
     /// Handle the single /api/genres requests

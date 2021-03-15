@@ -18,7 +18,7 @@ using Ngsa.Middleware;
 /// This provides higher performance and less variability which allows us to establish
 /// baseline performance metrics
 /// </summary>
-namespace Ngsa.DataService.DataAccessLayer
+namespace Ngsa.Application.DataAccessLayer
 {
     public class InMemoryDal : IDAL
     {

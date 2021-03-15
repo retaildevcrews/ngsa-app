@@ -13,7 +13,7 @@ using Microsoft.Extensions.Logging;
 using Ngsa.Middleware;
 using Prometheus;
 
-namespace Ngsa.DataService
+namespace Ngsa.Application
 {
     /// <summary>
     /// WebHostBuilder Startup

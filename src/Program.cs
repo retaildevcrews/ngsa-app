@@ -14,10 +14,10 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Ngsa.DataService.DataAccessLayer;
+using Ngsa.Application.DataAccessLayer;
 using Ngsa.Middleware;
 
-namespace Ngsa.DataService
+namespace Ngsa.Application
 {
     /// <summary>
     /// Main application class
@@ -197,7 +197,7 @@ namespace Ngsa.DataService
                     logger.AddFilter("Microsoft", Config.LogLevel)
                     .AddFilter("System", Config.LogLevel)
                     .AddFilter("Default", Config.LogLevel)
-                    .AddFilter("Ngsa.DataService", Config.LogLevel);
+                    .AddFilter("Ngsa.Application", Config.LogLevel);
                 }
             });
 

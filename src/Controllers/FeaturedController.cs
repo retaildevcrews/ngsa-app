@@ -6,10 +6,10 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Imdb.Model;
 using Microsoft.AspNetCore.Mvc;
-using Ngsa.DataService.DataAccessLayer;
+using Ngsa.Application.DataAccessLayer;
 using Ngsa.Middleware;
 
-namespace Ngsa.DataService.Controllers
+namespace Ngsa.Application.Controllers
 {
     /// <summary>
     /// Handle /api/featured/movie requests

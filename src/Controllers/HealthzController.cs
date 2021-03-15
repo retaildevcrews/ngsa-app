@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
-using Ngsa.DataService.DataAccessLayer;
-using Ngsa.DataService.Model;
+using Ngsa.Application.DataAccessLayer;
+using Ngsa.Application.Model;
 
-namespace Ngsa.DataService.Controllers
+namespace Ngsa.Application.Controllers
 {
     /// <summary>
     /// Handle the /healthz* requests

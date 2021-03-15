@@ -7,9 +7,9 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
-using Ngsa.DataService.Model;
+using Ngsa.Application.Model;
 
-namespace Ngsa.DataService
+namespace Ngsa.Application
 {
     /// <summary>
     /// Cosmos Health Check

@@ -10,7 +10,7 @@ using Microsoft.Azure.Cosmos;
 using Ngsa.Middleware;
 using Ngsa.Middleware.Validation;
 
-namespace Ngsa.DataService.Controllers
+namespace Ngsa.Application.Controllers
 {
     /// <summary>
     /// Handles query requests from the controllers

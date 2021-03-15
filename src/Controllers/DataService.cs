@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.CorrelationVector;
 using Ngsa.Middleware;
 
-namespace Ngsa.DataService.Controllers
+namespace Ngsa.Application.Controllers
 {
     /// <summary>
     /// Handles query requests from the controllers

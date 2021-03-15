@@ -8,10 +8,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using Imdb.Model;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
-using Ngsa.DataService.Model;
+using Ngsa.Application.Model;
 using Ngsa.Middleware;
 
-namespace Ngsa.DataService
+namespace Ngsa.Application
 {
     /// <summary>
     /// Cosmos Health Check
@@ -81,7 +81,7 @@ namespace Ngsa.DataService
 
             try
             {
-                if (App.Config.AppType == AppType.DataService)
+                if (App.Config.AppType == AppType.App)
                 {
                     _ = (await dal.GetGenresAsync().ConfigureAwait(false)).ToList<string>();
                 }
@@ -110,7 +110,7 @@ namespace Ngsa.DataService
 
             try
             {
-                if (App.Config.AppType == AppType.DataService)
+                if (App.Config.AppType == AppType.App)
                 {
                     _ = await dal.GetMovieAsync(movieId).ConfigureAwait(false);
                 }
@@ -142,7 +142,7 @@ namespace Ngsa.DataService
 
             try
             {
-                if (App.Config.AppType == AppType.DataService)
+                if (App.Config.AppType == AppType.App)
                 {
                     _ = (await dal.GetMoviesAsync(movieQuery).ConfigureAwait(false)).ToList<Movie>();
                 }
@@ -171,7 +171,7 @@ namespace Ngsa.DataService
 
             try
             {
-                if (App.Config.AppType == AppType.DataService)
+                if (App.Config.AppType == AppType.App)
                 {
                     _ = await dal.GetActorAsync(actorId).ConfigureAwait(false);
                 }
@@ -203,7 +203,7 @@ namespace Ngsa.DataService
 
             try
             {
-                if (App.Config.AppType == AppType.DataService)
+                if (App.Config.AppType == AppType.App)
                 {
                     _ = (await dal.GetActorsAsync(actorQuery).ConfigureAwait(false)).ToList<Actor>();
                 }

@@ -12,7 +12,7 @@ using Microsoft.Extensions.Logging;
 using Ngsa.Middleware;
 using Ngsa.Middleware.CommandLine;
 
-namespace Ngsa.DataService
+namespace Ngsa.Application
 {
     /// <summary>
     /// Main application class
@@ -27,8 +27,8 @@ namespace Ngsa.DataService
         {
             RootCommand root = new RootCommand
             {
-                Name = "DataService",
-                Description = "NGSA Data Service",
+                Name = "Ngsa.Application",
+                Description = "NGSA Validation App",
                 TreatUnmatchedTokensAsErrors = true,
             };
 
@@ -193,7 +193,7 @@ namespace Ngsa.DataService
 
             try
             {
-                AppType appType = !(result.Children.FirstOrDefault(c => c.Symbol.Name == "app-type") is OptionResult appTypeRes) ? AppType.DataService : appTypeRes.GetValueOrDefault<AppType>();
+                AppType appType = !(result.Children.FirstOrDefault(c => c.Symbol.Name == "app-type") is OptionResult appTypeRes) ? AppType.App : appTypeRes.GetValueOrDefault<AppType>();
                 int? cacheDuration = !(result.Children.FirstOrDefault(c => c.Symbol.Name == "cache-duration") is OptionResult cacheDurationRes) ? null : cacheDurationRes.GetValueOrDefault<int?>();
                 int? perfCache = !(result.Children.FirstOrDefault(c => c.Symbol.Name == "perf-cache") is OptionResult perfCacheRes) ? null : perfCacheRes.GetValueOrDefault<int?>();
                 bool inMemory = result.Children.FirstOrDefault(c => c.Symbol.Name == "in-memory") is OptionResult inMemoryRes && inMemoryRes.GetValueOrDefault<bool>();

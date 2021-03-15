@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.CorrelationVector;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Ngsa.DataService;
+using Ngsa.Application;
 using Ngsa.Middleware.Validation;
 using Prometheus;
 

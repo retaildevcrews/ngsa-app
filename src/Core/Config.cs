@@ -3,17 +3,17 @@
 
 using Microsoft.Extensions.Logging;
 
-namespace Ngsa.DataService
+namespace Ngsa.Application
 {
     public enum AppType
     {
-        DataService,
+        App,
         WebAPI,
     }
 
     public class Config
     {
-        public AppType AppType { get; set; } = AppType.DataService;
+        public AppType AppType { get; set; } = AppType.App;
         public string DataService { get; set; } = string.Empty;
         public string SecretsVolume { get; set; } = "secrets";
         public LogLevel LogLevel { get; set; } = LogLevel.Warning;
