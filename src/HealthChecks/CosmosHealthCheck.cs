@@ -10,11 +10,11 @@ using System.Threading.Tasks;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
-using Ngsa.DataService.DataAccessLayer;
-using Ngsa.DataService.Model;
+using Ngsa.Application.DataAccessLayer;
+using Ngsa.Application.Model;
 using Ngsa.Middleware;
 
-namespace Ngsa.DataService
+namespace Ngsa.Application
 {
     /// <summary>
     /// Cosmos Health Check

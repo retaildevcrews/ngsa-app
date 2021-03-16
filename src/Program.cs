@@ -14,10 +14,10 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Ngsa.DataService.DataAccessLayer;
+using Ngsa.Application.DataAccessLayer;
 using Ngsa.Middleware;
 
-namespace Ngsa.DataService
+namespace Ngsa.Application
 {
     /// <summary>
     /// Main application class
@@ -63,19 +63,28 @@ namespace Ngsa.DataService
         /// <returns>IActionResult</returns>
         public static async Task<int> Main(string[] args)
         {
+            if (args != null)
+            {
+                DisplayAsciiArt(new List<string>(args));
+            }
+
             // build the System.CommandLine.RootCommand
             RootCommand root = BuildRootCommand();
             root.Handler = CommandHandler.Create<Config>(RunApp);
 
-            List<string> cmd = new List<string>(args);
+            // run the app
+            return await root.InvokeAsync(args).ConfigureAwait(false);
+        }
 
+        private static void DisplayAsciiArt(List<string> cmd)
+        {
             if (!cmd.Contains("--version") &&
                 (cmd.Contains("-h") ||
                 cmd.Contains("--help") ||
                 cmd.Contains("-d") ||
                 cmd.Contains("--dry-run")))
             {
-                const string file = "Core/ascii-art.txt";
+                const string file = "src/Core/ascii-art.txt";
 
                 try
                 {
@@ -93,13 +102,10 @@ namespace Ngsa.DataService
                     // ignore any errors
                 }
             }
-
-            // run the app
-            return await root.InvokeAsync(cmd.ToArray()).ConfigureAwait(false);
         }
 
         /// <summary>
-        /// Creates a CancellationTokenSource that cancels on ctl-c pressed
+        /// Creates a CancellationTokenSource that cancels on ctl-c or sigterm
         /// </summary>
         /// <returns>CancellationTokenSource</returns>
         private static CancellationTokenSource SetupCtlCHandler()
@@ -146,7 +152,7 @@ namespace Ngsa.DataService
                 // standard config builder
                 IConfigurationBuilder cfgBuilder = new ConfigurationBuilder()
                     .SetBasePath(Directory.GetCurrentDirectory())
-                    .AddJsonFile("appsettings.json", optional: false);
+                    .AddJsonFile("appsettings.json", optional: true);
 
                 // build the config
                 return cfgBuilder.Build();
@@ -197,7 +203,7 @@ namespace Ngsa.DataService
                     logger.AddFilter("Microsoft", Config.LogLevel)
                     .AddFilter("System", Config.LogLevel)
                     .AddFilter("Default", Config.LogLevel)
-                    .AddFilter("Ngsa.DataService", Config.LogLevel);
+                    .AddFilter("Ngsa.Application", Config.LogLevel);
                 }
             });
 

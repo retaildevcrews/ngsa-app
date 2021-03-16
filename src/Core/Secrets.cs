@@ -4,7 +4,7 @@
 using System;
 using System.IO;
 
-namespace Ngsa.DataService
+namespace Ngsa.Application
 {
     /// <summary>
     /// Application secrets

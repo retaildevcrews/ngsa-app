@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Imdb.Model;
 using Ngsa.Middleware;
 
-namespace Ngsa.DataService.DataAccessLayer
+namespace Ngsa.Application.DataAccessLayer
 {
     /// <summary>
     /// Data Access Layer for CosmosDB Interface

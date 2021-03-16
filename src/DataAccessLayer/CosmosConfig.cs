@@ -4,7 +4,7 @@
 using System;
 using Microsoft.Azure.Cosmos;
 
-namespace Ngsa.DataService.DataAccessLayer
+namespace Ngsa.Application.DataAccessLayer
 {
     /// <summary>
     /// Internal class for Cosmos config

@@ -12,7 +12,7 @@ using Microsoft.Extensions.Logging;
 using Ngsa.Middleware;
 using Ngsa.Middleware.CommandLine;
 
-namespace Ngsa.DataService
+namespace Ngsa.Application
 {
     /// <summary>
     /// Main application class
@@ -27,8 +27,8 @@ namespace Ngsa.DataService
         {
             RootCommand root = new RootCommand
             {
-                Name = "DataService",
-                Description = "NGSA Data Service",
+                Name = "Ngsa.Application",
+                Description = "NGSA Validation App",
                 TreatUnmatchedTokensAsErrors = true,
             };
 
@@ -64,56 +64,7 @@ namespace Ngsa.DataService
         {
             try
             {
-                // assign command line values
-                Config = config;
-                Config.Region = string.IsNullOrEmpty(config.Region) ? string.Empty : config.Region.Trim();
-                Config.Zone = string.IsNullOrEmpty(config.Zone) ? string.Empty : config.Zone.Trim();
-                Config.LogLevel = config.LogLevel <= LogLevel.Information ? LogLevel.Information : config.LogLevel;
-
-                RequestLogger.Zone = Config.Zone;
-                RequestLogger.Region = Config.Region;
-
-                NgsaLogger.Zone = Config.Zone;
-                NgsaLogger.Region = Config.Region;
-
-                NgsaLog.Zone = Config.Zone;
-                NgsaLog.Region = Config.Region;
-                NgsaLog.LogLevel = Config.LogLevel;
-
-                if (Config.AppType == AppType.WebAPI)
-                {
-                    RequestLogger.CosmosName = string.Empty;
-                    RequestLogger.DataService = Config.DataService.Replace("http://", string.Empty).Replace("https://", string.Empty);
-                }
-                else
-                {
-                    LoadSecrets(Config.SecretsVolume);
-
-                    // load the cache
-                    CacheDal = new DataAccessLayer.InMemoryDal();
-
-                    // create the cosomos data access layer
-                    if (Secrets.UseInMemoryDb)
-                    {
-                        CosmosDal = CacheDal;
-                    }
-                    else
-                    {
-                        CosmosDal = new DataAccessLayer.CosmosDal(Secrets, Config);
-                    }
-
-                    // set the logger info
-                    RequestLogger.CosmosName = Secrets.CosmosServer;
-
-                    // remove prefix and suffix
-                    RequestLogger.CosmosName = RequestLogger.CosmosName.Replace("https://", string.Empty);
-                    if (RequestLogger.CosmosName.IndexOf(".documents.azure.com") > 0)
-                    {
-                        RequestLogger.CosmosName = RequestLogger.CosmosName.Substring(0, RequestLogger.CosmosName.IndexOf(".documents.azure.com"));
-                    }
-
-                    RequestLogger.DataService = string.Empty;
-                }
+                SetConfig(config);
 
                 // build the host
                 host = BuildHost();
@@ -138,7 +89,7 @@ namespace Ngsa.DataService
                 // start the webserver
                 Task w = host.RunAsync();
 
-                // this doesn't return except on ctl-c
+                // this doesn't return except on ctl-c or sigterm
                 await w.ConfigureAwait(false);
 
                 // if not cancelled, app exit -1
@@ -153,6 +104,61 @@ namespace Ngsa.DataService
                 }
 
                 return -1;
+            }
+        }
+
+        // set the config values
+        private static void SetConfig(Config config)
+        {
+            // assign command line values
+            Config = config;
+            Config.Region = string.IsNullOrEmpty(config.Region) ? string.Empty : config.Region.Trim();
+            Config.Zone = string.IsNullOrEmpty(config.Zone) ? string.Empty : config.Zone.Trim();
+            Config.LogLevel = config.LogLevel <= LogLevel.Information ? LogLevel.Information : config.LogLevel;
+
+            RequestLogger.Zone = Config.Zone;
+            RequestLogger.Region = Config.Region;
+
+            NgsaLogger.Zone = Config.Zone;
+            NgsaLogger.Region = Config.Region;
+
+            NgsaLog.Zone = Config.Zone;
+            NgsaLog.Region = Config.Region;
+            NgsaLog.LogLevel = Config.LogLevel;
+
+            if (Config.AppType == AppType.WebAPI)
+            {
+                RequestLogger.CosmosName = string.Empty;
+                RequestLogger.DataService = Config.DataService.Replace("http://", string.Empty).Replace("https://", string.Empty);
+            }
+            else
+            {
+                LoadSecrets(Config.SecretsVolume);
+
+                // load the cache
+                CacheDal = new DataAccessLayer.InMemoryDal();
+
+                // create the cosomos data access layer
+                if (Secrets.UseInMemoryDb)
+                {
+                    CosmosDal = CacheDal;
+                }
+                else
+                {
+                    CosmosDal = new DataAccessLayer.CosmosDal(Secrets, Config);
+                }
+
+                // set the logger info
+                RequestLogger.DataService = string.Empty;
+                RequestLogger.CosmosName = Secrets.CosmosServer;
+
+                // remove prefix and suffix
+                RequestLogger.CosmosName = RequestLogger.CosmosName.Replace("https://", string.Empty);
+
+                if (RequestLogger.CosmosName.IndexOf(".documents.azure.com") > 0)
+                {
+                    RequestLogger.CosmosName = RequestLogger.CosmosName.Substring(0, RequestLogger.CosmosName.IndexOf(".documents.azure.com"));
+                }
             }
         }
 
@@ -193,7 +199,7 @@ namespace Ngsa.DataService
 
             try
             {
-                AppType appType = !(result.Children.FirstOrDefault(c => c.Symbol.Name == "app-type") is OptionResult appTypeRes) ? AppType.DataService : appTypeRes.GetValueOrDefault<AppType>();
+                AppType appType = !(result.Children.FirstOrDefault(c => c.Symbol.Name == "app-type") is OptionResult appTypeRes) ? AppType.App : appTypeRes.GetValueOrDefault<AppType>();
                 int? cacheDuration = !(result.Children.FirstOrDefault(c => c.Symbol.Name == "cache-duration") is OptionResult cacheDurationRes) ? null : cacheDurationRes.GetValueOrDefault<int?>();
                 int? perfCache = !(result.Children.FirstOrDefault(c => c.Symbol.Name == "perf-cache") is OptionResult perfCacheRes) ? null : perfCacheRes.GetValueOrDefault<int?>();
                 bool inMemory = result.Children.FirstOrDefault(c => c.Symbol.Name == "in-memory") is OptionResult inMemoryRes && inMemoryRes.GetValueOrDefault<bool>();
@@ -273,13 +279,17 @@ namespace Ngsa.DataService
             Console.WriteLine($"Application Type   {Config.AppType}");
             Console.WriteLine($"In Memory          {Config.InMemory}");
             Console.WriteLine($"No Cache           {Config.NoCache}");
-            Console.WriteLine($"Perf Cache         {Config.PerfCache}");
-            Console.WriteLine($"Secrets Volume     {Secrets.Volume}");
-            Console.WriteLine($"Use in memory DB   {Secrets.UseInMemoryDb}");
-            Console.WriteLine($"Cosmos Server      {Secrets.CosmosServer}");
-            Console.WriteLine($"Cosmos Database    {Secrets.CosmosDatabase}");
-            Console.WriteLine($"Cosmos Collection  {Secrets.CosmosCollection}");
-            Console.WriteLine($"Cosmos Key         Length({Secrets.CosmosKey.Length})");
+            Console.WriteLine($"Use Prometheus     {Config.Prometheus}");
+
+            if (!Config.InMemory)
+            {
+                Console.WriteLine($"Secrets Volume     {Secrets.Volume}");
+                Console.WriteLine($"Cosmos Server      {Secrets.CosmosServer}");
+                Console.WriteLine($"Cosmos Database    {Secrets.CosmosDatabase}");
+                Console.WriteLine($"Cosmos Collection  {Secrets.CosmosCollection}");
+                Console.WriteLine($"Cosmos Key         Length({Secrets.CosmosKey.Length})");
+            }
+
             Console.WriteLine($"Zone               {Config.Zone}");
             Console.WriteLine($"Region             {Config.Region}");
 

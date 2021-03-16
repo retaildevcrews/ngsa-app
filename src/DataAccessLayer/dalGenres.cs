@@ -4,7 +4,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Ngsa.DataService.DataAccessLayer
+namespace Ngsa.Application.DataAccessLayer
 {
     /// <summary>
     /// Data Access Layer for CosmosDB

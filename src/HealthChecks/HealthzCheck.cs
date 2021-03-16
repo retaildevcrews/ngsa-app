@@ -5,7 +5,7 @@ using System;
 using System.Globalization;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
-namespace Ngsa.DataService.Model
+namespace Ngsa.Application.Model
 {
     /// <summary>
     /// Health Check that supports dotnet IHeathCheck

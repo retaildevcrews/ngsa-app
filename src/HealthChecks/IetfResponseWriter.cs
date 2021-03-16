@@ -7,9 +7,9 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
-using Ngsa.DataService.Model;
+using Ngsa.Application.Model;
 
-namespace Ngsa.DataService
+namespace Ngsa.Application
 {
     /// <summary>
     /// Cosmos Health Check
@@ -40,8 +40,8 @@ namespace Ngsa.DataService
 
             // add header values
             result.Add("status", IetfCheck.ToIetfStatus(healthReport.Status));
-            result.Add("serviceId", CosmosHealthCheck.ServiceId);
-            result.Add("description", CosmosHealthCheck.Description);
+            result.Add("serviceId", ServiceId);
+            result.Add("description", Description);
 
             // add all the entries
             foreach (HealthReportEntry e in healthReport.Entries.Values)

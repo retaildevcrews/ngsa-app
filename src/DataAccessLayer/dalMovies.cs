@@ -9,7 +9,7 @@ using Imdb.Model;
 using Microsoft.Azure.Cosmos;
 using Ngsa.Middleware;
 
-namespace Ngsa.DataService.DataAccessLayer
+namespace Ngsa.Application.DataAccessLayer
 {
     /// <summary>
     /// Data Access Layer for CosmosDB

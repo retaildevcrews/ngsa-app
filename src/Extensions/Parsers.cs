@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.CommandLine.Parsing;
 using System.Linq;
 using Microsoft.Extensions.Logging;
-using Ngsa.DataService;
+using Ngsa.Application;
 
 namespace Ngsa.Middleware.CommandLine
 {
@@ -229,7 +229,7 @@ namespace Ngsa.Middleware.CommandLine
             if (string.IsNullOrWhiteSpace(name))
             {
                 result.ErrorMessage = "result.Parent is null";
-                return AppType.DataService;
+                return AppType.App;
             }
 
             string env = result.Tokens.Count == 0 ? Environment.GetEnvironmentVariable(name) : result.Tokens[0].Value;
@@ -247,7 +247,7 @@ namespace Ngsa.Middleware.CommandLine
             }
 
             // default value
-            return AppType.DataService;
+            return AppType.App;
         }
 
         // parser for LogLevel
