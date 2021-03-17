@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Text.Json;
@@ -50,6 +51,8 @@ namespace Ngsa.Middleware
             // implement the middleware
             builder.Use(async (context, next) =>
             {
+                const string swaggerFile = "src/wwwroot/swagger/swagger.json";
+
                 // matches /version
                 if (context.Request.Path.StartsWithSegments("/version", StringComparison.OrdinalIgnoreCase))
                 {
@@ -61,10 +64,10 @@ namespace Ngsa.Middleware
 
                         try
                         {
-                            if (File.Exists("wwwroot/swagger/swagger.json"))
+                            if (File.Exists(swaggerFile))
                             {
                                 // read swagger version from swagger.json
-                                using JsonDocument sw = JsonDocument.Parse(File.ReadAllText("wwwroot/swagger/swagger.json"));
+                                using JsonDocument sw = JsonDocument.Parse(File.ReadAllText(swaggerFile));
                                 swaggerVersion = sw.RootElement.GetProperty("info").GetProperty("version").ToString();
                             }
                         }
@@ -74,8 +77,14 @@ namespace Ngsa.Middleware
                         }
 
                         // build and cache the json string
-                        string json = $"{{ \"apiVersion\": \"{swaggerVersion}\", \"appVersion\": \"{Version}\", \"language\": \"C#\" }}";
-                        responseBytes = System.Text.Encoding.UTF8.GetBytes(json);
+                        Dictionary<string, string> dict = new Dictionary<string, string>
+                        {
+                            { "apiVersion", swaggerVersion },
+                            { "appVersion", Version },
+                            { "language", "C#" },
+                        };
+
+                        responseBytes = JsonSerializer.SerializeToUtf8Bytes(dict);
                     }
 
                     // return the version info
