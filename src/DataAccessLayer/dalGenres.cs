@@ -17,7 +17,7 @@ namespace Ngsa.Application.DataAccessLayer
         /// <returns>List of strings</returns>
         public async Task<IEnumerable<string>> GetGenresAsync()
         {
-            return await App.CacheDal.GetGenresAsync().ConfigureAwait(false);
+            return await App.Config.CacheDal.GetGenresAsync().ConfigureAwait(false);
         }
     }
 }

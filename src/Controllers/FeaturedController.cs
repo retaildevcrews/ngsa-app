@@ -32,7 +32,7 @@ namespace Ngsa.Application.Controllers
         /// <param name="dal">data access layer instance</param>
         public FeaturedController()
         {
-            dal = App.CosmosDal;
+            dal = App.Config.CosmosDal;
         }
 
         /// <summary>
@@ -51,7 +51,7 @@ namespace Ngsa.Application.Controllers
             }
             else
             {
-                List<string> featuredMovies = await App.CacheDal.GetFeaturedMovieListAsync().ConfigureAwait(false);
+                List<string> featuredMovies = await App.Config.CacheDal.GetFeaturedMovieListAsync().ConfigureAwait(false);
 
                 if (featuredMovies != null && featuredMovies.Count > 0)
                 {
@@ -66,7 +66,7 @@ namespace Ngsa.Application.Controllers
                     {
                         Logger.Log429(nameof(GetFeaturedMovieAsync), HttpContext);
 
-                        res = await ResultHandler.Handle(App.CacheDal.GetMovieAsync(movieId), Logger).ConfigureAwait(false);
+                        res = await ResultHandler.Handle(App.Config.CacheDal.GetMovieAsync(movieId), Logger).ConfigureAwait(false);
                     }
                 }
                 else

@@ -32,7 +32,7 @@ namespace Ngsa.Application.Controllers
         /// </summary>
         public MoviesController()
         {
-            dal = App.CosmosDal;
+            dal = App.Config.CosmosDal;
         }
 
         /// <summary>
@@ -76,7 +76,7 @@ namespace Ngsa.Application.Controllers
                 {
                     Logger.Log429(nameof(GetMoviesAsync), HttpContext);
 
-                    res = await ResultHandler.Handle(App.CacheDal.GetMoviesAsync(movieQueryParameters), Logger).ConfigureAwait(false);
+                    res = await ResultHandler.Handle(App.Config.CacheDal.GetMoviesAsync(movieQueryParameters), Logger).ConfigureAwait(false);
                 }
             }
 
@@ -120,7 +120,7 @@ namespace Ngsa.Application.Controllers
                 {
                     Logger.Log429(nameof(GetMovieByIdAsync), HttpContext);
 
-                    res = await ResultHandler.Handle(App.CacheDal.GetMovieAsync(movieId), Logger).ConfigureAwait(false);
+                    res = await ResultHandler.Handle(App.Config.CacheDal.GetMovieAsync(movieId), Logger).ConfigureAwait(false);
                 }
             }
 

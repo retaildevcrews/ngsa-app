@@ -34,7 +34,7 @@ namespace Ngsa.Application.Controllers
         {
             this.logger = logger;
             this.hcLogger = hcLogger;
-            dal = App.CosmosDal;
+            dal = App.Config.CosmosDal;
         }
 
         /// <summary>

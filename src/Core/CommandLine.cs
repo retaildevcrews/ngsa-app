@@ -6,6 +6,7 @@ using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Logging;
@@ -81,7 +82,7 @@ namespace Ngsa.Application
                 }
 
                 // setup ctl c handler
-                ctCancel = SetupCtlCHandler();
+                CancellationTokenSource ctCancel = SetupCtlCHandler();
 
                 // log startup messages
                 LogStartup();
@@ -136,21 +137,21 @@ namespace Ngsa.Application
                 LoadSecrets(Config.SecretsVolume);
 
                 // load the cache
-                CacheDal = new DataAccessLayer.InMemoryDal();
+                Config.CacheDal = new DataAccessLayer.InMemoryDal();
 
                 // create the cosomos data access layer
-                if (Secrets.UseInMemoryDb)
+                if (Config.Secrets.UseInMemoryDb)
                 {
-                    CosmosDal = CacheDal;
+                    Config.CosmosDal = Config.CacheDal;
                 }
                 else
                 {
-                    CosmosDal = new DataAccessLayer.CosmosDal(Secrets, Config);
+                    Config.CosmosDal = new DataAccessLayer.CosmosDal(Config.Secrets, Config);
                 }
 
                 // set the logger info
                 RequestLogger.DataService = string.Empty;
-                RequestLogger.CosmosName = Secrets.CosmosServer;
+                RequestLogger.CosmosName = Config.Secrets.CosmosServer;
 
                 // remove prefix and suffix
                 RequestLogger.CosmosName = RequestLogger.CosmosName.Replace("https://", string.Empty);
@@ -167,7 +168,7 @@ namespace Ngsa.Application
         {
             if (Config.InMemory)
             {
-                Secrets = new Secrets
+                Config.Secrets = new Secrets
                 {
                     UseInMemoryDb = true,
                     CosmosCollection = "movies",
@@ -178,16 +179,16 @@ namespace Ngsa.Application
             }
             else
             {
-                Secrets = Secrets.GetSecretsFromVolume(secretsVolume);
+                Config.Secrets = Secrets.GetSecretsFromVolume(secretsVolume);
 
                 // set the Cosmos server name for logging
-                CosmosName = Secrets.CosmosServer.Replace("https://", string.Empty, StringComparison.OrdinalIgnoreCase).Replace("http://", string.Empty, StringComparison.OrdinalIgnoreCase);
+                Config.CosmosName = Config.Secrets.CosmosServer.Replace("https://", string.Empty, StringComparison.OrdinalIgnoreCase).Replace("http://", string.Empty, StringComparison.OrdinalIgnoreCase);
 
-                int ndx = CosmosName.IndexOf('.', StringComparison.OrdinalIgnoreCase);
+                int ndx = Config.CosmosName.IndexOf('.', StringComparison.OrdinalIgnoreCase);
 
                 if (ndx > 0)
                 {
-                    CosmosName = CosmosName.Remove(ndx);
+                    Config.CosmosName = Config.CosmosName.Remove(ndx);
                 }
             }
         }
@@ -283,11 +284,11 @@ namespace Ngsa.Application
 
             if (!Config.InMemory)
             {
-                Console.WriteLine($"Secrets Volume     {Secrets.Volume}");
-                Console.WriteLine($"Cosmos Server      {Secrets.CosmosServer}");
-                Console.WriteLine($"Cosmos Database    {Secrets.CosmosDatabase}");
-                Console.WriteLine($"Cosmos Collection  {Secrets.CosmosCollection}");
-                Console.WriteLine($"Cosmos Key         Length({Secrets.CosmosKey.Length})");
+                Console.WriteLine($"Secrets Volume     {Config.Secrets.Volume}");
+                Console.WriteLine($"Cosmos Server      {Config.Secrets.CosmosServer}");
+                Console.WriteLine($"Cosmos Database    {Config.Secrets.CosmosDatabase}");
+                Console.WriteLine($"Cosmos Collection  {Config.Secrets.CosmosCollection}");
+                Console.WriteLine($"Cosmos Key         Length({Config.Secrets.CosmosKey.Length})");
             }
 
             Console.WriteLine($"Zone               {Config.Zone}");

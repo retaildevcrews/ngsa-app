@@ -11,10 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Ngsa.Application.DataAccessLayer;
 using Ngsa.Middleware;
 
 namespace Ngsa.Application
@@ -24,35 +21,14 @@ namespace Ngsa.Application
     /// </summary>
     public sealed partial class App
     {
-        // ILogger instance
+        // App ILogger
         private static readonly NgsaLog Logger = new NgsaLog { Name = typeof(App).FullName };
 
         // web host
         private static IWebHost host;
 
-        // Key Vault configuration
-        private static IConfigurationRoot config;
-
-        private static CancellationTokenSource ctCancel;
-
-        public static InMemoryDal CacheDal { get; set; }
-        public static InMemoryDal SearchService => CacheDal;
-
-        public static IDAL CosmosDal { get; set; }
-
-        public static string CosmosName { get; set; } = string.Empty;
-
-        public static Config Config { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether LogLevel is set in command line or env var
-        /// </summary>
-        public static bool IsLogLevelSet { get; set; }
-
-        /// <summary>
-        /// Gets or sets the secrets from k8s volume
-        /// </summary>
-        public static Secrets Secrets { get; set; }
+        // static App configuration values
+        public static Config Config { get; set; } = new Config();
 
         /// <summary>
         /// Main entry point
@@ -142,53 +118,17 @@ namespace Ngsa.Application
         }
 
         /// <summary>
-        /// Builds the config for the web server
-        /// </summary>
-        /// <returns>Root Configuration</returns>
-        private static IConfigurationRoot BuildConfig()
-        {
-            try
-            {
-                // standard config builder
-                IConfigurationBuilder cfgBuilder = new ConfigurationBuilder()
-                    .SetBasePath(Directory.GetCurrentDirectory())
-                    .AddJsonFile("appsettings.json", optional: true);
-
-                // build the config
-                return cfgBuilder.Build();
-            }
-            catch (Exception ex)
-            {
-                // log and fail
-                Logger.LogError(nameof(BuildConfig), "Exception", ex: ex);
-
-                Environment.Exit(-1);
-            }
-
-            return null;
-        }
-
-        /// <summary>
         /// Build the web host
         /// </summary>
         /// <param name="useInMemory">Use in memory DB flag</param>
         /// <returns>Web Host ready to run</returns>
         private static IWebHost BuildHost()
         {
-            // build the config
-            config = BuildConfig();
-
             // configure the web host builder
             IWebHostBuilder builder = WebHost.CreateDefaultBuilder()
-                .UseConfiguration(config)
                 .UseUrls(string.Format(System.Globalization.CultureInfo.InvariantCulture, $"http://*:{Config.Port}/"))
                 .UseStartup<Startup>()
-                .UseShutdownTimeout(TimeSpan.FromSeconds(Constants.GracefulShutdownTimeout))
-                .ConfigureServices(services =>
-                {
-                    // add IConfigurationRoot
-                    services.AddSingleton<IConfigurationRoot>(config);
-                });
+                .UseShutdownTimeout(TimeSpan.FromSeconds(Constants.GracefulShutdownTimeout));
 
             // configure logger based on command line
             builder.ConfigureLogging(logger =>
@@ -198,7 +138,7 @@ namespace Ngsa.Application
 
                 // if you specify the --log-level option, it will override the appsettings.json options
                 // remove any or all of the code below that you don't want to override
-                if (App.IsLogLevelSet)
+                if (App.Config.IsLogLevelSet)
                 {
                     logger.AddFilter("Microsoft", Config.LogLevel)
                     .AddFilter("System", Config.LogLevel)

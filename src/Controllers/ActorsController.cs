@@ -34,7 +34,7 @@ namespace Ngsa.Application.Controllers
         public ActorsController()
         {
             // save to local for use in handlers
-            dal = App.CosmosDal;
+            dal = App.Config.CosmosDal;
         }
 
         /// <summary>
@@ -74,7 +74,7 @@ namespace Ngsa.Application.Controllers
                 {
                     Logger.Log429(nameof(GetActorsAsync), HttpContext);
 
-                    res = await ResultHandler.Handle(App.CacheDal.GetActorsAsync(actorQueryParameters), Logger).ConfigureAwait(false);
+                    res = await ResultHandler.Handle(App.Config.CacheDal.GetActorsAsync(actorQueryParameters), Logger).ConfigureAwait(false);
                 }
             }
 
@@ -120,7 +120,7 @@ namespace Ngsa.Application.Controllers
                 {
                     Logger.Log429(nameof(GetActorByIdAsync), HttpContext);
 
-                    res = await ResultHandler.Handle(App.CacheDal.GetActorAsync(actorId), Logger).ConfigureAwait(false);
+                    res = await ResultHandler.Handle(App.Config.CacheDal.GetActorAsync(actorId), Logger).ConfigureAwait(false);
                 }
             }
 

@@ -253,7 +253,7 @@ namespace Ngsa.Middleware.CommandLine
         // parser for LogLevel
         public static LogLevel ParseLogLevel(ArgumentResult result)
         {
-            App.IsLogLevelSet = false;
+            App.Config.IsLogLevelSet = false;
 
             string name = result.Parent?.Symbol.Name.ToUpperInvariant().Replace('-', '_');
 
@@ -269,7 +269,7 @@ namespace Ngsa.Middleware.CommandLine
             {
                 if (Enum.TryParse<LogLevel>(env, out LogLevel ll))
                 {
-                    App.IsLogLevelSet = true;
+                    App.Config.IsLogLevelSet = true;
                     return ll;
                 }
                 else

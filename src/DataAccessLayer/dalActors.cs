@@ -76,7 +76,7 @@ namespace Ngsa.Application.DataAccessLayer
                 return ac;
             }
 
-            string sql = App.SearchService.GetActorIds(actorQueryParameters);
+            string sql = App.Config.CacheDal.GetActorIds(actorQueryParameters);
             List<Actor> res;
 
             if (!string.IsNullOrWhiteSpace(sql))

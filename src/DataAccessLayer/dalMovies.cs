@@ -68,7 +68,7 @@ namespace Ngsa.Application.DataAccessLayer
                 return m;
             }
 
-            string sql = App.SearchService.GetMovieIds(movieQueryParameters);
+            string sql = App.Config.CacheDal.GetMovieIds(movieQueryParameters);
 
             List<Movie> movies = new List<Movie>();
 
@@ -93,7 +93,7 @@ namespace Ngsa.Application.DataAccessLayer
         /// <returns>List</returns>
         public async Task<List<string>> GetFeaturedMovieListAsync()
         {
-            return await App.CacheDal.GetFeaturedMovieListAsync().ConfigureAwait(false);
+            return await App.Config.CacheDal.GetFeaturedMovieListAsync().ConfigureAwait(false);
         }
     }
 }

@@ -36,14 +36,14 @@ namespace Ngsa.Application.Controllers
             }
             else
             {
-                res = await ResultHandler.Handle(App.CosmosDal.GetGenresAsync(), Logger).ConfigureAwait(false);
+                res = await ResultHandler.Handle(App.Config.CosmosDal.GetGenresAsync(), Logger).ConfigureAwait(false);
 
                 // use cache dal on Cosmos 429 errors
                 if (App.Config.Cache && res is JsonResult jres && jres.StatusCode == 429)
                 {
                     Logger.Log429(nameof(GetGenresAsync), HttpContext);
 
-                    res = await ResultHandler.Handle(App.CacheDal.GetGenresAsync(), Logger).ConfigureAwait(false);
+                    res = await ResultHandler.Handle(App.Config.CacheDal.GetGenresAsync(), Logger).ConfigureAwait(false);
                 }
             }
 

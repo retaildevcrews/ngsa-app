@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using Microsoft.Extensions.Logging;
+using Ngsa.Application.DataAccessLayer;
 
 namespace Ngsa.Application
 {
@@ -17,6 +18,9 @@ namespace Ngsa.Application
         public string DataService { get; set; } = string.Empty;
         public string SecretsVolume { get; set; } = "secrets";
         public LogLevel LogLevel { get; set; } = LogLevel.Warning;
+        public string CosmosName { get; set; } = string.Empty;
+        public bool IsLogLevelSet { get; set; }
+        public Secrets Secrets { get; set; }
         public bool DryRun { get; set; }
         public bool InMemory { get; set; }
         public bool Cache => !NoCache;
@@ -30,5 +34,7 @@ namespace Ngsa.Application
         public int Timeout { get; set; }
         public bool Prometheus { get; set; }
         public LogLevel RequestLogLevel { get; set; } = LogLevel.Information;
+        public InMemoryDal CacheDal { get; set; }
+        public IDAL CosmosDal { get; set; }
     }
 }
