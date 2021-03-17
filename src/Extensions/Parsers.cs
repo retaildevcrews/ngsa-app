@@ -3,296 +3,114 @@
 
 using System;
 using System.Collections.Generic;
+using System.CommandLine;
 using System.CommandLine.Parsing;
-using System.Linq;
-using Microsoft.Extensions.Logging;
-using Ngsa.Application;
 
 namespace Ngsa.Middleware.CommandLine
 {
     public static class Parsers
     {
-        // parse string command line arg
-        public static string ParseString(ArgumentResult result)
+        public static Option MyOption<T>(string[] names, string description, T defaultValue)
         {
-            string name = result.Parent?.Symbol.Name.ToUpperInvariant().Replace('-', '_');
-
-            if (string.IsNullOrWhiteSpace(name))
+            if (string.IsNullOrWhiteSpace(description))
             {
-                result.ErrorMessage = "result.Parent is null";
-                return null;
+                throw new ArgumentNullException(nameof(description));
             }
 
-            string val;
+            // this will throw on bad names
+            string env = GetValueFromEnvironment(names);
 
-            if (result.Tokens.Count == 0)
-            {
-                string env = Environment.GetEnvironmentVariable(name);
+            T value = defaultValue;
 
-                val = string.IsNullOrWhiteSpace(env) ? string.Empty : env.Trim();
-            }
-            else
-            {
-                val = result.Tokens[0].Value.Trim();
-            }
-
-            if (string.IsNullOrWhiteSpace(val))
-            {
-                return name switch
-                {
-                    "DATA_SERVICE" => "http://localhost:8080",
-                    "SECRETS_VOLUME" => "secrets",
-                    "ZONE" => "dev",
-                    "REGION" => "dev",
-                    _ => null,
-                };
-            }
-            else if (val.Length < 3)
-            {
-                result.ErrorMessage = $"--{result.Parent.Symbol.Name} must be at least 3 characters";
-                return null;
-            }
-            else if (val.Length > 100)
-            {
-                result.ErrorMessage = $"--{result.Parent.Symbol.Name} must be 100 characters or less";
-            }
-
-            return val;
-        }
-
-        // parse List<string> command line arg (--files)
-        public static List<string> ParseStringList(ArgumentResult result)
-        {
-            string name = result.Parent?.Symbol.Name.ToUpperInvariant().Replace('-', '_');
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                result.ErrorMessage = "result.Parent is null";
-                return null;
-            }
-
-            List<string> val = new List<string>();
-
-            if (result.Tokens.Count == 0)
-            {
-                string env = Environment.GetEnvironmentVariable(name);
-
-                if (string.IsNullOrWhiteSpace(env))
-                {
-                    result.ErrorMessage = $"--{result.Argument.Name} is a required parameter";
-                    return null;
-                }
-
-                string[] files = env.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-
-                foreach (string f in files)
-                {
-                    val.Add(f.Trim());
-                }
-            }
-            else
-            {
-                for (int i = 0; i < result.Tokens.Count; i++)
-                {
-                    val.Add(result.Tokens[i].Value.Trim());
-                }
-            }
-
-            return val;
-        }
-
-        // parse boolean command line arg
-        public static bool ParseBool(ArgumentResult result)
-        {
-            string name = result.Parent?.Symbol.Name.ToUpperInvariant().Replace('-', '_');
-
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                result.ErrorMessage = "result.Parent is null";
-                return false;
-            }
-
-            string errorMessage = $"--{result.Parent.Symbol.Name} must be true or false";
-            bool val;
-
-            // bool options default to true if value not specified (ie -r and -r true)
-            if (result.Parent.Parent.Children.FirstOrDefault(c => c.Symbol.Name == result.Parent.Symbol.Name) is OptionResult res &&
-                !res.IsImplicit &&
-                result.Tokens.Count == 0)
-            {
-                return true;
-            }
-
-            // nothing to validate
-            if (result.Tokens.Count == 0)
-            {
-                string env = Environment.GetEnvironmentVariable(name);
-
-                if (!string.IsNullOrWhiteSpace(env))
-                {
-                    if (bool.TryParse(env, out val))
-                    {
-                        return val;
-                    }
-                    else
-                    {
-                        result.ErrorMessage = errorMessage;
-                        return false;
-                    }
-                }
-
-                // default to true
-                if (result.Parent.Symbol.Name == "verbose-errors")
-                {
-                    return true;
-                }
-
-                if (result.Parent.Symbol.Name == "verbose" &&
-                    result.Parent.Parent.Children.FirstOrDefault(c => c.Symbol.Name == "run-loop") is OptionResult resRunLoop &&
-                    !resRunLoop.GetValueOrDefault<bool>())
-                {
-                    return true;
-                }
-
-                return false;
-            }
-
-            if (!bool.TryParse(result.Tokens[0].Value, out val))
-            {
-                result.ErrorMessage = errorMessage;
-                return false;
-            }
-
-            return val;
-        }
-
-        // parser for integer >= 0
-        public static int ParseIntGEZero(ArgumentResult result)
-        {
-            return ParseInt(result, 0);
-        }
-
-        // parser for integer > 0
-        public static int ParseIntGTZero(ArgumentResult result)
-        {
-            return ParseInt(result, 1);
-        }
-
-        // parser for integer
-        public static int ParseInt(ArgumentResult result, int minValue)
-        {
-            string name = result.Parent?.Symbol.Name.ToUpperInvariant().Replace('-', '_');
-
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                result.ErrorMessage = "result.Parent is null";
-                return -1;
-            }
-
-            string errorMessage = $"--{result.Parent.Symbol.Name} must be an integer >= {minValue}";
-            int val;
-
-            // nothing to validate
-            if (result.Tokens.Count == 0)
-            {
-                string env = Environment.GetEnvironmentVariable(name);
-
-                if (string.IsNullOrWhiteSpace(env))
-                {
-                    return GetCommandDefaultValues(result);
-                }
-                else
-                {
-                    if (!int.TryParse(env, out val) || val < minValue)
-                    {
-                        result.ErrorMessage = errorMessage;
-                        return -1;
-                    }
-
-                    return val;
-                }
-            }
-
-            if (!int.TryParse(result.Tokens[0].Value, out val) || val < minValue)
-            {
-                result.ErrorMessage = errorMessage;
-                return -1;
-            }
-
-            return val;
-        }
-
-        // parser for enums
-        public static AppType ParseAppType(ArgumentResult result)
-        {
-            string name = result.Parent?.Symbol.Name.ToUpperInvariant().Replace('-', '_');
-
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                result.ErrorMessage = "result.Parent is null";
-                return AppType.App;
-            }
-
-            string env = result.Tokens.Count == 0 ? Environment.GetEnvironmentVariable(name) : result.Tokens[0].Value;
-
+            // set default to environment value if set
             if (!string.IsNullOrWhiteSpace(env))
             {
-                if (Enum.TryParse<AppType>(env, out AppType at))
+                if (defaultValue.GetType().IsEnum)
                 {
-                    return at;
+                    if (Enum.TryParse(defaultValue.GetType(), env, true, out object result))
+                    {
+                        value = (T)result;
+                    }
                 }
                 else
                 {
-                    result.ErrorMessage = "--app-type must be of type AppType";
+                    value = (T)Convert.ChangeType(env, typeof(T));
                 }
             }
 
-            // default value
-            return AppType.App;
+            return new Option<T>(names, () => value, description);
         }
 
-        // parser for LogLevel
-        public static LogLevel ParseLogLevel(ArgumentResult result)
+        public static Option<int> MyOption(string[] names, string description, int defaultValue, int minValue)
         {
-            App.Config.IsLogLevelSet = false;
-
-            string name = result.Parent?.Symbol.Name.ToUpperInvariant().Replace('-', '_');
-
-            if (string.IsNullOrWhiteSpace(name))
+            if (string.IsNullOrWhiteSpace(description))
             {
-                result.ErrorMessage = "result.Parent is null";
-                return LogLevel.Error;
+                throw new ArgumentNullException(nameof(description));
             }
 
-            string env = result.Tokens.Count == 0 ? Environment.GetEnvironmentVariable(name) : result.Tokens[0].Value;
+            // this will throw on bad names
+            string env = GetValueFromEnvironment(names);
 
+            int value = defaultValue;
+
+            // set default to environment value if set
             if (!string.IsNullOrWhiteSpace(env))
             {
-                if (Enum.TryParse<LogLevel>(env, out LogLevel ll))
+                if (!int.TryParse(env, out value))
                 {
-                    App.Config.IsLogLevelSet = true;
-                    return ll;
-                }
-                else
-                {
-                    result.ErrorMessage = "--log-level must be of type LogLevel";
+                    // todo - do something
                 }
             }
 
-            // default value
-            return LogLevel.Warning;
+            Option<int> opt = new Option<int>(names, () => value, description);
+
+            opt.AddValidator((res) =>
+            {
+                string s = string.Empty;
+                int val;
+
+                try
+                {
+                    val = (int)res.GetValueOrDefault();
+
+                    if (val <= minValue)
+                    {
+                        s = $"{names[0]} must be >= {minValue}";
+                    }
+                }
+                catch
+                {
+                }
+
+                return s;
+            });
+
+            return opt;
         }
 
-        // get default values for command line args
-        public static int GetCommandDefaultValues(ArgumentResult result)
+        // check for environment variable value
+        private static string GetValueFromEnvironment(string[] names)
         {
-            return result.Parent.Symbol.Name switch
+            if (names == null ||
+                names.Length < 1 ||
+                names[0].Trim().Length < 4)
             {
-                "perf-cache" => -1,
-                "cache-duration" => 300,
-                "retries" => 5,
-                "timeout" => 30,
-                _ => 0,
-            };
+                throw new ArgumentNullException(nameof(names));
+            }
+
+            for (int i = 1; i < names.Length; i++)
+            {
+                if (string.IsNullOrWhiteSpace(names[i]) ||
+                    names[i].Length != 2 ||
+                    names[i][0] != '-')
+                {
+                    throw new ArgumentException($"Invalid command line parameter at position {i}", nameof(names));
+                }
+            }
+
+            string key = names[0][2..].Trim().ToUpperInvariant().Replace('-', '_');
+
+            return Environment.GetEnvironmentVariable(key);
         }
     }
 }
