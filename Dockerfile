@@ -1,7 +1,5 @@
 ### Build and Test the App
-FROM mcr.microsoft.com/dotnet/core/sdk:3.1 AS test
-
-SHELL ["/bin/bash", "-c"]
+FROM mcr.microsoft.com/dotnet/core/sdk:3.1-alpine AS build
 
 ### copy the source and tests
 COPY . /src
@@ -32,6 +30,6 @@ RUN addgroup -S ngsa && \
 USER ngsa
 
 ### copy the app
-COPY --from=test /app .
+COPY --from=build /app .
 
 ENTRYPOINT [ "dotnet",  "aspnetapp.dll" ]
