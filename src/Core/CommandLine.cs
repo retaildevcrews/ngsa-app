@@ -219,6 +219,10 @@ namespace Ngsa.Application
                     {
                         value = (T)result;
                     }
+                    else
+                    {
+                        EnvVarErrors.Add($"Environment variable {key} is invalid");
+                    }
                 }
                 else
                 {
