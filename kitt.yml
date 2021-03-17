@@ -1,0 +1,46 @@
+profiles:
+  - aspnetcore
+owner:
+  group: wcnp-ms-ngsa
+services:
+  - path: kitt-service.yml
+build:
+  docker:
+    app:
+      buildArgs:
+        dotnetVersion: 3.1
+        alpineVersion: 3.12
+
+deploy:
+  namespace: ms-ngsa    
+  stages:
+    - name: azure
+      refs: [master]
+      target:
+        - cluster_id: [eus2-dev-a2]
+    - name: gke
+      refs: [master]
+      target:
+        - cluster_id: [useast4-dev-gke01]
+  helm:
+    values:
+      global:
+        metrics:
+          enabled: true
+          endpoints:
+          - targetPort: 8080
+            path: "/metrics"
+          remoteWriteSampleLimit: 100
+          whitelist:
+            - NgsaAppDuration_bucket
+            - NgsaAppDuration_count
+            - NgsaAppDuration_sum
+            - NgsaAppSummary
+            - NgsaAppSummary_count
+            - NgsaAppSummary_sum
+notify:
+  slack:
+    channelName: "ms-ngsa"
+alerts:
+  slackChannel:
+    - ms-ngsa
