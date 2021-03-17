@@ -2,13 +2,11 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.CommandLine.Parsing;
 using System.IO;
 using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Logging;
@@ -21,70 +19,95 @@ namespace Ngsa.Application
     /// </summary>
     public sealed partial class App
     {
-        // App ILogger
-        private static readonly NgsaLog Logger = new NgsaLog { Name = typeof(App).FullName };
-
-        // web host
-        private static IWebHost host;
-
-        // static App configuration values
-        public static Config Config { get; set; } = new Config();
+        // App configuration values
+        public static Config Config { get; } = new Config();
 
         /// <summary>
         /// Main entry point
-        ///
-        /// Configure and run the web server
         /// </summary>
         /// <param name="args">command line args</param>
-        /// <returns>IActionResult</returns>
-        public static async Task<int> Main(string[] args)
+        /// <returns>0 == success</returns>
+        public static int Main(string[] args)
         {
-            if (args != null)
-            {
-                DisplayAsciiArt(new List<string>(args));
-            }
+            DisplayAsciiArt(args);
 
             // build the System.CommandLine.RootCommand
             RootCommand root = BuildRootCommand();
             root.Handler = CommandHandler.Create<Config>(RunApp);
 
             // run the app
-            return await root.InvokeAsync(args).ConfigureAwait(false);
+            return root.Invoke(args);
         }
 
-        private static void DisplayAsciiArt(List<string> cmd)
+        // load secrets from volume
+        private static void LoadSecrets()
         {
-            if (!cmd.Contains("--version") &&
-                (cmd.Contains("-h") ||
-                cmd.Contains("--help") ||
-                cmd.Contains("-d") ||
-                cmd.Contains("--dry-run")))
+            if (Config.InMemory)
             {
-                const string file = "src/Core/ascii-art.txt";
-
-                try
+                Config.Secrets = new Secrets
                 {
-                    if (File.Exists(file))
-                    {
-                        string txt = File.ReadAllText(file);
+                    CosmosCollection = "movies",
+                    CosmosDatabase = "imdb",
+                    CosmosKey = "in-memory",
+                    CosmosServer = "in-memory",
+                };
 
-                        Console.ForegroundColor = ConsoleColor.DarkMagenta;
-                        Console.WriteLine(txt);
-                        Console.ResetColor();
-                    }
-                }
-                catch
+                Config.CosmosName = "in-memory";
+            }
+            else
+            {
+                Config.Secrets = Secrets.GetSecretsFromVolume(Config.SecretsVolume);
+
+                // set the Cosmos server name for logging
+                Config.CosmosName = Config.Secrets.CosmosServer.Replace("https://", string.Empty, StringComparison.OrdinalIgnoreCase).Replace("http://", string.Empty, StringComparison.OrdinalIgnoreCase);
+
+                int ndx = Config.CosmosName.IndexOf('.', StringComparison.OrdinalIgnoreCase);
+
+                if (ndx > 0)
                 {
-                    // ignore any errors
+                    Config.CosmosName = Config.CosmosName.Remove(ndx);
                 }
             }
         }
 
-        /// <summary>
-        /// Creates a CancellationTokenSource that cancels on ctl-c or sigterm
-        /// </summary>
-        /// <returns>CancellationTokenSource</returns>
-        private static CancellationTokenSource SetupCtlCHandler()
+        // display Ascii Art
+        private static void DisplayAsciiArt(string[] args)
+        {
+            if (args != null)
+            {
+                ReadOnlySpan<string> cmd = new ReadOnlySpan<string>(args);
+
+                if (!cmd.Contains("--version") &&
+                    (cmd.Contains("-h") ||
+                    cmd.Contains("--help") ||
+                    cmd.Contains("--dry-run")))
+                {
+                    const string file = "src/Core/ascii-art.txt";
+
+                    try
+                    {
+                        if (File.Exists(file))
+                        {
+                            string txt = File.ReadAllText(file);
+
+                            if (!string.IsNullOrWhiteSpace(txt))
+                            {
+                                Console.ForegroundColor = ConsoleColor.DarkMagenta;
+                                Console.WriteLine(txt);
+                                Console.ResetColor();
+                            }
+                        }
+                    }
+                    catch
+                    {
+                        // ignore any errors
+                    }
+                }
+            }
+        }
+
+        // Create a CancellationTokenSource that cancels on ctl-c or sigterm
+        private static CancellationTokenSource SetupSigTermHandler(IWebHost host, NgsaLog logger)
         {
             CancellationTokenSource ctCancel = new CancellationTokenSource();
 
@@ -93,7 +116,7 @@ namespace Ngsa.Application
                 e.Cancel = true;
                 ctCancel.Cancel();
 
-                Logger.LogInformation("CtlCHandler", "Ctl-C Pressed");
+                logger.LogInformation("Shutdown", "Shutting Down ...");
 
                 // trigger graceful shutdown for the webhost
                 // force shutdown after timeout, defined in UseShutdownTimeout within BuildHost() method
@@ -106,46 +129,37 @@ namespace Ngsa.Application
             return ctCancel;
         }
 
-        /// <summary>
-        /// Log startup messages
-        /// </summary>
-        private static void LogStartup()
+        // Log startup messages
+        private static void LogStartup(NgsaLog logger)
         {
-            if (Logger != null)
-            {
-                Logger.LogInformation("Data Service Started", VersionExtension.Version);
-            }
+            logger.LogInformation($"NGSA.{Config.AppType} Started", VersionExtension.Version);
         }
 
-        /// <summary>
-        /// Build the web host
-        /// </summary>
-        /// <param name="useInMemory">Use in memory DB flag</param>
-        /// <returns>Web Host ready to run</returns>
+        // Build the web host
         private static IWebHost BuildHost()
         {
             // configure the web host builder
             IWebHostBuilder builder = WebHost.CreateDefaultBuilder()
-                .UseUrls(string.Format(System.Globalization.CultureInfo.InvariantCulture, $"http://*:{Config.Port}/"))
+                .UseUrls($"http://*:{Config.Port}/")
                 .UseStartup<Startup>()
-                .UseShutdownTimeout(TimeSpan.FromSeconds(Constants.GracefulShutdownTimeout));
-
-            // configure logger based on command line
-            builder.ConfigureLogging(logger =>
-            {
-                logger.ClearProviders();
-                logger.AddNgsaLogger(config => { config.LogLevel = Config.LogLevel; });
-
-                // if you specify the --log-level option, it will override the appsettings.json options
-                // remove any or all of the code below that you don't want to override
-                if (App.Config.IsLogLevelSet)
+                .UseShutdownTimeout(TimeSpan.FromSeconds(10))
+                .ConfigureLogging(logger =>
                 {
-                    logger.AddFilter("Microsoft", Config.LogLevel)
-                    .AddFilter("System", Config.LogLevel)
-                    .AddFilter("Default", Config.LogLevel)
-                    .AddFilter("Ngsa.Application", Config.LogLevel);
-                }
-            });
+                    // log to XML
+                    // this can be replaced when the dotnet XML logger is available
+                    logger.ClearProviders();
+                    logger.AddNgsaLogger(config => { config.LogLevel = Config.LogLevel; });
+
+                    // if you specify the --log-level option, it will override the appsettings.json options
+                    // remove any or all of the code below that you don't want to override
+                    if (Config.IsLogLevelSet)
+                    {
+                        logger.AddFilter("Microsoft", Config.LogLevel)
+                        .AddFilter("System", Config.LogLevel)
+                        .AddFilter("Default", Config.LogLevel)
+                        .AddFilter("Ngsa.Application", Config.LogLevel);
+                    }
+                });
 
             // build the host
             return builder.Build();
