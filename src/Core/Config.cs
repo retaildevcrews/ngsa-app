@@ -36,5 +36,33 @@ namespace Ngsa.Application
         public LogLevel RequestLogLevel { get; set; } = LogLevel.Information;
         public InMemoryDal CacheDal { get; set; }
         public IDAL CosmosDal { get; set; }
+
+        public void SetConfig(Config config)
+        {
+            AppType = config.AppType;
+            IsLogLevelSet = config.IsLogLevelSet;
+            DryRun = config.DryRun;
+            InMemory = config.InMemory;
+            NoCache = config.NoCache;
+            CacheDuration = config.CacheDuration;
+            Secrets = config.Secrets;
+            Port = config.Port;
+            Retries = config.Retries;
+            Timeout = config.Timeout;
+            Prometheus = config.Prometheus;
+            CacheDal = config.CacheDal;
+            CosmosDal = config.CosmosDal;
+
+            // LogLevel.Information is the min
+            LogLevel = config.LogLevel <= LogLevel.Information ? LogLevel.Information : config.LogLevel;
+            RequestLogLevel = config.RequestLogLevel <= LogLevel.Information ? LogLevel.Information : config.RequestLogLevel;
+
+            // clean up string values
+            DataService = config.DataService == "n/a" ? string.Empty : config.DataService;
+            SecretsVolume = string.IsNullOrWhiteSpace(config.SecretsVolume) ? string.Empty : config.SecretsVolume.Trim();
+            CosmosName = string.IsNullOrWhiteSpace(config.CosmosName) ? string.Empty : config.CosmosName.Trim();
+            Zone = string.IsNullOrWhiteSpace(config.Zone) ? string.Empty : config.Zone.Trim();
+            Region = string.IsNullOrWhiteSpace(config.Region) ? string.Empty : config.Region.Trim();
+        }
     }
 }
