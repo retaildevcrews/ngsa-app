@@ -57,7 +57,7 @@
 		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </Content>
 
-    <None Include="data\**">
+    <None Include="src\data\**">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
 
@@ -65,7 +65,7 @@
 		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </None>
 
-    <None Include="wwwroot\**">
+    <None Include="src\wwwroot\**">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
 
