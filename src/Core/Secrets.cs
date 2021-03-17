@@ -11,7 +11,6 @@ namespace Ngsa.Application
     /// </summary>
     public class Secrets
     {
-        public bool UseInMemoryDb { get; set; }
         public string Volume { get; set; }
         public string CosmosServer { get; set; }
         public string CosmosKey { get; set; }
