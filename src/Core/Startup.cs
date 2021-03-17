@@ -2,12 +2,14 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System;
+using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Ngsa.Middleware;
@@ -20,6 +22,9 @@ namespace Ngsa.Application
     /// </summary>
     public class Startup
     {
+        private const string SwaggerPath = "/swagger.json";
+        private const string SwaggerTitle = "Next Gen Symmetric Apps";
+
         /// <summary>
         /// Initializes a new instance of the <see cref="Startup"/> class.
         /// </summary>
@@ -65,49 +70,35 @@ namespace Ngsa.Application
                 });
             }
 
-            // differences based on dev or prod
-            if (env.IsDevelopment())
+            // UseHsts in prod
+            if (env.IsProduction())
             {
-                //app.UseDeveloperExceptionPage();
-            }
-            else
-            {
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
 
-            // use routing
-            app.UseRouting();
-
-            // map the controllers
-            app.UseEndpoints(ep =>
-            {
-                ep.MapControllers();
-
-                if (App.Config.Prometheus)
+            // add middleware handlers
+            app.UseRouting()
+                .UseEndpoints(ep =>
                 {
-                    ep.MapMetrics();
-                }
-            });
+                    ep.MapControllers();
 
-            // rewrite root to /index.html
-            app.UseSwaggerRoot();
-
-            // Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.), specifying the Swagger JSON endpoint.
-            app.UseSwaggerUI(c =>
-            {
-                c.SwaggerEndpoint("/swagger/swagger.json", "Next Gen Symmetric Apps");
-                c.RoutePrefix = string.Empty;
-            });
-
-            // use the version middleware to handle /version
-            app.UseVersion();
-
-            // handle robots.txt
-            app.UseRobots();
-
-            // swagger.json
-            app.UseStaticFiles();
+                    if (App.Config.Prometheus)
+                    {
+                        ep.MapMetrics();
+                    }
+                })
+                .UseSwaggerRoot()
+                .UseSwaggerUI(c =>
+                {
+                    c.SwaggerEndpoint(SwaggerPath, SwaggerTitle);
+                    c.RoutePrefix = string.Empty;
+                })
+                .UseVersion()
+                .UseRobots()
+                .UseStaticFiles(new StaticFileOptions
+                {
+                    FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), "src/wwwroot")),
+                });
         }
 
         /// <summary>
