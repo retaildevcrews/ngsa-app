@@ -4,8 +4,10 @@
 using System;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Imdb.Model;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.CorrelationVector;
@@ -74,6 +76,91 @@ namespace Ngsa.Application.Controllers
                 }
 
                 return json;
+            }
+            catch (Exception ex)
+            {
+                return CreateResult(ex.Message, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        public static async Task<IActionResult> Post(HttpRequest request, Movie m)
+        {
+            if (request == null || !request.Path.HasValue)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
+            string path = RequestLogger.GetPathAndQuerystring(request);
+
+            CorrelationVector cVector = Middleware.CorrelationVectorExtensions.GetCorrelationVectorFromContext(request.HttpContext);
+
+            try
+            {
+                HttpRequestMessage req = new HttpRequestMessage(HttpMethod.Put, path);
+
+                if (cVector != null)
+                {
+                    req.Headers.Add(CorrelationVector.HeaderName, cVector.Value);
+                }
+
+                req.Content = new ByteArrayContent(JsonSerializer.SerializeToUtf8Bytes(m));
+                req.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+
+                HttpResponseMessage resp = await Client.SendAsync(req);
+
+                JsonResult json;
+
+                if (resp.IsSuccessStatusCode)
+                {
+                    Movie obj = JsonSerializer.Deserialize<Movie>(await resp.Content.ReadAsByteArrayAsync().ConfigureAwait(false), Options);
+                    json = new JsonResult(obj, Options) { StatusCode = (int)resp.StatusCode };
+                }
+                else
+                {
+                    dynamic err = JsonSerializer.Deserialize<dynamic>(await resp.Content.ReadAsByteArrayAsync().ConfigureAwait(false), Options);
+                    json = new JsonResult(err, Options) { StatusCode = (int)resp.StatusCode };
+                }
+
+                return json;
+            }
+            catch (Exception ex)
+            {
+                return CreateResult(ex.Message, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        public static async Task<IActionResult> Delete(HttpRequest request)
+        {
+            if (request == null || !request.Path.HasValue)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
+            string path = RequestLogger.GetPathAndQuerystring(request);
+
+            CorrelationVector cVector = Middleware.CorrelationVectorExtensions.GetCorrelationVectorFromContext(request.HttpContext);
+
+            try
+            {
+                HttpRequestMessage req = new HttpRequestMessage(HttpMethod.Delete, path);
+
+                if (cVector != null)
+                {
+                    req.Headers.Add(CorrelationVector.HeaderName, cVector.Value);
+                }
+
+                HttpResponseMessage resp = await Client.SendAsync(req);
+
+                if (resp.IsSuccessStatusCode)
+                {
+                    return new NoContentResult();
+                }
+                else
+                {
+                    dynamic err = JsonSerializer.Deserialize<dynamic>(await resp.Content.ReadAsByteArrayAsync().ConfigureAwait(false), Options);
+
+                    return new JsonResult(err, Options) { StatusCode = (int)resp.StatusCode };
+                }
             }
             catch (Exception ex)
             {
