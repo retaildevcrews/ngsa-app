@@ -38,7 +38,8 @@ namespace Imdb.Model
             // validate id
             if (!string.IsNullOrWhiteSpace(id) &&
                 id.Length > 5 &&
-                id.StartsWith("tt", StringComparison.OrdinalIgnoreCase) &&
+                (id.StartsWith("tt", StringComparison.OrdinalIgnoreCase) ||
+                 id.StartsWith("zz", StringComparison.OrdinalIgnoreCase)) &&
                 int.TryParse(id[2..], out int idInt))
             {
                 return (idInt % 10).ToString(CultureInfo.InvariantCulture);
@@ -61,9 +62,20 @@ namespace Imdb.Model
             return result;
         }
 
+        public Movie DuplicateForUpsert()
+        {
+            Movie m = (Movie)MemberwiseClone();
+
+            m.MovieId = m.MovieId.Replace("tt", "zz");
+            m.Id = m.MovieId;
+            m.Type = "Movie-Dupe";
+
+            return m;
+        }
+
         public object Clone()
         {
-            return this.MemberwiseClone();
+            return MemberwiseClone();
         }
     }
 }
