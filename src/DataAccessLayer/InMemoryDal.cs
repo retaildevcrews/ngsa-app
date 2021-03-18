@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Imdb.Model;
@@ -411,7 +412,31 @@ namespace Ngsa.Application.DataAccessLayer
             });
         }
 
-        private void LoadActors(JsonSerializerOptions settings)
+        public Movie UpsertMovie(Movie m, out HttpStatusCode status)
+        {
+            if (MoviesIndex.ContainsKey(m.MovieId))
+            {
+                m = MoviesIndex[m.MovieId];
+                status = HttpStatusCode.OK;
+            }
+            else
+            {
+                MoviesIndex.Add(m.MovieId, m);
+                status = HttpStatusCode.OK;
+            }
+
+            return m;
+        }
+
+        public void DeleteMovie(string movieId)
+        {
+            if (MoviesIndex.ContainsKey(movieId))
+            {
+                MoviesIndex.Remove(movieId);
+            }
+        }
+
+        private static void LoadActors(JsonSerializerOptions settings)
         {
             if (Actors?.Count == null)
             {
@@ -433,7 +458,7 @@ namespace Ngsa.Application.DataAccessLayer
             }
         }
 
-        private void LoadGenres(JsonSerializerOptions settings)
+        private static void LoadGenres(JsonSerializerOptions settings)
         {
             if (Genres.Count == 0)
             {
@@ -450,7 +475,7 @@ namespace Ngsa.Application.DataAccessLayer
             }
         }
 
-        private void LoadMovies(JsonSerializerOptions settings)
+        private static void LoadMovies(JsonSerializerOptions settings)
         {
             if (Movies?.Count == null)
             {

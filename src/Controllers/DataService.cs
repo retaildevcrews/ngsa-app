@@ -4,8 +4,10 @@
 using System;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Imdb.Model;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.CorrelationVector;
@@ -35,21 +37,22 @@ namespace Ngsa.Application.Controllers
         /// Call the data access layer proxy using a path and query string
         /// </summary>
         /// <typeparam name="T">Result Type</typeparam>
-        /// <param name="path">path</param>
-        /// <param name="cVector">Correlation Vector</param>
+        /// <param name="request">HTTP Request</param>
         /// <returns>IActionResult</returns>
-        public static async Task<IActionResult> Read<T>(string path, CorrelationVector cVector)
+        public static async Task<IActionResult> Read<T>(HttpRequest request)
         {
-            if (string.IsNullOrWhiteSpace(path))
+            if (request == null || !request.Path.HasValue)
             {
-                throw new ArgumentNullException(nameof(path));
+                throw new ArgumentNullException(nameof(request));
             }
 
-            string fullPath = path.Trim();
+            string path = RequestLogger.GetPathAndQuerystring(request);
+
+            CorrelationVector cVector = Middleware.CorrelationVectorExtensions.GetCorrelationVectorFromContext(request.HttpContext);
 
             try
             {
-                HttpRequestMessage req = new HttpRequestMessage(HttpMethod.Get, fullPath);
+                HttpRequestMessage req = new HttpRequestMessage(HttpMethod.Get, path);
 
                 if (cVector != null)
                 {
@@ -80,20 +83,89 @@ namespace Ngsa.Application.Controllers
             }
         }
 
-        /// <summary>
-        /// Call the data access layer based on the path in the request
-        /// </summary>
-        /// <typeparam name="T">return type</typeparam>
-        /// <param name="request">http request</param>
-        /// <returns>IActionResult</returns>
-        public static async Task<IActionResult> Read<T>(HttpRequest request)
+        public static async Task<IActionResult> Post(HttpRequest request, Movie m)
         {
             if (request == null || !request.Path.HasValue)
             {
                 throw new ArgumentNullException(nameof(request));
             }
 
-            return await Read<T>(RequestLogger.GetPathAndQuerystring(request), Middleware.CorrelationVectorExtensions.GetCorrelationVectorFromContext(request.HttpContext)).ConfigureAwait(false);
+            string path = RequestLogger.GetPathAndQuerystring(request);
+
+            CorrelationVector cVector = Middleware.CorrelationVectorExtensions.GetCorrelationVectorFromContext(request.HttpContext);
+
+            try
+            {
+                HttpRequestMessage req = new HttpRequestMessage(HttpMethod.Put, path);
+
+                if (cVector != null)
+                {
+                    req.Headers.Add(CorrelationVector.HeaderName, cVector.Value);
+                }
+
+                req.Content = new ByteArrayContent(JsonSerializer.SerializeToUtf8Bytes(m));
+                req.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+
+                HttpResponseMessage resp = await Client.SendAsync(req);
+
+                JsonResult json;
+
+                if (resp.IsSuccessStatusCode)
+                {
+                    Movie obj = JsonSerializer.Deserialize<Movie>(await resp.Content.ReadAsByteArrayAsync().ConfigureAwait(false), Options);
+                    json = new JsonResult(obj, Options) { StatusCode = (int)resp.StatusCode };
+                }
+                else
+                {
+                    dynamic err = JsonSerializer.Deserialize<dynamic>(await resp.Content.ReadAsByteArrayAsync().ConfigureAwait(false), Options);
+                    json = new JsonResult(err, Options) { StatusCode = (int)resp.StatusCode };
+                }
+
+                return json;
+            }
+            catch (Exception ex)
+            {
+                return CreateResult(ex.Message, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        public static async Task<IActionResult> Delete(HttpRequest request)
+        {
+            if (request == null || !request.Path.HasValue)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
+            string path = RequestLogger.GetPathAndQuerystring(request);
+
+            CorrelationVector cVector = Middleware.CorrelationVectorExtensions.GetCorrelationVectorFromContext(request.HttpContext);
+
+            try
+            {
+                HttpRequestMessage req = new HttpRequestMessage(HttpMethod.Delete, path);
+
+                if (cVector != null)
+                {
+                    req.Headers.Add(CorrelationVector.HeaderName, cVector.Value);
+                }
+
+                HttpResponseMessage resp = await Client.SendAsync(req);
+
+                if (resp.IsSuccessStatusCode)
+                {
+                    return new NoContentResult();
+                }
+                else
+                {
+                    dynamic err = JsonSerializer.Deserialize<dynamic>(await resp.Content.ReadAsByteArrayAsync().ConfigureAwait(false), Options);
+
+                    return new JsonResult(err, Options) { StatusCode = (int)resp.StatusCode };
+                }
+            }
+            catch (Exception ex)
+            {
+                return CreateResult(ex.Message, HttpStatusCode.InternalServerError);
+            }
         }
 
         /// <summary>

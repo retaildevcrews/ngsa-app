@@ -25,14 +25,13 @@ namespace Ngsa.Application
         public bool InMemory { get; set; }
         public bool Cache => !NoCache;
         public bool NoCache { get; set; }
-        public int PerfCache { get; set; }
+        public bool Prometheus { get; set; }
         public int CacheDuration { get; set; } = 300;
         public string Zone { get; set; } = string.Empty;
         public string Region { get; set; } = string.Empty;
         public int Port { get; set; } = 8080;
-        public int Retries { get; set; }
-        public int Timeout { get; set; }
-        public bool Prometheus { get; set; }
+        public int Retries { get; set; } = 10;
+        public int Timeout { get; set; } = 10;
         public LogLevel RequestLogLevel { get; set; } = LogLevel.Information;
         public InMemoryDal CacheDal { get; set; }
         public IDAL CosmosDal { get; set; }

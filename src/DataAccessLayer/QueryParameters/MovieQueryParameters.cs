@@ -32,7 +32,7 @@ namespace Ngsa.Middleware
                     (movieId != movieId.ToLowerInvariant().Trim() ||
                     movieId.Length < 7 ||
                     movieId.Length > 11 ||
-                    !movieId.StartsWith("tt") ||
+                    (!movieId.StartsWith("tt") && !movieId.StartsWith("zz")) ||
                     !int.TryParse(movieId[2..], out int v) ||
                     v <= 0))
             {

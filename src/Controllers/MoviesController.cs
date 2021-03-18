@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Threading.Tasks;
 using Imdb.Model;
 using Microsoft.AspNetCore.Mvc;
@@ -113,7 +114,15 @@ namespace Ngsa.Application.Controllers
             }
             else
             {
-                res = await ResultHandler.Handle(dal.GetMovieAsync(movieId), Logger).ConfigureAwait(false);
+                // todo - remove this once upsert / delete work
+                if (movieId.StartsWith("zz"))
+                {
+                    res = await ResultHandler.Handle(App.Config.CacheDal.GetMovieAsync(movieId), Logger).ConfigureAwait(false);
+                }
+                else
+                {
+                    res = await ResultHandler.Handle(dal.GetMovieAsync(movieId), Logger).ConfigureAwait(false);
+                }
 
                 // use cache dal on Cosmos 429 errors
                 if (App.Config.Cache && res is JsonResult jres && jres.StatusCode == 429)
@@ -122,6 +131,88 @@ namespace Ngsa.Application.Controllers
 
                     res = await ResultHandler.Handle(App.Config.CacheDal.GetMovieAsync(movieId), Logger).ConfigureAwait(false);
                 }
+            }
+
+            return res;
+        }
+
+        [HttpPut("{movieId}")]
+        public async Task<IActionResult> UpsertMovieAsync([FromRoute] string movieId)
+        {
+            try
+            {
+                List<Middleware.Validation.ValidationError> list = MovieQueryParameters.ValidateMovieId(movieId);
+
+                if (list.Count > 0 || !movieId.StartsWith("zz"))
+                {
+                    Logger.LogWarning(nameof(UpsertMovieAsync), "Invalid Movie Id", NgsaLog.LogEvent400, HttpContext);
+
+                    return ResultHandler.CreateResult(list, RequestLogger.GetPathAndQuerystring(Request));
+                }
+
+                // duplicate the movie for upsert
+                Movie mOrig = App.Config.CacheDal.GetMovie(movieId.Replace("zz", "tt"));
+                Movie m = mOrig.DuplicateForUpsert();
+
+                IActionResult res;
+
+                if (App.Config.AppType == AppType.WebAPI)
+                {
+                    // todo - implement
+                    res = await DataService.Post(Request, m).ConfigureAwait(false);
+                }
+                else
+                {
+                    // todo - implement for Cosmos
+                    m = App.Config.CacheDal.UpsertMovie(m, out HttpStatusCode status);
+
+                    if (status == HttpStatusCode.Created)
+                    {
+                        res = Created($"/api/movies/{m.MovieId}", m);
+                    }
+                    else
+                    {
+                        res = Ok(m);
+                    }
+                }
+
+                return res;
+            }
+            catch
+            {
+                return NotFound($"Movie ID Not Found: {movieId}");
+            }
+        }
+
+        /// <summary>
+        /// Delete a movie by movieId
+        /// </summary>
+        /// <param name="movieId">ID to delete</param>
+        /// <returns>IActionResult</returns>
+        [HttpDelete("{movieId}")]
+        public async Task<IActionResult> DeleteMovieAsync([FromRoute] string movieId)
+        {
+            List<Middleware.Validation.ValidationError> list = MovieQueryParameters.ValidateMovieId(movieId);
+
+            if (list.Count > 0 || !movieId.StartsWith("zz"))
+            {
+                Logger.LogWarning(nameof(UpsertMovieAsync), "Invalid Movie Id", NgsaLog.LogEvent400, HttpContext);
+
+                return ResultHandler.CreateResult(list, RequestLogger.GetPathAndQuerystring(Request));
+            }
+
+            IActionResult res;
+
+            if (App.Config.AppType == AppType.WebAPI)
+            {
+                // todo - implement
+                res = await DataService.Delete(Request).ConfigureAwait(false);
+            }
+            else
+            {
+                // todo - implement in Cosmos DB
+                App.Config.CacheDal.DeleteMovie(movieId);
+                res = NoContent();
             }
 
             return res;
