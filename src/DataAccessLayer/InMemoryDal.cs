@@ -433,8 +433,10 @@ namespace Ngsa.Application.DataAccessLayer
             if (MoviesIndex.ContainsKey(movieId))
             {
                 MoviesIndex.Remove(movieId);
+            }
+        }
 
-        private void LoadActors(JsonSerializerOptions settings)
+        private static void LoadActors(JsonSerializerOptions settings)
         {
             if (Actors?.Count == null)
             {
@@ -456,7 +458,7 @@ namespace Ngsa.Application.DataAccessLayer
             }
         }
 
-        private void LoadGenres(JsonSerializerOptions settings)
+        private static void LoadGenres(JsonSerializerOptions settings)
         {
             if (Genres.Count == 0)
             {
@@ -473,7 +475,7 @@ namespace Ngsa.Application.DataAccessLayer
             }
         }
 
-        private void LoadMovies(JsonSerializerOptions settings)
+        private static void LoadMovies(JsonSerializerOptions settings)
         {
             if (Movies?.Count == null)
             {
