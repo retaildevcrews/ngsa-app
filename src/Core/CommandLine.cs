@@ -92,6 +92,7 @@ namespace Ngsa.Application
             root.AddOption(EnvVarOption(new string[] { "--prometheus", "-p" }, "Send metrics to Prometheus", false));
             root.AddOption(EnvVarOption(new string[] { "--in-memory", "-m" }, "Use in-memory database", false));
             root.AddOption(EnvVarOption(new string[] { "--no-cache", "-n" }, "Don't cache results", false));
+            root.AddOption(EnvVarOption(new string[] { "--port" }, "Listen Port", 8080, 1));
             root.AddOption(EnvVarOption(new string[] { "--cache-duration", "-d" }, "Cache for duration (seconds)", 300, 1));
             root.AddOption(EnvVarOption(new string[] { "--retries" }, "Cosmos 429 retries", 10, 0));
             root.AddOption(EnvVarOption(new string[] { "--timeout" }, "Request timeout", 10, 1));
