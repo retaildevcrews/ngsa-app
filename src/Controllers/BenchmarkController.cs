@@ -70,11 +70,12 @@ namespace Ngsa.Application.Controllers
             }
             else
             {
-                size = size < 1000 ? 1000 : size;
+                int pageSize = size / 1000;
+                pageSize = pageSize == 0 ? 1 : pageSize;
 
                 // run a Cosmos query that simulates the size
                 // each movie is approximately 1K
-                _ = await App.Config.CosmosDal.GetMoviesAsync(new MovieQueryParameters { PageSize = size / 1000 });
+                _ = await App.Config.CosmosDal.GetMoviesAsync(new MovieQueryParameters { PageSize = pageSize });
 
                 // return exact byte size
                 res = await ResultHandler.Handle(App.Config.CacheDal.GetBenchmarkDataAsync(size), Logger).ConfigureAwait(false);
