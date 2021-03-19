@@ -155,7 +155,8 @@ namespace Ngsa.Middleware
                     { "Verb", context.Request.Method },
                     { "Path", GetPathAndQuerystring(context.Request) },
                     { "Host", context.Request.Headers["Host"].ToString() },
-                    { "ClientIP", GetClientIp(context) },
+                    { "ClientIP", GetClientIp(context, out string xff) },
+                    { "XFF", xff },  // todo - remove this if we don't want to log xff
                     { "UserAgent", context.Request.Headers["User-Agent"].ToString() },
                     { "CVector", cv.Value },
                     { "CVectorBase", cv.GetBase() },
@@ -229,12 +230,12 @@ namespace Ngsa.Middleware
         // todo move to utility class
         // todo - we should think about logging these separately
         //        could help with trouble shooting
-        private static string GetClientIp(HttpContext context)
+        private static string GetClientIp(HttpContext context, out string xff)
         {
             const string XffHeader = "X-Forwarded-For";
             const string IpHeader = "X-Client-IP";
 
-            string xff;  // todo - potentially log xff content in addition to IP
+            xff = string.Empty;
             string clientIp = context.Connection.RemoteIpAddress.ToString();
 
             // check for the forwarded headers
@@ -259,8 +260,6 @@ namespace Ngsa.Middleware
                 xff = context.Request.Headers[IpHeader].ToString().Trim();
                 clientIp = xff;
             }
-
-            // todo - potentially log xff here
 
             // remove IP6 local address
             return clientIp.Replace("::ffff:", string.Empty);
