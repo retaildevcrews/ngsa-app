@@ -23,11 +23,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <AdditionalFiles Include="stylecop.json" />
+    <AdditionalFiles Include="src\stylecop.json" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Include=".editorconfig" Link=".editorconfig" />
+    <None Include="src\.editorconfig" />
   </ItemGroup>
 
   <ItemGroup>
