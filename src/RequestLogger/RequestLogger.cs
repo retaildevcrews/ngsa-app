@@ -20,8 +20,6 @@ namespace Ngsa.Middleware
     /// </summary>
     public class RequestLogger
     {
-        private const string IpHeader = "X-Client-IP";
-
         private static Histogram requestHistogram = null;
         private static Summary requestSummary = null;
 
@@ -229,15 +227,40 @@ namespace Ngsa.Middleware
 
         // get the client IP address from the request / headers
         // todo move to utility class
+        // todo - we should think about logging these separately
+        //        could help with trouble shooting
         private static string GetClientIp(HttpContext context)
         {
+            const string XffHeader = "X-Forwarded-For";
+            const string IpHeader = "X-Client-IP";
+
+            string xff;  // todo - potentially log xff content in addition to IP
             string clientIp = context.Connection.RemoteIpAddress.ToString();
 
-            // check for the forwarded header
-            if (context.Request.Headers.ContainsKey(IpHeader))
+            // check for the forwarded headers
+            if (context.Request.Headers.ContainsKey(XffHeader))
             {
-                clientIp = context.Request.Headers[IpHeader].ToString();
+                xff = context.Request.Headers[XffHeader].ToString().Trim();
+
+                // add the clientIp to the list of proxies
+                xff += $", {clientIp}";
+
+                // get the first IP in the xff header (comma space separated)
+                string[] ips = xff.Split(',');
+
+                if (ips.Length > 0)
+                {
+                    clientIp = ips[0].Trim();
+                }
             }
+            else if (context.Request.Headers.ContainsKey(IpHeader))
+            {
+                // fall back to X-Client-IP if xff not set
+                xff = context.Request.Headers[IpHeader].ToString().Trim();
+                clientIp = xff;
+            }
+
+            // todo - potentially log xff here
 
             // remove IP6 local address
             return clientIp.Replace("::ffff:", string.Empty);
