@@ -26,6 +26,9 @@ namespace Ngsa.Application.DataAccessLayer
         private const string ActorsSQL = "select m.id, m.partitionKey, m.actorId, m.type, m.name, m.birthYear, m.deathYear, m.profession, m.textSearch, m.movies from m where m.id in ({0}) order by m.textSearch ASC";
         private const string MoviesSQL = "select m.id, m.partitionKey, m.movieId, m.type, m.textSearch, m.title, m.year, m.runtime, m.rating, m.votes, m.totalScore, m.genres, m.roles from m where m.id in ({0}) order by m.textSearch ASC, m.movieId ASC";
 
+        // benchmark results buffer
+        private readonly string benchmarkData;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="InMemoryDal"/> class.
         /// </summary>
@@ -40,6 +43,21 @@ namespace Ngsa.Application.DataAccessLayer
             LoadActors(settings);
             LoadGenres(settings);
             LoadMovies(settings);
+
+            // 100 bytes
+            benchmarkData = "1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890";
+
+            // 500 bytes
+            benchmarkData += benchmarkData + benchmarkData + benchmarkData + benchmarkData;
+
+            // 1000 bytes
+            benchmarkData += benchmarkData;
+
+            // 1024000 bytes
+            while (benchmarkData.Length <= 1000000)
+            {
+                benchmarkData += benchmarkData;
+            }
         }
 
         public static List<Actor> Actors { get; set; }
@@ -214,6 +232,14 @@ namespace Ngsa.Application.DataAccessLayer
             return await Task<List<string>>.Factory.StartNew(() =>
             {
                 return Genres;
+            }).ConfigureAwait(false);
+        }
+
+        public async Task<string> GetBenchmarkDataAsync(int size)
+        {
+            return await Task<string>.Factory.StartNew(() =>
+            {
+                return benchmarkData[0..size];
             }).ConfigureAwait(false);
         }
 
