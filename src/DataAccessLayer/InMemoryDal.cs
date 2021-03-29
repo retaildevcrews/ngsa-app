@@ -44,17 +44,11 @@ namespace Ngsa.Application.DataAccessLayer
             LoadGenres(settings);
             LoadMovies(settings);
 
-            // 100 bytes
-            benchmarkData = "1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890";
+            // 16 bytes
+            benchmarkData = "0123456789ABCDEF";
 
-            // 500 bytes
-            benchmarkData += benchmarkData + benchmarkData + benchmarkData + benchmarkData;
-
-            // 1000 bytes
-            benchmarkData += benchmarkData;
-
-            // 1024000 bytes
-            while (benchmarkData.Length <= 1000000)
+            // 1 MB
+            while (benchmarkData.Length < 1024 * 1024)
             {
                 benchmarkData += benchmarkData;
             }

@@ -48,14 +48,14 @@ namespace Ngsa.Application.Controllers
                 return ResultHandler.CreateResult(list, RequestLogger.GetPathAndQuerystring(Request));
             }
 
-            if (size > 1000000)
+            if (size > 1024 * 1024)
             {
                 List<Middleware.Validation.ValidationError> list = new List<Middleware.Validation.ValidationError>
                 {
                     new Middleware.Validation.ValidationError
                     {
                         Target = "size",
-                        Message = "size must be <= 1000000",
+                        Message = $"size must be <= 1 MB ({1024 * 1024})",
                     },
                 };
 
@@ -70,12 +70,16 @@ namespace Ngsa.Application.Controllers
             }
             else
             {
-                int pageSize = size / 1000;
-                pageSize = pageSize == 0 ? 1 : pageSize;
+                // run a cosmos query
+                if (App.Config.NoCache)
+                {
+                    int pageSize = size / 1024;
+                    pageSize = pageSize == 0 ? 1 : pageSize;
 
-                // run a Cosmos query that simulates the size
-                // each movie is approximately 1K
-                _ = await App.Config.CosmosDal.GetMoviesAsync(new MovieQueryParameters { PageSize = pageSize });
+                    // run a Cosmos query that simulates the size
+                    // each movie is approximately 1K
+                    _ = await App.Config.CosmosDal.GetMoviesAsync(new MovieQueryParameters { PageSize = pageSize });
+                }
 
                 // return exact byte size
                 res = await ResultHandler.Handle(App.Config.CacheDal.GetBenchmarkDataAsync(size), Logger).ConfigureAwait(false);
