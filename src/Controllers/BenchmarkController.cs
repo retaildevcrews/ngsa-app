@@ -45,7 +45,7 @@ namespace Ngsa.Application.Controllers
 
                 Logger.LogWarning(nameof(GetDataAsync), "Invalid Size", NgsaLog.LogEvent400, HttpContext);
 
-                return ResultHandler.CreateResult(list, RequestLogger.GetPathAndQuerystring(Request));
+                return BadRequest("Invalid Size");
             }
 
             if (size > 1024 * 1024)
@@ -61,7 +61,7 @@ namespace Ngsa.Application.Controllers
 
                 Logger.LogWarning(nameof(GetDataAsync), "Invalid Size", NgsaLog.LogEvent400, HttpContext);
 
-                return ResultHandler.CreateResult(list, RequestLogger.GetPathAndQuerystring(Request));
+                return BadRequest("Invalid Size");
             }
 
             if (App.Config.AppType == AppType.WebAPI)
@@ -70,17 +70,6 @@ namespace Ngsa.Application.Controllers
             }
             else
             {
-                // run a cosmos query
-                if (App.Config.NoCache)
-                {
-                    int pageSize = size / 1024;
-                    pageSize = pageSize == 0 ? 1 : pageSize;
-
-                    // run a Cosmos query that simulates the size
-                    // each movie is approximately 1K
-                    _ = await App.Config.CosmosDal.GetMoviesAsync(new MovieQueryParameters { PageSize = pageSize });
-                }
-
                 // return exact byte size
                 res = await ResultHandler.Handle(App.Config.CacheDal.GetBenchmarkDataAsync(size), Logger).ConfigureAwait(false);
             }
