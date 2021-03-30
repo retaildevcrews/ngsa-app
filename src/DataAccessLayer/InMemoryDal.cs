@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Imdb.Model;
@@ -432,28 +431,32 @@ namespace Ngsa.Application.DataAccessLayer
             });
         }
 
-        public Movie UpsertMovie(Movie m, out HttpStatusCode status)
+        public async Task<Movie> UpsertMovieAsync(Movie m)
         {
-            if (MoviesIndex.ContainsKey(m.MovieId))
+            await Task.Run(() =>
             {
-                m = MoviesIndex[m.MovieId];
-                status = HttpStatusCode.OK;
-            }
-            else
-            {
-                MoviesIndex.Add(m.MovieId, m);
-                status = HttpStatusCode.OK;
-            }
+                if (MoviesIndex.ContainsKey(m.MovieId))
+                {
+                    m = MoviesIndex[m.MovieId];
+                }
+                else
+                {
+                    MoviesIndex.Add(m.MovieId, m);
+                }
+            }).ConfigureAwait(false);
 
             return m;
         }
 
-        public void DeleteMovie(string movieId)
+        public async Task DeleteMovieAsync(string movieId)
         {
-            if (MoviesIndex.ContainsKey(movieId))
+            await Task.Run(() =>
             {
-                MoviesIndex.Remove(movieId);
-            }
+                if (MoviesIndex.ContainsKey(movieId))
+                {
+                    MoviesIndex.Remove(movieId);
+                }
+            }).ConfigureAwait(false);
         }
 
         private static void LoadActors(JsonSerializerOptions settings)

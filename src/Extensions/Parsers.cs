@@ -58,7 +58,7 @@ namespace Ngsa.Middleware.CommandLine
             {
                 if (!int.TryParse(env, out value))
                 {
-                    // todo - do something
+                    value = defaultValue;
                 }
             }
 

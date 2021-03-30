@@ -77,7 +77,6 @@ namespace Ngsa.Middleware
 
         /// <summary>
         /// Return the path and query string if it exists
-        /// todo move to utility class
         /// </summary>
         /// <param name="request">HttpRequest</param>
         /// <returns>string</returns>
@@ -156,7 +155,7 @@ namespace Ngsa.Middleware
                     { "Path", GetPathAndQuerystring(context.Request) },
                     { "Host", context.Request.Headers["Host"].ToString() },
                     { "ClientIP", GetClientIp(context, out string xff) },
-                    { "XFF", xff },  // todo - remove this if we don't want to log xff
+                    { "XFF", xff },
                     { "UserAgent", context.Request.Headers["User-Agent"].ToString() },
                     { "CVector", cv.Value },
                     { "CVectorBase", cv.GetBase() },
@@ -227,9 +226,6 @@ namespace Ngsa.Middleware
         }
 
         // get the client IP address from the request / headers
-        // todo move to utility class
-        // todo - we should think about logging these separately
-        //        could help with trouble shooting
         private static string GetClientIp(HttpContext context, out string xff)
         {
             const string XffHeader = "X-Forwarded-For";
