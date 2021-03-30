@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Imdb.Model;
@@ -26,6 +25,9 @@ namespace Ngsa.Application.DataAccessLayer
         private const string ActorsSQL = "select m.id, m.partitionKey, m.actorId, m.type, m.name, m.birthYear, m.deathYear, m.profession, m.textSearch, m.movies from m where m.id in ({0}) order by m.textSearch ASC";
         private const string MoviesSQL = "select m.id, m.partitionKey, m.movieId, m.type, m.textSearch, m.title, m.year, m.runtime, m.rating, m.votes, m.totalScore, m.genres, m.roles from m where m.id in ({0}) order by m.textSearch ASC, m.movieId ASC";
 
+        // benchmark results buffer
+        private readonly string benchmarkData;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="InMemoryDal"/> class.
         /// </summary>
@@ -40,6 +42,15 @@ namespace Ngsa.Application.DataAccessLayer
             LoadActors(settings);
             LoadGenres(settings);
             LoadMovies(settings);
+
+            // 16 bytes
+            benchmarkData = "0123456789ABCDEF";
+
+            // 1 MB
+            while (benchmarkData.Length < 1024 * 1024)
+            {
+                benchmarkData += benchmarkData;
+            }
         }
 
         public static List<Actor> Actors { get; set; }
@@ -214,6 +225,14 @@ namespace Ngsa.Application.DataAccessLayer
             return await Task<List<string>>.Factory.StartNew(() =>
             {
                 return Genres;
+            }).ConfigureAwait(false);
+        }
+
+        public async Task<string> GetBenchmarkDataAsync(int size)
+        {
+            return await Task<string>.Factory.StartNew(() =>
+            {
+                return benchmarkData[0..size];
             }).ConfigureAwait(false);
         }
 
@@ -412,28 +431,32 @@ namespace Ngsa.Application.DataAccessLayer
             });
         }
 
-        public Movie UpsertMovie(Movie m, out HttpStatusCode status)
+        public async Task<Movie> UpsertMovieAsync(Movie m)
         {
-            if (MoviesIndex.ContainsKey(m.MovieId))
+            await Task.Run(() =>
             {
-                m = MoviesIndex[m.MovieId];
-                status = HttpStatusCode.OK;
-            }
-            else
-            {
-                MoviesIndex.Add(m.MovieId, m);
-                status = HttpStatusCode.OK;
-            }
+                if (MoviesIndex.ContainsKey(m.MovieId))
+                {
+                    m = MoviesIndex[m.MovieId];
+                }
+                else
+                {
+                    MoviesIndex.Add(m.MovieId, m);
+                }
+            }).ConfigureAwait(false);
 
             return m;
         }
 
-        public void DeleteMovie(string movieId)
+        public async Task DeleteMovieAsync(string movieId)
         {
-            if (MoviesIndex.ContainsKey(movieId))
+            await Task.Run(() =>
             {
-                MoviesIndex.Remove(movieId);
-            }
+                if (MoviesIndex.ContainsKey(movieId))
+                {
+                    MoviesIndex.Remove(movieId);
+                }
+            }).ConfigureAwait(false);
         }
 
         private static void LoadActors(JsonSerializerOptions settings)

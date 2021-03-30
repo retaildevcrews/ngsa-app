@@ -50,7 +50,18 @@ namespace Ngsa.Application.DataAccessLayer
             {
                 if (cosmosClientOptions == null)
                 {
-                    cosmosClientOptions = new CosmosClientOptions { RequestTimeout = TimeSpan.FromSeconds(Timeout), MaxRetryAttemptsOnRateLimitedRequests = Retries, MaxRetryWaitTimeOnRateLimitedRequests = TimeSpan.FromSeconds(Timeout) };
+                    cosmosClientOptions = new CosmosClientOptions
+                    {
+                        RequestTimeout = TimeSpan.FromSeconds(Timeout),
+                        MaxRetryAttemptsOnRateLimitedRequests = Retries,
+                        MaxRetryWaitTimeOnRateLimitedRequests = TimeSpan.FromSeconds(Timeout),
+                        SerializerOptions = new CosmosSerializationOptions()
+                        {
+                            IgnoreNullValues = true,
+                            Indented = false,
+                            PropertyNamingPolicy = CosmosPropertyNamingPolicy.CamelCase,
+                        },
+                    };
                 }
 
                 return cosmosClientOptions;

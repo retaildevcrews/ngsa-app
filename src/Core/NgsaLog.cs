@@ -13,7 +13,6 @@ namespace Ngsa.Middleware
 {
     public class NgsaLog
     {
-        public const string Message429 = "Cosmos Retry - served from cache";
         public const string MessageInvalidQueryString = "Invalid query string";
 
         private static readonly JsonSerializerOptions Options = new JsonSerializerOptions
@@ -25,7 +24,6 @@ namespace Ngsa.Middleware
         public static string Zone { get; set; } = string.Empty;
         public static string Region { get; set; } = string.Empty;
 
-        public static LogEventId LogEvent429 { get; } = new LogEventId(429, "Cosmos 429 Result");
         public static LogEventId LogEvent400 { get; } = new LogEventId((int)HttpStatusCode.BadRequest, HttpStatusCode.BadRequest.ToString());
         public static LogEventId LogEvent404 { get; } = new LogEventId((int)HttpStatusCode.NotFound, HttpStatusCode.NotFound.ToString());
         public static LogEventId LogEvent500 { get; } = new LogEventId((int)HttpStatusCode.InternalServerError, "Exception");
@@ -62,14 +60,6 @@ namespace Ngsa.Middleware
             if (LogLevel <= LogLevel.Warning)
             {
                 WriteLog(LogLevel.Warning, GetDictionary(method, message, LogLevel.Warning, eventId, context, dictionary));
-            }
-        }
-
-        public void Log429(string method, HttpContext context = null, Dictionary<string, object> dictionary = null)
-        {
-            if (LogLevel <= LogLevel.Warning)
-            {
-                WriteLog(LogLevel.Warning, GetDictionary(method, Message429, LogLevel.Warning, LogEvent429, context, dictionary));
             }
         }
 
@@ -145,7 +135,6 @@ namespace Ngsa.Middleware
 
             if (context != null && context.Items != null)
             {
-                // todo - this causes an xss error
                 data.Add("Path", RequestLogger.GetPathAndQuerystring(context.Request));
 
                 if (context.Items != null)
