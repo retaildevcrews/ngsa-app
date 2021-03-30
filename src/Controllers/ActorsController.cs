@@ -68,14 +68,6 @@ namespace Ngsa.Application.Controllers
             else
             {
                 res = await ResultHandler.Handle(dal.GetActorsAsync(actorQueryParameters), Logger).ConfigureAwait(false);
-
-                // use cache dal on Cosmos 429 errors
-                if (App.Config.Cache && res is JsonResult jres && jres.StatusCode == 429)
-                {
-                    Logger.Log429(nameof(GetActorsAsync), HttpContext);
-
-                    res = await ResultHandler.Handle(App.Config.CacheDal.GetActorsAsync(actorQueryParameters), Logger).ConfigureAwait(false);
-                }
             }
 
             return res;
@@ -114,14 +106,6 @@ namespace Ngsa.Application.Controllers
             else
             {
                 res = await ResultHandler.Handle(dal.GetActorAsync(actorId), Logger).ConfigureAwait(false);
-
-                // use cache dal on Cosmos 429 errors
-                if (App.Config.Cache && res is JsonResult jres && jres.StatusCode == 429)
-                {
-                    Logger.Log429(nameof(GetActorByIdAsync), HttpContext);
-
-                    res = await ResultHandler.Handle(App.Config.CacheDal.GetActorAsync(actorId), Logger).ConfigureAwait(false);
-                }
             }
 
             return res;

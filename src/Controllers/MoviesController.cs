@@ -69,17 +69,6 @@ namespace Ngsa.Application.Controllers
             {
                 // get the result
                 res = await ResultHandler.Handle(dal.GetMoviesAsync(movieQueryParameters), Logger).ConfigureAwait(false);
-
-                // use cache dal on Cosmos 429 errors
-                // todo - this will never get called - code review
-                //        if App.Config.Cache, the cache will be used in ResultHandler
-                //        we would need an additional flag and update the cache creation
-                if (App.Config.Cache && res is JsonResult jres && jres.StatusCode == 429)
-                {
-                    Logger.Log429(nameof(GetMoviesAsync), HttpContext);
-
-                    res = await ResultHandler.Handle(App.Config.CacheDal.GetMoviesAsync(movieQueryParameters), Logger).ConfigureAwait(false);
-                }
             }
 
             return res;
@@ -116,14 +105,6 @@ namespace Ngsa.Application.Controllers
             else
             {
                 res = await ResultHandler.Handle(dal.GetMovieAsync(movieId), Logger).ConfigureAwait(false);
-
-                // use cache dal on Cosmos 429 errors
-                if (App.Config.Cache && res is JsonResult jres && jres.StatusCode == 429)
-                {
-                    Logger.Log429(nameof(GetMovieByIdAsync), HttpContext);
-
-                    res = await ResultHandler.Handle(App.Config.CacheDal.GetMovieAsync(movieId), Logger).ConfigureAwait(false);
-                }
             }
 
             return res;
