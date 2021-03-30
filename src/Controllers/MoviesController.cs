@@ -71,7 +71,7 @@ namespace Ngsa.Application.Controllers
                 res = await ResultHandler.Handle(dal.GetMoviesAsync(movieQueryParameters), Logger).ConfigureAwait(false);
 
                 // use cache dal on Cosmos 429 errors
-                // todo - this will never get called
+                // todo - this will never get called - code review
                 //        if App.Config.Cache, the cache will be used in ResultHandler
                 //        we would need an additional flag and update the cache creation
                 if (App.Config.Cache && res is JsonResult jres && jres.StatusCode == 429)
