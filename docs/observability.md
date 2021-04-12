@@ -111,8 +111,8 @@ Each of the above metrics has several field values that are used as part of the 
 | :-- | :-- | :-- | :-- |
 |mode|string|\[Query, Direct\]|Represent whether a request to CosmosDB is using a **direct** read by id or if it is using a **query** that must be parsed and its predicates used to filter.|
 |cosmos|bool|\[True, False\]|Indicates whether the app is running in in-memory mode or querying CosmosDB.This is not currently used in the WCNP deployment as the **service** field is used to filter for **ngsa-in-memory** or **ngsa-cosmos**|
-|region|string|Based on environment|This is set from the cluster environment and represents the geo region of the deployment.It is set in kitt.yml as:- --region={{$.kittExec.currentCluster.site}}|
-|zone|string|Based on environment|This is set from the cluster environment and represents the cloud used for the deployment.It is set in kitt.yml as:- --zone={{$.kittExec.currentCluster.provider}}|
-|code|string|\[Error, Retry, Warn, OK\]|This value represents the HTTP status disposition of the request:"Error" → 500+"Retry" → 429"Warn" → Any non-429 400 response"OK" → Any value < 400|
+|region|string|Based on environment|This is set from the cluster environment and represents the geo region of the deployment. It is set in kitt.yml as:<br>`- --region={{$.kittExec.currentCluster.site}}`|
+|zone|string|Based on environment|This is set from the cluster environment and represents the cloud used for the deployment. It is set in kitt.yml as:<br>`- --zone={{$.kittExec.currentCluster.provider}}`|
+|code|string|\[Error, Retry, Warn, OK\]|This value represents the HTTP status disposition of the request:<br>"Error" → 500+ <br>"Retry" → 429<br>"Warn" → Any non-429 400 response<br>"OK" → Any value < 400|
 |quantile|decimal|\[0, 100\]|Used to indicate confidence interval in which the measurement lands.|
 |le|int||Value added by Prometheus library to indicate "buckets" for a histogram|
