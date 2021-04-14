@@ -11,6 +11,8 @@ namespace Ngsa.Application
     /// </summary>
     public class PerfCounters
     {
+        public const string CapacityHeader = "X-Capacity-Metric";
+
         private static readonly PerformanceCounter CpuCounter = new PerformanceCounter("Processor", "% Processor Time", "_Total", true);
         private static readonly object Lock = new object();
         private static DateTime lastRefresh = DateTime.UtcNow;
@@ -19,8 +21,8 @@ namespace Ngsa.Application
         /// <summary>
         /// Get current CPU usage
         /// </summary>
-        /// <returns>double</returns>
-        public static double GetCpu()
+        /// <returns>int</returns>
+        public static int GetCpu()
         {
             // wait at least 1 second before updating per docs
             if (DateTime.UtcNow.Subtract(lastRefresh).TotalMilliseconds >= 1000)
@@ -36,7 +38,7 @@ namespace Ngsa.Application
                 }
             }
 
-            return Math.Round(cpu, 2);
+            return (int)Math.Round(cpu, 0);
         }
     }
 }
