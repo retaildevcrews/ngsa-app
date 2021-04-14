@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -53,11 +54,15 @@ namespace Ngsa.Application.Controllers
 
             HttpContext.Items.Add(typeof(HealthCheckResult).ToString(), res);
 
-            return new ContentResult
+            var result = new ContentResult
             {
                 Content = IetfCheck.ToIetfStatus(res.Status),
                 StatusCode = res.Status == HealthStatus.Unhealthy ? (int)System.Net.HttpStatusCode.ServiceUnavailable : (int)System.Net.HttpStatusCode.OK,
             };
+
+            Response.Headers.Add("X-Capacity-Metric", $"current={PerfCounters.GetCpu()}, target={App.Config.BurstTarget}, max={App.Config.BurstMax}");
+
+            return result;
         }
 
         /// <summary>
