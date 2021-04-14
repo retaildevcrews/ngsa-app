@@ -6,18 +6,34 @@ using System.Diagnostics;
 
 namespace Ngsa.Application
 {
+    /// <summary>
+    /// Encapsulates dotnet PerformanceCounters
+    /// </summary>
     public class PerfCounters
     {
         private static readonly PerformanceCounter CpuCounter = new PerformanceCounter("Processor", "% Processor Time", "_Total", true);
+        private static readonly object Lock = new object();
         private static DateTime lastRefresh = DateTime.UtcNow;
         private static float cpu = CpuCounter.NextValue();
 
+        /// <summary>
+        /// Get current CPU usage
+        /// </summary>
+        /// <returns>double</returns>
         public static double GetCpu()
         {
-            if (DateTime.UtcNow.Subtract(lastRefresh).TotalMilliseconds >= 900)
+            // wait at least 1 second before updating per docs
+            if (DateTime.UtcNow.Subtract(lastRefresh).TotalMilliseconds >= 1000)
             {
-                cpu = CpuCounter.NextValue();
-                lastRefresh = DateTime.UtcNow;
+                lock (Lock)
+                {
+                    // check if updated before lock
+                    if (DateTime.UtcNow.Subtract(lastRefresh).TotalMilliseconds >= 1000)
+                    {
+                        cpu = CpuCounter.NextValue();
+                        lastRefresh = DateTime.UtcNow;
+                    }
+                }
             }
 
             return Math.Round(cpu, 2);
