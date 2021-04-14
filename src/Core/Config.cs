@@ -35,6 +35,8 @@ namespace Ngsa.Application
         public LogLevel RequestLogLevel { get; set; } = LogLevel.Information;
         public InMemoryDal CacheDal { get; set; }
         public IDAL CosmosDal { get; set; }
+        public int BurstTarget { get; set; }
+        public int BurstMax { get; set; }
 
         public void SetConfig(Config config)
         {
@@ -51,6 +53,8 @@ namespace Ngsa.Application
             Prometheus = config.Prometheus;
             CacheDal = config.CacheDal;
             CosmosDal = config.CosmosDal;
+            BurstMax = config.BurstMax;
+            BurstTarget = config.BurstTarget;
 
             // LogLevel.Information is the min
             LogLevel = config.LogLevel <= LogLevel.Information ? LogLevel.Information : config.LogLevel;
