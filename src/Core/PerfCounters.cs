@@ -17,6 +17,7 @@ namespace Ngsa.Application
             if (DateTime.UtcNow.Subtract(lastRefresh).TotalMilliseconds >= 900)
             {
                 cpu = CpuCounter.NextValue();
+                lastRefresh = DateTime.UtcNow;
             }
 
             return Math.Round(cpu, 2);
