@@ -11,7 +11,7 @@ namespace Ngsa.Application
     /// <summary>
     /// Encapsulates CPU percentage
     /// </summary>
-    public class CpuCounter
+    public class CpuCounter : IDisposable
     {
         public const string CapacityHeader = "X-Capacity-Metric";
 
@@ -69,6 +69,20 @@ namespace Ngsa.Application
                 timer.Dispose();
                 timer = null;
                 cpu = 0;
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                Stop();
             }
         }
 
