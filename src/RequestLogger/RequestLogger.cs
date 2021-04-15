@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading.Tasks;
+using System.Web;
 using Microsoft.AspNetCore.Http;
 using Microsoft.CorrelationVector;
 using Microsoft.Extensions.Logging;
@@ -87,7 +88,7 @@ namespace Ngsa.Middleware
                 return string.Empty;
             }
 
-            return request.Path.Value + (request.QueryString.HasValue ? request.QueryString.Value : string.Empty);
+            return HttpUtility.UrlDecode(HttpUtility.UrlEncode(request.Path.Value + (request.QueryString.HasValue ? request.QueryString.Value : string.Empty)));
         }
 
         /// <summary>
