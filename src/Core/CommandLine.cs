@@ -33,7 +33,7 @@ namespace Ngsa.Application
             NgsaLog logger = new NgsaLog { Name = typeof(App).FullName };
 
             // start collecting CPU usage
-            PerfCounters.Start();
+            CpuCounter.Start();
 
             try
             {
