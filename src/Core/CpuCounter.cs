@@ -80,8 +80,7 @@ namespace Ngsa.Application
             long nowCpu = Proc.TotalProcessorTime.Ticks;
 
             // compute CPU percentage
-            // dotnet counts hyper threads as cores on Windows
-            cpu = (int)((nowCpu - lastCpu) / (procCount * (nowTicks - lastTicks)) / 100);
+            cpu = (int)Math.Round((nowCpu - lastCpu) / (procCount * (nowTicks - lastTicks)) / 100.0, 0);
 
             // update last reading
             lastCpu = nowCpu;
