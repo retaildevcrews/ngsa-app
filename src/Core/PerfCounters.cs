@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Timers;
 
 namespace Ngsa.Application
 {
@@ -14,37 +15,58 @@ namespace Ngsa.Application
         public const string CapacityHeader = "X-Capacity-Metric";
 
         private static readonly Process Proc = Process.GetCurrentProcess();
-        private static readonly object Lock = new object();
         private static DateTime lastRefresh = DateTime.UtcNow;
         private static TimeSpan lastCpu = Proc.TotalProcessorTime;
         private static double cpu = 0;
+        private static Timer timer = null;
 
         /// <summary>
-        /// Get current CPU usage
+        /// Gets current CPU usage
         /// </summary>
-        /// <returns>int</returns>
-        public static double GetCpu()
+        /// <returns>double</returns>
+        public static double CpuPercent
         {
-            // wait at least 1 second before updating per docs
-            if (DateTime.UtcNow.Subtract(lastRefresh).TotalMilliseconds >= 1000)
+            get
             {
-                lock (Lock)
-                {
-                    // check if updated before lock
-                    if (DateTime.UtcNow.Subtract(lastRefresh).TotalMilliseconds >= 1000)
-                    {
-                        DateTime now = DateTime.UtcNow;
-                        TimeSpan nowCpu = Proc.TotalProcessorTime;
+                return cpu;
+            }
+        }
 
-                        cpu = Math.Round(nowCpu.Subtract(lastCpu).TotalMilliseconds / (Environment.ProcessorCount * now.Subtract(lastRefresh).TotalMilliseconds) * 100, 4);
-
-                        lastCpu = nowCpu;
-                        lastRefresh = now;
-                    }
-                }
+        public static void Start()
+        {
+            if (timer != null)
+            {
+                Stop();
             }
 
-            return cpu;
+            lastRefresh = DateTime.UtcNow;
+            lastCpu = Proc.TotalProcessorTime;
+
+            timer = new Timer(1000);
+            timer.Elapsed += TimerEvent;
+            timer.Start();
+        }
+
+        public static void Stop()
+        {
+            if (timer != null)
+            {
+                timer.Stop();
+                timer.Dispose();
+                timer = null;
+                cpu = 0;
+            }
+        }
+
+        private static void TimerEvent(object sender, System.Timers.ElapsedEventArgs e)
+        {
+            DateTime now = DateTime.UtcNow;
+            TimeSpan nowCpu = Proc.TotalProcessorTime;
+
+            cpu = Math.Round(nowCpu.Subtract(lastCpu).TotalMilliseconds / (Environment.ProcessorCount * now.Subtract(lastRefresh).TotalMilliseconds) * 100, 4);
+
+            lastCpu = nowCpu;
+            lastRefresh = now;
         }
     }
 }

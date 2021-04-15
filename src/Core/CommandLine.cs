@@ -32,8 +32,8 @@ namespace Ngsa.Application
         {
             NgsaLog logger = new NgsaLog { Name = typeof(App).FullName };
 
-            // the first read is always 0
-            _ = PerfCounters.GetCpu();
+            // start collecting CPU usage
+            PerfCounters.Start();
 
             try
             {
