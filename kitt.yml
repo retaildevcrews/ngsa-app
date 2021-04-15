@@ -40,7 +40,7 @@ deploy:
             - NgsaAppSummary_sum
 notify:
   slack:
-    channelName: "ms-ngsa"
+    channelName: "ms-ngsa-alerts"
 alerts:
   slackChannel:
-    - ms-ngsa
+    - ms-ngsa-alerts
