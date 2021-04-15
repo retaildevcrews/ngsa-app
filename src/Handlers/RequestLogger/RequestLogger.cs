@@ -206,6 +206,7 @@ namespace Ngsa.Middleware
             }
         }
 
+        // convert StatusCode for metrics
         private static string GetPrometheusCode(int statusCode)
         {
             if (statusCode >= 500)
