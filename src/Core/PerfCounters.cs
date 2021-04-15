@@ -13,16 +13,17 @@ namespace Ngsa.Application
     {
         public const string CapacityHeader = "X-Capacity-Metric";
 
-        private static readonly PerformanceCounter CpuCounter = new PerformanceCounter("Processor", "% Processor Time", "_Total", true);
+        private static readonly Process Proc = Process.GetCurrentProcess();
         private static readonly object Lock = new object();
         private static DateTime lastRefresh = DateTime.UtcNow;
-        private static float cpu = CpuCounter.NextValue();
+        private static TimeSpan lastCpu = Proc.TotalProcessorTime;
+        private static double cpu = 0;
 
         /// <summary>
         /// Get current CPU usage
         /// </summary>
         /// <returns>int</returns>
-        public static int GetCpu()
+        public static double GetCpu()
         {
             // wait at least 1 second before updating per docs
             if (DateTime.UtcNow.Subtract(lastRefresh).TotalMilliseconds >= 1000)
@@ -32,13 +33,18 @@ namespace Ngsa.Application
                     // check if updated before lock
                     if (DateTime.UtcNow.Subtract(lastRefresh).TotalMilliseconds >= 1000)
                     {
-                        cpu = CpuCounter.NextValue();
-                        lastRefresh = DateTime.UtcNow;
+                        DateTime now = DateTime.UtcNow;
+                        TimeSpan nowCpu = Proc.TotalProcessorTime;
+
+                        cpu = Math.Round(nowCpu.Subtract(lastCpu).TotalMilliseconds / (Environment.ProcessorCount * now.Subtract(lastRefresh).TotalMilliseconds) * 100, 4);
+
+                        lastCpu = nowCpu;
+                        lastRefresh = now;
                     }
                 }
             }
 
-            return (int)Math.Round(cpu, 0);
+            return cpu;
         }
     }
 }
