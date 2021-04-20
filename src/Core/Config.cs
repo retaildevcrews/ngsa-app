@@ -37,6 +37,7 @@ namespace Ngsa.Application
         public IDAL CosmosDal { get; set; }
         public int BurstTarget { get; set; }
         public int BurstMax { get; set; }
+        public string UrlPrefix { get; set; }
 
         public void SetConfig(Config config)
         {
@@ -55,6 +56,7 @@ namespace Ngsa.Application
             CosmosDal = config.CosmosDal;
             BurstMax = config.BurstMax;
             BurstTarget = config.BurstTarget;
+            UrlPrefix = config.UrlPrefix;
 
             // LogLevel.Information is the min
             LogLevel = config.LogLevel <= LogLevel.Information ? LogLevel.Information : config.LogLevel;
