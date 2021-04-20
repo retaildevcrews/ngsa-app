@@ -58,6 +58,11 @@ namespace Ngsa.Application
             BurstTarget = config.BurstTarget;
             UrlPrefix = string.IsNullOrEmpty(config.UrlPrefix) ? string.Empty : config.UrlPrefix;
 
+            if (UrlPrefix.EndsWith('/'))
+            {
+                UrlPrefix = UrlPrefix[0..^1];
+            }
+
             // LogLevel.Information is the min
             LogLevel = config.LogLevel <= LogLevel.Information ? LogLevel.Information : config.LogLevel;
             RequestLogLevel = config.RequestLogLevel <= LogLevel.Information ? LogLevel.Information : config.RequestLogLevel;

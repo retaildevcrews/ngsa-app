@@ -139,14 +139,16 @@ namespace Ngsa.Application
                 // validate url-prefix
                 if (!string.IsNullOrWhiteSpace(urlPrefix))
                 {
+                    urlPrefix = urlPrefix.Trim();
+
+                    if (urlPrefix.Length < 2)
+                    {
+                        msg += "--url-prefix is invalid";
+                    }
+
                     if (!urlPrefix.StartsWith('/'))
                     {
                         msg += "--url-prefix must start with /";
-                    }
-
-                    if (urlPrefix.EndsWith('/'))
-                    {
-                        msg += "--url-prefix cannot end with /";
                     }
                 }
 
