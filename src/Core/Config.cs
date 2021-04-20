@@ -56,7 +56,7 @@ namespace Ngsa.Application
             CosmosDal = config.CosmosDal;
             BurstMax = config.BurstMax;
             BurstTarget = config.BurstTarget;
-            UrlPrefix = config.UrlPrefix;
+            UrlPrefix = string.IsNullOrEmpty(config.UrlPrefix) ? string.Empty : config.UrlPrefix;
 
             // LogLevel.Information is the min
             LogLevel = config.LogLevel <= LogLevel.Information ? LogLevel.Information : config.LogLevel;
