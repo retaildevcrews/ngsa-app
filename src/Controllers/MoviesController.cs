@@ -16,7 +16,7 @@ namespace Ngsa.Application.Controllers
     /// <summary>
     /// Handle all of the /api/movies requests
     /// </summary>
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     [ApiController]
     public class MoviesController : Controller
     {

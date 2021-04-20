@@ -14,7 +14,7 @@ namespace Ngsa.Application.Controllers
     /// <summary>
     /// Handle /api/featured/movie requests
     /// </summary>
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     public class FeaturedController : Controller
     {
         private static readonly NgsaLog Logger = new NgsaLog

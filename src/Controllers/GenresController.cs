@@ -11,7 +11,7 @@ namespace Ngsa.Application.Controllers
     /// <summary>
     /// Handle the single /api/genres requests
     /// </summary>
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     public class GenresController : Controller
     {
         private static readonly NgsaLog Logger = new NgsaLog

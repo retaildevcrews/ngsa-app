@@ -15,7 +15,7 @@ namespace Ngsa.Application.Controllers
     /// <summary>
     /// Handle all of the /api/actors requests
     /// </summary>
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     [ApiController]
     public class ActorsController : Controller
     {
