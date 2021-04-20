@@ -80,42 +80,11 @@ namespace Ngsa.Application
             if (!string.IsNullOrEmpty(App.Config.UrlPrefix))
             {
                 // enforce url prefix
-                app.Use(async (context, next) =>
-                {
-                    var path = context.Request.Path.Value.ToLowerInvariant();
-
-                    // reject anything that doesn't start with /urlPrefix
-                    if (!path.StartsWith(App.Config.UrlPrefix.ToLowerInvariant()))
-                    {
-                        context.Response.StatusCode = 404;
-                        return;
-                    }
-
-                    await next();
-                });
-
-                // fix links in swagger.json
-                app.Use(async (context, next) =>
-                {
-                    var path = context.Request.Path.Value.ToLowerInvariant();
-
-                    if (path.StartsWith(App.Config.UrlPrefix) &&
-                        path.EndsWith("swagger.json"))
-                    {
-                        string json = File.ReadAllText("src/wwwroot/swagger.json");
-
-                        json = json.Replace("/api/", $"{App.Config.UrlPrefix}/api/")
-                        .Replace("/healthz", $"{App.Config.UrlPrefix}/healthz");
-
-                        context.Response.ContentType = "application/json";
-                        await context.Response.Body.WriteAsync(System.Text.Encoding.UTF8.GetBytes(json)).ConfigureAwait(false);
-
-                        return;
-                    }
-
-                    await next().ConfigureAwait(false);
-                });
+                app.UseUrlPrefix(App.Config.UrlPrefix);
             }
+
+            // fix links in swagger.json
+            app.UseSwaggerReplaceJson("src/wwwroot/swagger.json");
 
             // add middleware handlers
             app.UseRouting()
@@ -127,6 +96,7 @@ namespace Ngsa.Application
                     {
                         string path = "/metrics";
 
+                        // add URL prefix
                         if (!string.IsNullOrEmpty(App.Config.UrlPrefix))
                         {
                             path = App.Config.UrlPrefix + path;
@@ -146,11 +116,7 @@ namespace Ngsa.Application
                     }
                 })
                 .UseVersion(App.Config.UrlPrefix)
-                .UseRobots(App.Config.UrlPrefix)
-                .UseStaticFiles(new StaticFileOptions
-                {
-                    FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), "src/wwwroot")),
-                });
+                .UseRobots(App.Config.UrlPrefix);
         }
 
         /// <summary>
