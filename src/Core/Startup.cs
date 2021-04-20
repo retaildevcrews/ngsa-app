@@ -7,6 +7,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
@@ -76,10 +77,25 @@ namespace Ngsa.Application
                 app.UseHsts();
             }
 
-            // fix links in swagger.json
-            app.Use(async (context, next) =>
+            if (!string.IsNullOrEmpty(App.Config.UrlPrefix))
             {
-                if (!string.IsNullOrEmpty(App.Config.UrlPrefix))
+                // enforce url prefix
+                app.Use(async (context, next) =>
+                {
+                    var path = context.Request.Path.Value.ToLowerInvariant();
+
+                    // reject anything that doesn't start with /urlPrefix
+                    if (!path.StartsWith(App.Config.UrlPrefix.ToLowerInvariant()))
+                    {
+                        context.Response.StatusCode = 404;
+                        return;
+                    }
+
+                    await next();
+                });
+
+                // fix links in swagger.json
+                app.Use(async (context, next) =>
                 {
                     var path = context.Request.Path.Value.ToLowerInvariant();
 
@@ -96,36 +112,10 @@ namespace Ngsa.Application
 
                         return;
                     }
-                }
 
-                await next().ConfigureAwait(false);
-            });
-
-            // handle url prefix
-            app.Use(async (context, next) =>
-            {
-                var path = context.Request.Path.Value.ToLowerInvariant();
-
-                if (!string.IsNullOrEmpty(App.Config.UrlPrefix))
-                {
-                    // reject anything that doesn't start with /urlPrefix
-                    if (!path.StartsWith(App.Config.UrlPrefix.ToLowerInvariant()))
-                    {
-                        context.Response.StatusCode = 404;
-                        return;
-                    }
-
-                    // todo - use custom route mappings instead
-                    if (path.StartsWith(App.Config.UrlPrefix + "/api") ||
-                        path.StartsWith(App.Config.UrlPrefix + "/metrics") ||
-                        path.StartsWith(App.Config.UrlPrefix + "/healthz"))
-                    {
-                        context.Request.Path = context.Request.Path.ToString()[App.Config.UrlPrefix.Length..];
-                    }
-                }
-
-                await next();
-            });
+                    await next().ConfigureAwait(false);
+                });
+            }
 
             // add middleware handlers
             app.UseRouting()
@@ -135,7 +125,14 @@ namespace Ngsa.Application
 
                     if (App.Config.Prometheus)
                     {
-                        ep.MapMetrics();
+                        string path = "/metrics";
+
+                        if (!string.IsNullOrEmpty(App.Config.UrlPrefix))
+                        {
+                            path = App.Config.UrlPrefix + path;
+                        }
+
+                        ep.MapMetrics(path);
                     }
                 })
                 .UseSwaggerUI(c =>
@@ -163,7 +160,10 @@ namespace Ngsa.Application
         public static void ConfigureServices(IServiceCollection services)
         {
             // set json serialization defaults and api behavior
-            services.AddControllers()
+            services.AddControllers(options =>
+            {
+                options.Conventions.Add(new RouteTokenTransformerConvention(new UrlPrefixTransformer(App.Config.UrlPrefix)));
+            })
                 .AddJsonOptions(options =>
                 {
                     options.JsonSerializerOptions.IgnoreNullValues = true;
