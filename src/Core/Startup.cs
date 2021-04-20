@@ -22,7 +22,7 @@ namespace Ngsa.Application
     /// </summary>
     public class Startup
     {
-        private const string SwaggerPath = "/swagger.json";
+        private const string SwaggerPath = "swagger.json";
         private const string SwaggerTitle = "Next Gen Symmetric Apps";
 
         /// <summary>
@@ -76,6 +76,57 @@ namespace Ngsa.Application
                 app.UseHsts();
             }
 
+            // fix links in swagger.json
+            app.Use(async (context, next) =>
+            {
+                if (!string.IsNullOrEmpty(App.Config.UrlPrefix))
+                {
+                    var path = context.Request.Path.Value.ToLowerInvariant();
+
+                    if (path.StartsWith(App.Config.UrlPrefix) &&
+                        path.EndsWith("swagger.json"))
+                    {
+                        string json = File.ReadAllText("src/wwwroot/swagger.json");
+
+                        json = json.Replace("/api/", $"{App.Config.UrlPrefix}/api/")
+                        .Replace("/healthz", $"{App.Config.UrlPrefix}/healthz");
+
+                        context.Response.ContentType = "application/json";
+                        await context.Response.Body.WriteAsync(System.Text.Encoding.UTF8.GetBytes(json)).ConfigureAwait(false);
+
+                        return;
+                    }
+                }
+
+                await next().ConfigureAwait(false);
+            });
+
+            // handle url prefix
+            app.Use(async (context, next) =>
+            {
+                var path = context.Request.Path.Value.ToLowerInvariant();
+
+                if (!string.IsNullOrEmpty(App.Config.UrlPrefix))
+                {
+                    // reject anything that doesn't start with /urlPrefix
+                    if (!path.StartsWith(App.Config.UrlPrefix.ToLowerInvariant()))
+                    {
+                        context.Response.StatusCode = 404;
+                        return;
+                    }
+
+                    // todo - use custom route mappings instead
+                    if (path.StartsWith(App.Config.UrlPrefix + "/api") ||
+                        path.StartsWith(App.Config.UrlPrefix + "/metrics") ||
+                        path.StartsWith(App.Config.UrlPrefix + "/healthz"))
+                    {
+                        context.Request.Path = context.Request.Path.ToString()[App.Config.UrlPrefix.Length..];
+                    }
+                }
+
+                await next();
+            });
+
             // add middleware handlers
             app.UseRouting()
                 .UseEndpoints(ep =>
@@ -87,14 +138,18 @@ namespace Ngsa.Application
                         ep.MapMetrics();
                     }
                 })
-                .UseSwaggerRoot()
                 .UseSwaggerUI(c =>
                 {
                     c.SwaggerEndpoint(SwaggerPath, SwaggerTitle);
                     c.RoutePrefix = string.Empty;
+
+                    if (!string.IsNullOrEmpty(App.Config.UrlPrefix))
+                    {
+                        c.RoutePrefix = App.Config.UrlPrefix[1..];
+                    }
                 })
-                .UseVersion()
-                .UseRobots()
+                .UseVersion(App.Config.UrlPrefix)
+                .UseRobots(App.Config.UrlPrefix)
                 .UseStaticFiles(new StaticFileOptions
                 {
                     FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), "src/wwwroot")),
