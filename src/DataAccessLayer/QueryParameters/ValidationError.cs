@@ -59,19 +59,19 @@ namespace Ngsa.Middleware.Validation
 
             path = path.ToLowerInvariant();
 
-            if (path.StartsWith("/api/movies?") || path.StartsWith("/api/movies/?"))
+            if (path.Contains("/api/movies?") || path.Contains("/api/movies/?"))
             {
                 s += "#movies-api";
             }
-            else if (path.StartsWith("/api/movies"))
+            else if (path.Contains("/api/movies"))
             {
                 s += "#movies-direct-read";
             }
-            else if (path.StartsWith("/api/actors?") || path.StartsWith("/api/actors/?"))
+            else if (path.Contains("/api/actors?") || path.Contains("/api/actors/?"))
             {
                 s += "#actors-api";
             }
-            else if (path.StartsWith("/api/actors"))
+            else if (path.Contains("/api/actors"))
             {
                 s += "#actors-direct-read";
             }
@@ -85,7 +85,7 @@ namespace Ngsa.Middleware.Validation
 
             string path = RequestLogger.GetPathAndQuerystring(context.Request).ToLowerInvariant();
 
-            if (path.StartsWith("/api/movies?") || path.StartsWith("/api/movies/?"))
+            if (path.Contains("/api/movies?") || path.Contains("/api/movies/?"))
             {
                 category = "Movies";
                 mode = "Query";
@@ -112,7 +112,7 @@ namespace Ngsa.Middleware.Validation
                     subCategory += "0";
                 }
             }
-            else if (path.StartsWith("/api/movies/"))
+            else if (path.Contains("/api/movies/"))
             {
                 category = "Movies";
                 subCategory = "Movies";
@@ -127,43 +127,43 @@ namespace Ngsa.Middleware.Validation
                     mode = "Upsert";
                 }
             }
-            else if (path.StartsWith("/api/movies"))
+            else if (path.Contains("/api/movies"))
             {
                 category = "Movies";
                 subCategory = "Movies";
                 mode = "Query";
             }
-            else if (path.StartsWith("/api/actors?") || path.StartsWith("/api/actors/?"))
+            else if (path.Contains("/api/actors?") || path.StartsWith("/api/actors/?"))
             {
                 category = "Actors";
                 subCategory = "Actors";
                 mode = "Query";
             }
-            else if (path.StartsWith("/api/actors/"))
+            else if (path.Contains("/api/actors/"))
             {
                 category = "Actors";
                 subCategory = "Actors";
                 mode = "Direct";
             }
-            else if (path.StartsWith("/api/actors"))
+            else if (path.Contains("/api/actors"))
             {
                 category = "Actors";
                 subCategory = "Actors";
                 mode = "Query";
             }
-            else if (path.StartsWith("/api/genres"))
+            else if (path.Contains("/api/genres"))
             {
                 category = "Genres";
                 subCategory = "Genres";
                 mode = "Query";
             }
-            else if (path.StartsWith("/healthz"))
+            else if (path.Contains("/healthz"))
             {
                 category = "Healthz";
                 subCategory = "Healthz";
                 mode = "Healthz";
             }
-            else if (path.StartsWith("/metrics"))
+            else if (path.Contains("/metrics"))
             {
                 category = "Metrics";
                 subCategory = "Metrics";
