@@ -1,43 +1,55 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
+using System.IO;
+using System.Text;
 using Microsoft.AspNetCore.Builder;
 using Ngsa.Application;
 
 namespace Ngsa.Middleware
 {
     /// <summary>
-    /// Register swagger root middleware
+    /// Register swagger middleware
     /// </summary>
     public static class SwaggerExtension
     {
+        private const string MatchEndsWith = "swagger.json";
+
+        // cached response
+        private static byte[] responseBytes;
+
         /// <summary>
-        /// aspnet middleware extension method to handle / request
-        /// rewrite / to /index.html (the swagger UI)
+        /// aspnet middleware extension method to update swagger.json
         ///
         /// This has to be before UseSwaggerUI() in startup
         /// </summary>
         /// <param name="builder">this IApplicationBuilder</param>
+        /// <param name="jsonPath">swagger.json path</param>
         /// <returns>ApplicationBuilder</returns>
-        public static IApplicationBuilder UseSwaggerRoot(this IApplicationBuilder builder)
+        public static IApplicationBuilder UseSwaggerReplaceJson(this IApplicationBuilder builder, string jsonPath)
         {
             // implement the middleware
             builder.Use(async (context, next) =>
             {
-                // rewrite / path
-                if (context.Request.Path.Value == "/")
-                {
-                    string path = "/index.html";
+                var path = context.Request.Path.Value.ToLowerInvariant();
 
-                    if (!string.IsNullOrEmpty(App.Config.UrlPrefix))
+                if (path.EndsWith(MatchEndsWith))
+                {
+                    App.Config.UrlPrefix = string.IsNullOrWhiteSpace(App.Config.UrlPrefix) ? string.Empty : App.Config.UrlPrefix;
+
+                    // cache the response
+                    if (responseBytes == null)
                     {
-                        path = App.Config.UrlPrefix + path;
+                        string json = File.ReadAllText(jsonPath).Replace("{urlPrefix}", App.Config.UrlPrefix);
+                        responseBytes = Encoding.UTF8.GetBytes(json);
                     }
 
-                    context.Request.Path = new Microsoft.AspNetCore.Http.PathString(path);
+                    context.Response.ContentType = "application/json";
+                    await context.Response.Body.WriteAsync(responseBytes).ConfigureAwait(false);
+
+                    return;
                 }
 
-                // call next middleware handler
                 await next().ConfigureAwait(false);
             });
 
