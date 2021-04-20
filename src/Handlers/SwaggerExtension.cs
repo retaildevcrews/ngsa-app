@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using Microsoft.AspNetCore.Builder;
+using Ngsa.Application;
 
 namespace Ngsa.Middleware
 {
@@ -26,7 +27,14 @@ namespace Ngsa.Middleware
                 // rewrite / path
                 if (context.Request.Path.Value == "/")
                 {
-                    context.Request.Path = new Microsoft.AspNetCore.Http.PathString("/index.html");
+                    string path = "/index.html";
+
+                    if (!string.IsNullOrEmpty(App.Config.UrlPrefix))
+                    {
+                        path = App.Config.UrlPrefix + path;
+                    }
+
+                    context.Request.Path = new Microsoft.AspNetCore.Http.PathString(path);
                 }
 
                 // call next middleware handler

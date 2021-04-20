@@ -21,14 +21,25 @@ namespace Ngsa.Middleware
         /// this also handles a real /robots.txt request to prevent indexing
         /// </summary>
         /// <param name="builder">this IApplicationBuilder</param>
+        /// <param name="urlPrefix">URL prefix</param>
         /// <returns>ApplicationBuilder</returns>
-        public static IApplicationBuilder UseRobots(this IApplicationBuilder builder)
+        public static IApplicationBuilder UseRobots(this IApplicationBuilder builder, string urlPrefix)
         {
             // implement the middleware
             builder.Use(async (context, next) =>
             {
-                // remove the leading /
-                string path = context.Request.Path.Value[1..];
+                string path = context.Request.Path.Value.ToLowerInvariant();
+
+                // remove urlPrefix
+                if (!string.IsNullOrWhiteSpace(urlPrefix))
+                {
+                    path = path[(urlPrefix.Length + 1) ..];
+                }
+
+                if (path.StartsWith('/'))
+                {
+                    path = path[1..];
+                }
 
                 // matches /robots*.txt (/robots.txt /robots123.txt etc)
                 // does not match /robots/robots.txt

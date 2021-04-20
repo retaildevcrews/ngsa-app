@@ -45,16 +45,24 @@ namespace Ngsa.Middleware
         /// Middleware extension method to handle /version request
         /// </summary>
         /// <param name="builder">this IApplicationBuilder</param>
+        /// <param name="urlPrefix">URL prefix</param>
         /// <returns>IApplicationBuilder</returns>
-        public static IApplicationBuilder UseVersion(this IApplicationBuilder builder)
+        public static IApplicationBuilder UseVersion(this IApplicationBuilder builder, string urlPrefix)
         {
             // implement the middleware
             builder.Use(async (context, next) =>
             {
-                const string swaggerFile = "src/wwwroot/swagger/swagger.json";
+                const string swaggerFile = "src/wwwroot/swagger.json";
+
+                string path = "/version";
+
+                if (!string.IsNullOrWhiteSpace(urlPrefix))
+                {
+                    path = urlPrefix + path;
+                }
 
                 // matches /version
-                if (context.Request.Path.StartsWithSegments("/version", StringComparison.OrdinalIgnoreCase))
+                if (context.Request.Path.StartsWithSegments(path, StringComparison.OrdinalIgnoreCase))
                 {
                     // cache the version info for performance
                     if (responseBytes == null)
