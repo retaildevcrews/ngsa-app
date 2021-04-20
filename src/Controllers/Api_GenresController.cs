@@ -12,11 +12,11 @@ namespace Ngsa.Application.Controllers
     /// Handle the single /api/genres requests
     /// </summary>
     [Route("[controller]")]
-    public class GenresController : Controller
+    public class Api_GenresController : Controller
     {
         private static readonly NgsaLog Logger = new NgsaLog
         {
-            Name = typeof(GenresController).FullName,
+            Name = typeof(Api_GenresController).FullName,
             ErrorMessage = "GenreControllerException",
         };
 

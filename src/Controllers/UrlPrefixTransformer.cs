@@ -36,13 +36,8 @@ namespace Ngsa.Application
                 return null;
             }
 
-            string path = value.ToString();
-
-            // don't add api/ for healthz
-            if (path.ToLowerInvariant() != "healthz")
-            {
-                path = "api/" + path;
-            }
+            // convert _ to /
+            string path = value.ToString().Replace('_', '/').ToLowerInvariant();
 
             // add the prefix
             if (!string.IsNullOrWhiteSpace(prefix))
