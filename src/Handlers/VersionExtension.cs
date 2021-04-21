@@ -52,7 +52,7 @@ namespace Ngsa.Middleware
             // implement the middleware
             builder.Use(async (context, next) =>
             {
-                const string swaggerFile = "src/wwwroot/swagger.json";
+                const string swaggerFile = "swagger.json";
 
                 string path = "/version";
 
