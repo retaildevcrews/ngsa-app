@@ -15,7 +15,7 @@ namespace Ngsa.Middleware
         // cached response
         private static byte[] responseBytes;
 
-        private static string matchEndsWith;
+        private static string match;
 
         /// <summary>
         /// aspnet middleware extension method to update swagger.json
@@ -33,16 +33,21 @@ namespace Ngsa.Middleware
                 throw new FileNotFoundException(jsonPath);
             }
 
+            if (string.IsNullOrWhiteSpace(urlPrefix))
+            {
+                urlPrefix = string.Empty;
+            }
+
             // cache the file
             responseBytes = Encoding.UTF8.GetBytes(File.ReadAllText(jsonPath).Replace("{urlPrefix}", urlPrefix));
 
             FileInfo fi = new FileInfo(jsonPath);
-            matchEndsWith = fi.Name;
+            match = urlPrefix + "/" + fi.Name;
 
             // implement the middleware
             builder.Use(async (context, next) =>
             {
-                if (context.Request.Path.Value.EndsWith(matchEndsWith, System.StringComparison.OrdinalIgnoreCase))
+                if (context.Request.Path.Value.Equals(match, System.StringComparison.OrdinalIgnoreCase))
                 {
                     context.Response.ContentType = "application/json";
                     await context.Response.Body.WriteAsync(responseBytes).ConfigureAwait(false);
