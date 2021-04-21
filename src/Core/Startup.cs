@@ -82,15 +82,7 @@ namespace Ngsa.Application
 
                     if (App.Config.Prometheus)
                     {
-                        string path = "/metrics";
-
-                        // add URL prefix
-                        if (!string.IsNullOrEmpty(App.Config.UrlPrefix))
-                        {
-                            path = App.Config.UrlPrefix + path;
-                        }
-
-                        ep.MapMetrics(path);
+                        ep.MapMetrics();
                     }
                 })
                 .UseSwaggerUI(c =>
