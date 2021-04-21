@@ -89,7 +89,7 @@ namespace Ngsa.Application
                 {
                     if (!string.IsNullOrEmpty(App.Config.UrlPrefix))
                     {
-                        swaggerPath = App.Config.UrlPrefix[1..] + swaggerPath;
+                        swaggerPath = App.Config.UrlPrefix + swaggerPath;
                     }
 
                     c.SwaggerEndpoint(swaggerPath, SwaggerTitle);
