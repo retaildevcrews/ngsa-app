@@ -74,6 +74,23 @@ namespace Ngsa.Application
                 app.UseHsts();
             }
 
+            // redirect /
+            app.Use(async (context, next) =>
+            {
+                // matches /
+                if (context.Request.Path.Equals("/"))
+                {
+                    // return the version info
+                    context.Response.Redirect($"{App.Config.UrlPrefix}/index.html", true);
+                    return;
+                }
+                else
+                {
+                    // not a match, so call next middleware handler
+                    await next().ConfigureAwait(false);
+                }
+            });
+
             // add middleware handlers
             app.UseRouting()
                 .UseEndpoints(ep =>
