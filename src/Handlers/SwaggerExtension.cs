@@ -69,7 +69,7 @@ namespace Ngsa.Middleware
             // implement the middleware
             builder.Use(async (context, next) =>
             {
-                if (context.Request.Path.Value.Equals(match, System.StringComparison.OrdinalIgnoreCase))
+                if (context.Request.Path.Value.Equals(match, StringComparison.OrdinalIgnoreCase))
                 {
                     context.Response.ContentType = "application/json";
                     await context.Response.Body.WriteAsync(responseBytes).ConfigureAwait(false);
