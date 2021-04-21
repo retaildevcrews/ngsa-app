@@ -82,7 +82,7 @@ namespace Ngsa.Application
                     cmd.Contains("--help") ||
                     cmd.Contains("--dry-run")))
                 {
-                    const string file = "src/Core/ascii-art.txt";
+                    const string file = "ascii-art.txt";
 
                     try
                     {

@@ -95,13 +95,14 @@ namespace Ngsa.Application
             root.AddOption(EnvVarOption(new string[] { "--prometheus", "-p" }, "Send metrics to Prometheus", false));
             root.AddOption(EnvVarOption(new string[] { "--in-memory", "-m" }, "Use in-memory database", false));
             root.AddOption(EnvVarOption(new string[] { "--no-cache", "-n" }, "Don't cache results", false));
+            root.AddOption(EnvVarOption(new string[] { "--url-prefix" }, "URL prefix for ingress mapping", string.Empty));
             root.AddOption(EnvVarOption(new string[] { "--port" }, "Listen Port", 8080, 1));
             root.AddOption(EnvVarOption(new string[] { "--cache-duration", "-d" }, "Cache for duration (seconds)", 300, 1));
             root.AddOption(EnvVarOption(new string[] { "--burst-target" }, "Target level for bursting metrics (int)", 60, 1));
             root.AddOption(EnvVarOption(new string[] { "--burst-max" }, "Max level for bursting metrics (int)", 80, 1));
             root.AddOption(EnvVarOption(new string[] { "--retries" }, "Cosmos 429 retries", 10, 0));
             root.AddOption(EnvVarOption(new string[] { "--timeout" }, "Request timeout", 10, 1));
-            root.AddOption(EnvVarOption(new string[] { "--data-service", "-s" }, "Data Service URL", "n/a"));
+            root.AddOption(EnvVarOption(new string[] { "--data-service", "-s" }, "Data Service URL", string.Empty));
             root.AddOption(EnvVarOption(new string[] { "--secrets-volume", "-v" }, "Secrets Volume Path", "secrets"));
             root.AddOption(EnvVarOption(new string[] { "--zone", "-z" }, "Zone for log", "dev"));
             root.AddOption(EnvVarOption(new string[] { "--region", "-r" }, "Region for log", "dev"));
@@ -131,8 +132,25 @@ namespace Ngsa.Application
                 AppType appType = result.Children.FirstOrDefault(c => c.Symbol.Name == "app-type") is OptionResult appTypeRes ? appTypeRes.GetValueOrDefault<AppType>() : AppType.App;
                 string secrets = result.Children.FirstOrDefault(c => c.Symbol.Name == "secrets-volume") is OptionResult secretsRes ? secretsRes.GetValueOrDefault<string>() : string.Empty;
                 string dataService = result.Children.FirstOrDefault(c => c.Symbol.Name == "data-service") is OptionResult dsRes ? dsRes.GetValueOrDefault<string>() : string.Empty;
+                string urlPrefix = result.Children.FirstOrDefault(c => c.Symbol.Name == "urlPrefix") is OptionResult urlRes ? urlRes.GetValueOrDefault<string>() : string.Empty;
                 bool inMemory = result.Children.FirstOrDefault(c => c.Symbol.Name == "in-memory") is OptionResult inMemoryRes && inMemoryRes.GetValueOrDefault<bool>();
                 bool noCache = result.Children.FirstOrDefault(c => c.Symbol.Name == "no-cache") is OptionResult noCacheRes && noCacheRes.GetValueOrDefault<bool>();
+
+                // validate url-prefix
+                if (!string.IsNullOrWhiteSpace(urlPrefix))
+                {
+                    urlPrefix = urlPrefix.Trim();
+
+                    if (urlPrefix.Length < 2)
+                    {
+                        msg += "--url-prefix is invalid";
+                    }
+
+                    if (!urlPrefix.StartsWith('/'))
+                    {
+                        msg += "--url-prefix must start with /";
+                    }
+                }
 
                 // validate data-service
                 if (appType == AppType.WebAPI)

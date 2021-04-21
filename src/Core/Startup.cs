@@ -2,14 +2,12 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System;
-using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Ngsa.Middleware;
@@ -22,8 +20,8 @@ namespace Ngsa.Application
     /// </summary>
     public class Startup
     {
-        private const string SwaggerPath = "/swagger.json";
         private const string SwaggerTitle = "Next Gen Symmetric Apps";
+        private static string swaggerPath = "/swagger.json";
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Startup"/> class.
@@ -87,18 +85,18 @@ namespace Ngsa.Application
                         ep.MapMetrics();
                     }
                 })
-                .UseSwaggerRoot()
                 .UseSwaggerUI(c =>
                 {
-                    c.SwaggerEndpoint(SwaggerPath, SwaggerTitle);
+                    if (!string.IsNullOrEmpty(App.Config.UrlPrefix))
+                    {
+                        swaggerPath = App.Config.UrlPrefix + swaggerPath;
+                    }
+
+                    c.SwaggerEndpoint(swaggerPath, SwaggerTitle);
                     c.RoutePrefix = string.Empty;
                 })
-                .UseVersion()
-                .UseRobots()
-                .UseStaticFiles(new StaticFileOptions
-                {
-                    FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), "src/wwwroot")),
-                });
+                .UseSwaggerReplaceJson("swagger.json", App.Config.UrlPrefix)
+                .UseVersion();
         }
 
         /// <summary>
