@@ -111,8 +111,7 @@ namespace Ngsa.Application
                     }
                 })
                 .UseSwaggerReplaceJson("swagger.json", App.Config.UrlPrefix)
-                .UseVersion(App.Config.UrlPrefix)
-                .UseRobots(App.Config.UrlPrefix);
+                .UseVersion(App.Config.UrlPrefix);
         }
 
         /// <summary>
