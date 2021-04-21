@@ -46,7 +46,7 @@ namespace Ngsa.Middleware
             }
             else
             {
-                urlPrefix = urlPrefix.Trim().ToLowerInvariant();
+                urlPrefix = urlPrefix.Trim();
 
                 if (!urlPrefix.StartsWith('/'))
                 {
