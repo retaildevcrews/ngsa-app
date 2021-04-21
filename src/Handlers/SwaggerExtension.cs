@@ -13,10 +13,10 @@ namespace Ngsa.Middleware
     /// </summary>
     public static class SwaggerExtension
     {
-        private const string MatchEndsWith = "swagger.json";
-
         // cached response
         private static byte[] responseBytes;
+
+        private static string matchEndsWith;
 
         /// <summary>
         /// aspnet middleware extension method to update swagger.json
@@ -25,25 +25,28 @@ namespace Ngsa.Middleware
         /// </summary>
         /// <param name="builder">this IApplicationBuilder</param>
         /// <param name="jsonPath">swagger.json path</param>
+        /// <param name="urlPrefix">URL prefix</param>
         /// <returns>ApplicationBuilder</returns>
-        public static IApplicationBuilder UseSwaggerReplaceJson(this IApplicationBuilder builder, string jsonPath)
+        public static IApplicationBuilder UseSwaggerReplaceJson(this IApplicationBuilder builder, string jsonPath, string urlPrefix)
         {
+            if (!File.Exists(jsonPath))
+            {
+                throw new FileNotFoundException(jsonPath);
+            }
+
+            string json = File.ReadAllText(jsonPath).Replace("{urlPrefix}", urlPrefix);
+            responseBytes = Encoding.UTF8.GetBytes(json);
+
+            FileInfo fi = new FileInfo(jsonPath);
+            matchEndsWith = fi.Name.ToLowerInvariant();
+
             // implement the middleware
             builder.Use(async (context, next) =>
             {
                 var path = context.Request.Path.Value.ToLowerInvariant();
 
-                if (path.EndsWith(MatchEndsWith))
+                if (path.EndsWith(matchEndsWith))
                 {
-                    App.Config.UrlPrefix = string.IsNullOrWhiteSpace(App.Config.UrlPrefix) ? string.Empty : App.Config.UrlPrefix;
-
-                    // cache the response
-                    if (responseBytes == null)
-                    {
-                        string json = File.ReadAllText(jsonPath).Replace("{urlPrefix}", App.Config.UrlPrefix);
-                        responseBytes = Encoding.UTF8.GetBytes(json);
-                    }
-
                     context.Response.ContentType = "application/json";
                     await context.Response.Body.WriteAsync(responseBytes).ConfigureAwait(false);
 
