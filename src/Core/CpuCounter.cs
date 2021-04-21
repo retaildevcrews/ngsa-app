@@ -26,13 +26,7 @@ namespace Ngsa.Application
         /// Gets current CPU usage
         /// </summary>
         /// <returns>int</returns>
-        public static int CpuPercent
-        {
-            get
-            {
-                return cpu;
-            }
-        }
+        public static int CpuPercent => cpu;
 
         /// <summary>
         /// Start collecting CPU metrics

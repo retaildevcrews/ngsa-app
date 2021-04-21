@@ -33,7 +33,7 @@ namespace Ngsa.Middleware
                 // remove urlPrefix
                 if (!string.IsNullOrWhiteSpace(urlPrefix))
                 {
-                    path = path[(urlPrefix.Length + 1) ..];
+                    path = path[(urlPrefix.Length + 1)..];
                 }
 
                 if (path.StartsWith('/'))

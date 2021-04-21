@@ -2,10 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Reflection;
-using System.Text.Json;
 using Microsoft.AspNetCore.Builder;
 
 namespace Ngsa.Middleware
@@ -22,13 +19,7 @@ namespace Ngsa.Middleware
         /// <summary>
         /// Gets the app version
         /// </summary>
-        public static string Version
-        {
-            get
-            {
-                return version;
-            }
-        }
+        public static string Version => version;
 
         /// <summary>
         /// Middleware extension method to handle /version request

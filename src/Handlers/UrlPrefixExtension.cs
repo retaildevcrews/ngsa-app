@@ -25,7 +25,7 @@ namespace Ngsa.Middleware
             // implement the middleware
             builder.Use(async (context, next) =>
             {
-                var path = context.Request.Path.Value.ToLowerInvariant();
+                string path = context.Request.Path.Value.ToLowerInvariant();
 
                 // cache the prefix
                 if (prefix == null)

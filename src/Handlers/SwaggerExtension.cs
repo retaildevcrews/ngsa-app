@@ -4,7 +4,6 @@
 using System.IO;
 using System.Text;
 using Microsoft.AspNetCore.Builder;
-using Ngsa.Application;
 
 namespace Ngsa.Middleware
 {
@@ -43,7 +42,7 @@ namespace Ngsa.Middleware
             // implement the middleware
             builder.Use(async (context, next) =>
             {
-                var path = context.Request.Path.Value.ToLowerInvariant();
+                string path = context.Request.Path.Value.ToLowerInvariant();
 
                 if (path.EndsWith(matchEndsWith))
                 {
