@@ -25,9 +25,9 @@ namespace Ngsa.Application
         }
 
         /// <summary>
-        /// Transform the controller
+        /// Transform the controller name
         /// </summary>
-        /// <param name="value">controller</param>
+        /// <param name="value">controller name</param>
         /// <returns>string</returns>
         public string TransformOutbound(object value)
         {

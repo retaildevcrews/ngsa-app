@@ -33,8 +33,8 @@ namespace Ngsa.Middleware
                 throw new FileNotFoundException(jsonPath);
             }
 
-            string json = File.ReadAllText(jsonPath).Replace("{urlPrefix}", urlPrefix);
-            responseBytes = Encoding.UTF8.GetBytes(json);
+            // cache the file
+            responseBytes = Encoding.UTF8.GetBytes(File.ReadAllText(jsonPath).Replace("{urlPrefix}", urlPrefix));
 
             FileInfo fi = new FileInfo(jsonPath);
             matchEndsWith = fi.Name.ToLowerInvariant();
@@ -52,6 +52,7 @@ namespace Ngsa.Middleware
                     return;
                 }
 
+                // call next handler
                 await next().ConfigureAwait(false);
             });
 
