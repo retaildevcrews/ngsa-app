@@ -56,7 +56,7 @@ namespace Ngsa.Application
             CosmosDal = config.CosmosDal;
             BurstMax = config.BurstMax;
             BurstTarget = config.BurstTarget;
-            UrlPrefix = string.IsNullOrEmpty(config.UrlPrefix) ? string.Empty : config.UrlPrefix;
+            UrlPrefix = string.IsNullOrWhiteSpace(config.UrlPrefix) ? string.Empty : config.UrlPrefix;
 
             // remove trailing / if present
             if (UrlPrefix.EndsWith('/'))
