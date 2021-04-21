@@ -37,7 +37,7 @@ namespace Ngsa.Application
             }
 
             // convert _ to /
-            string path = value.ToString().Replace('_', '/').ToLowerInvariant();
+            string path = value.ToString().Replace('_', '/');
 
             // add the prefix
             if (!string.IsNullOrWhiteSpace(prefix))
@@ -45,7 +45,7 @@ namespace Ngsa.Application
                 path = prefix + path;
             }
 
-            return path;
+            return path.ToLowerInvariant();
         }
     }
 }
