@@ -1,4 +1,5 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System;
@@ -75,11 +76,8 @@ namespace Ngsa.Application
                 app.UseHsts();
             }
 
-            if (!string.IsNullOrEmpty(App.Config.UrlPrefix))
-            {
-                // enforce url prefix
-                app.UseUrlPrefix(App.Config.UrlPrefix);
-            }
+            // enforce url prefix
+            app.UseUrlPrefix(App.Config.UrlPrefix);
 
             // add middleware handlers
             app.UseRouting()

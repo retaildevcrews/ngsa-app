@@ -22,26 +22,27 @@ namespace Ngsa.Middleware
         /// <returns>ApplicationBuilder</returns>
         public static IApplicationBuilder UseUrlPrefix(this IApplicationBuilder builder, string urlPrefix)
         {
-            // implement the middleware
-            builder.Use(async (context, next) =>
+            // cache the prefix
+            prefix = string.IsNullOrEmpty(urlPrefix) ? string.Empty : urlPrefix.Trim().ToLowerInvariant();
+
+            // only add the handler if url prefix is set
+            if (!string.IsNullOrEmpty(prefix))
             {
-                string path = context.Request.Path.Value.ToLowerInvariant();
-
-                // cache the prefix
-                if (prefix == null)
+                // implement the middleware
+                builder.Use(async (context, next) =>
                 {
-                    prefix = string.IsNullOrEmpty(urlPrefix) ? string.Empty : urlPrefix.Trim().ToLowerInvariant();
-                }
+                    string path = context.Request.Path.Value.ToLowerInvariant();
 
-                // reject anything that doesn't start with /urlPrefix
-                if (!string.IsNullOrEmpty(prefix) && !path.StartsWith(prefix))
-                {
-                    context.Response.StatusCode = 404;
-                    return;
-                }
+                    // reject anything that doesn't start with /urlPrefix
+                    if (!path.StartsWith(prefix))
+                    {
+                        context.Response.StatusCode = 404;
+                        return;
+                    }
 
-                await next().ConfigureAwait(false);
-            });
+                    await next().ConfigureAwait(false);
+                });
+            }
 
             return builder;
         }
