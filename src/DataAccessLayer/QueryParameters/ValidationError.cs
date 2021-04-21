@@ -90,15 +90,15 @@ namespace Ngsa.Middleware.Validation
                 category = "Movies";
                 mode = "Query";
 
-                if (path.StartsWith("year="))
+                if (path.Contains("year="))
                 {
                     subCategory = "Year10";
                 }
-                else if (path.StartsWith("rating="))
+                else if (path.Contains("rating="))
                 {
                     subCategory = "Rating10";
                 }
-                else if (path.StartsWith("genre="))
+                else if (path.Contains("genre="))
                 {
                     subCategory = "Genre10";
                 }
@@ -107,7 +107,7 @@ namespace Ngsa.Middleware.Validation
                     subCategory = "Movies";
                 }
 
-                if (subCategory.EndsWith("10") && path.StartsWith("pagesize=100"))
+                if (subCategory.EndsWith("10") && path.Contains("pagesize=100"))
                 {
                     subCategory += "0";
                 }
