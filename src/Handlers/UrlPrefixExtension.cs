@@ -23,7 +23,7 @@ namespace Ngsa.Middleware
         public static IApplicationBuilder UseUrlPrefix(this IApplicationBuilder builder, string urlPrefix)
         {
             // cache the prefix
-            prefix = string.IsNullOrEmpty(urlPrefix) ? string.Empty : urlPrefix.Trim().ToLowerInvariant();
+            prefix = string.IsNullOrEmpty(urlPrefix) ? string.Empty : urlPrefix.Trim();
 
             // only add the handler if url prefix is set
             if (!string.IsNullOrEmpty(prefix))
@@ -31,10 +31,8 @@ namespace Ngsa.Middleware
                 // implement the middleware
                 builder.Use(async (context, next) =>
                 {
-                    string path = context.Request.Path.Value.ToLowerInvariant();
-
                     // reject anything that doesn't start with /urlPrefix
-                    if (!path.StartsWith(prefix))
+                    if (!context.Request.Path.Value.StartsWith(prefix, System.StringComparison.OrdinalIgnoreCase))
                     {
                         context.Response.StatusCode = 404;
                         return;

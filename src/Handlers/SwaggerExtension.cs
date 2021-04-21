@@ -37,14 +37,12 @@ namespace Ngsa.Middleware
             responseBytes = Encoding.UTF8.GetBytes(File.ReadAllText(jsonPath).Replace("{urlPrefix}", urlPrefix));
 
             FileInfo fi = new FileInfo(jsonPath);
-            matchEndsWith = fi.Name.ToLowerInvariant();
+            matchEndsWith = fi.Name;
 
             // implement the middleware
             builder.Use(async (context, next) =>
             {
-                string path = context.Request.Path.Value.ToLowerInvariant();
-
-                if (path.EndsWith(matchEndsWith))
+                if (context.Request.Path.Value.EndsWith(matchEndsWith, System.StringComparison.OrdinalIgnoreCase))
                 {
                     context.Response.ContentType = "application/json";
                     await context.Response.Body.WriteAsync(responseBytes).ConfigureAwait(false);
