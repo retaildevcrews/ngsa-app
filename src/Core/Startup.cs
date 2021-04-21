@@ -83,9 +83,6 @@ namespace Ngsa.Application
                 app.UseUrlPrefix(App.Config.UrlPrefix);
             }
 
-            // fix links in swagger.json
-            app.UseSwaggerReplaceJson("src/wwwroot/swagger.json");
-
             // add middleware handlers
             app.UseRouting()
                 .UseEndpoints(ep =>
@@ -115,6 +112,7 @@ namespace Ngsa.Application
                         c.RoutePrefix = App.Config.UrlPrefix[1..];
                     }
                 })
+                .UseSwaggerReplaceJson("src/swagger.json", App.Config.UrlPrefix)
                 .UseVersion(App.Config.UrlPrefix)
                 .UseRobots(App.Config.UrlPrefix);
         }
