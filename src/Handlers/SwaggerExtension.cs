@@ -36,9 +36,6 @@ namespace Ngsa.Middleware
                 throw new FileNotFoundException(jsonPath);
             }
 
-            // cache the file
-            responseBytes = Encoding.UTF8.GetBytes(File.ReadAllText(jsonPath).Replace("{urlPrefix}", urlPrefix));
-
             // clean up urlPrefix
             if (string.IsNullOrWhiteSpace(urlPrefix))
             {
@@ -53,18 +50,21 @@ namespace Ngsa.Middleware
                     urlPrefix = "/" + urlPrefix;
                 }
 
-                if (!urlPrefix.EndsWith('/'))
+                if (urlPrefix.EndsWith('/'))
                 {
-                    urlPrefix += "/";
+                    urlPrefix += urlPrefix[0..^1];
                 }
             }
 
-            if (urlPrefix.Length < 3)
+            if (urlPrefix.Length < 2)
             {
                 throw new ArgumentException("Invalid urlPrefix");
             }
 
-            match = urlPrefix + fi.Name;
+            // cache the file
+            responseBytes = Encoding.UTF8.GetBytes(File.ReadAllText(jsonPath).Replace("{urlPrefix}", urlPrefix));
+
+            match = urlPrefix + "/" + fi.Name;
 
             // implement the middleware
             builder.Use(async (context, next) =>
