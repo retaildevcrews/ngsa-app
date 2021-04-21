@@ -58,6 +58,7 @@ namespace Ngsa.Application
             BurstTarget = config.BurstTarget;
             UrlPrefix = string.IsNullOrEmpty(config.UrlPrefix) ? string.Empty : config.UrlPrefix;
 
+            // remove trailing / if present
             if (UrlPrefix.EndsWith('/'))
             {
                 UrlPrefix = UrlPrefix[0..^1];

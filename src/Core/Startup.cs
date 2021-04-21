@@ -21,7 +21,7 @@ namespace Ngsa.Application
     public class Startup
     {
         private const string SwaggerTitle = "Next Gen Symmetric Apps";
-        private static string swaggerPath = "swagger.json";
+        private static string swaggerPath = "/swagger.json";
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Startup"/> class.
@@ -89,7 +89,7 @@ namespace Ngsa.Application
                 {
                     if (!string.IsNullOrEmpty(App.Config.UrlPrefix))
                     {
-                        swaggerPath = App.Config.UrlPrefix[1..] + "/" + swaggerPath;
+                        swaggerPath = App.Config.UrlPrefix[1..] + swaggerPath;
                     }
 
                     c.SwaggerEndpoint(swaggerPath, SwaggerTitle);
