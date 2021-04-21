@@ -64,7 +64,7 @@ namespace Ngsa.Middleware
             // cache the file
             responseBytes = Encoding.UTF8.GetBytes(File.ReadAllText(jsonPath).Replace("{urlPrefix}", urlPrefix));
 
-            match = urlPrefix + "/" + fi.Name;
+            match = "/" + fi.Name;
 
             // implement the middleware
             builder.Use(async (context, next) =>
