@@ -25,9 +25,8 @@ namespace Ngsa.Middleware
         /// Middleware extension method to handle /version request
         /// </summary>
         /// <param name="builder">this IApplicationBuilder</param>
-        /// <param name="urlPrefix">URL prefix</param>
         /// <returns>IApplicationBuilder</returns>
-        public static IApplicationBuilder UseVersion(this IApplicationBuilder builder, string urlPrefix)
+        public static IApplicationBuilder UseVersion(this IApplicationBuilder builder)
         {
             // cache the version info
             if (Attribute.GetCustomAttribute(Assembly.GetEntryAssembly(), typeof(AssemblyInformationalVersionAttribute)) is AssemblyInformationalVersionAttribute v)
@@ -41,11 +40,6 @@ namespace Ngsa.Middleware
             builder.Use(async (context, next) =>
             {
                 string path = "/version";
-
-                if (!string.IsNullOrWhiteSpace(urlPrefix))
-                {
-                    path = urlPrefix + path;
-                }
 
                 // matches /version
                 if (context.Request.Path.StartsWithSegments(path, StringComparison.OrdinalIgnoreCase))

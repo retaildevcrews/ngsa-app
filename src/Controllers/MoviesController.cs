@@ -16,13 +16,13 @@ namespace Ngsa.Application.Controllers
     /// <summary>
     /// Handle all of the /api/movies requests
     /// </summary>
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     [ApiController]
-    public class Api_MoviesController : Controller
+    public class MoviesController : Controller
     {
         private static readonly NgsaLog Logger = new NgsaLog
         {
-            Name = typeof(Api_MoviesController).FullName,
+            Name = typeof(MoviesController).FullName,
             ErrorMessage = "MovieControllerException",
             NotFoundError = "Movie Not Found",
         };
@@ -30,9 +30,9 @@ namespace Ngsa.Application.Controllers
         private readonly IDAL dal;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Api_MoviesController"/> class.
+        /// Initializes a new instance of the <see cref="MoviesController"/> class.
         /// </summary>
-        public Api_MoviesController()
+        public MoviesController()
         {
             dal = App.Config.CosmosDal;
         }

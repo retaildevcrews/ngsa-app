@@ -1,5 +1,4 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
-// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System;
@@ -7,7 +6,6 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -22,8 +20,8 @@ namespace Ngsa.Application
     /// </summary>
     public class Startup
     {
-        private const string SwaggerPath = "swagger.json";
         private const string SwaggerTitle = "Next Gen Symmetric Apps";
+        private static string swaggerPath = "swagger.json";
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Startup"/> class.
@@ -76,9 +74,6 @@ namespace Ngsa.Application
                 app.UseHsts();
             }
 
-            // enforce url prefix
-            app.UseUrlPrefix(App.Config.UrlPrefix);
-
             // add middleware handlers
             app.UseRouting()
                 .UseEndpoints(ep =>
@@ -100,16 +95,16 @@ namespace Ngsa.Application
                 })
                 .UseSwaggerUI(c =>
                 {
-                    c.SwaggerEndpoint(SwaggerPath, SwaggerTitle);
-                    c.RoutePrefix = string.Empty;
-
                     if (!string.IsNullOrEmpty(App.Config.UrlPrefix))
                     {
-                        c.RoutePrefix = App.Config.UrlPrefix[1..];
+                        swaggerPath = App.Config.UrlPrefix[1..] + "/" + swaggerPath;
                     }
+
+                    c.SwaggerEndpoint(swaggerPath, SwaggerTitle);
+                    c.RoutePrefix = string.Empty;
                 })
                 .UseSwaggerReplaceJson("swagger.json", App.Config.UrlPrefix)
-                .UseVersion(App.Config.UrlPrefix);
+                .UseVersion();
         }
 
         /// <summary>
@@ -119,10 +114,7 @@ namespace Ngsa.Application
         public static void ConfigureServices(IServiceCollection services)
         {
             // set json serialization defaults and api behavior
-            services.AddControllers(options =>
-            {
-                options.Conventions.Add(new RouteTokenTransformerConvention(new UrlPrefixTransformer(App.Config.UrlPrefix)));
-            })
+            services.AddControllers()
                 .AddJsonOptions(options =>
                 {
                     options.JsonSerializerOptions.IgnoreNullValues = true;

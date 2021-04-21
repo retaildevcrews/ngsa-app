@@ -14,12 +14,12 @@ namespace Ngsa.Application.Controllers
     /// <summary>
     /// Handle /api/featured/movie requests
     /// </summary>
-    [Route("[controller]")]
-    public class Api_FeaturedController : Controller
+    [Route("api/[controller]")]
+    public class FeaturedController : Controller
     {
         private static readonly NgsaLog Logger = new NgsaLog
         {
-            Name = typeof(Api_FeaturedController).FullName,
+            Name = typeof(FeaturedController).FullName,
             ErrorMessage = "FeaturedControllerException",
             NotFoundError = "Movie Not Found",
         };
@@ -27,10 +27,10 @@ namespace Ngsa.Application.Controllers
         private readonly IDAL dal;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Api_FeaturedController"/> class.
+        /// Initializes a new instance of the <see cref="FeaturedController"/> class.
         /// </summary>
         /// <param name="dal">data access layer instance</param>
-        public Api_FeaturedController()
+        public FeaturedController()
         {
             dal = App.Config.CosmosDal;
         }

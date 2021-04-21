@@ -15,13 +15,13 @@ namespace Ngsa.Application.Controllers
     /// <summary>
     /// Handle all of the /api/actors requests
     /// </summary>
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     [ApiController]
-    public class Api_ActorsController : Controller
+    public class ActorsController : Controller
     {
         private static readonly NgsaLog Logger = new NgsaLog
         {
-            Name = typeof(Api_ActorsController).FullName,
+            Name = typeof(ActorsController).FullName,
             ErrorMessage = "ActorControllerException",
             NotFoundError = "Actor Not Found",
         };
@@ -29,9 +29,9 @@ namespace Ngsa.Application.Controllers
         private readonly IDAL dal;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Api_ActorsController"/> class.
+        /// Initializes a new instance of the <see cref="ActorsController"/> class.
         /// </summary>
-        public Api_ActorsController()
+        public ActorsController()
         {
             // save to local for use in handlers
             dal = App.Config.CosmosDal;
