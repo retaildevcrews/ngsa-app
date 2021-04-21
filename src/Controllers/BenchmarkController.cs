@@ -11,7 +11,7 @@ namespace Ngsa.Application.Controllers
     /// <summary>
     /// Handle benchmark requests
     /// </summary>
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     public class BenchmarkController : Controller
     {
         private static readonly NgsaLog Logger = new NgsaLog
