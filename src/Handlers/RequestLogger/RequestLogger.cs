@@ -199,7 +199,7 @@ namespace Ngsa.Middleware
                 Console.WriteLine(JsonSerializer.Serialize(log));
             }
 
-            if (App.Config.Prometheus && requestHistogram != null && (mode == "Direct" || mode == "Query"))
+            if (App.Config.Prometheus && requestHistogram != null && (mode == "Direct" || mode == "Query" || mode == "Delete" || mode == "Upsert"))
             {
                 requestHistogram.WithLabels(GetPrometheusCode(context.Response.StatusCode), (!App.Config.InMemory).ToString(), mode, App.Config.Region, App.Config.Zone).Observe(duration);
                 requestSummary.WithLabels(GetPrometheusCode(context.Response.StatusCode), (!App.Config.InMemory).ToString(), mode, App.Config.Region, App.Config.Zone).Observe(duration);

@@ -122,7 +122,7 @@ namespace Ngsa.Middleware.Validation
                 {
                     mode = "Delete";
                 }
-                else if (context.Request.Method == "POST")
+                else if (context.Request.Method == "POST" || context.Request.Method == "PUT")
                 {
                     mode = "Upsert";
                 }
