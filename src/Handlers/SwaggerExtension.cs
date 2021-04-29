@@ -54,11 +54,11 @@ namespace Ngsa.Middleware
                 {
                     urlPrefix += urlPrefix[0..^1];
                 }
-            }
 
-            if (urlPrefix.Length < 2)
-            {
-                throw new ArgumentException("Invalid urlPrefix");
+                if (urlPrefix.Length < 2)
+                {
+                    throw new ArgumentException("Invalid urlPrefix");
+                }
             }
 
             // cache the file
