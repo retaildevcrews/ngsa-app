@@ -101,12 +101,13 @@ namespace Ngsa.Application.DataAccessLayer
         {
             IndexSearcher searcher = new IndexSearcher(writer.GetReader(true));
 
-            TopDocs hits = new IndexSearcher(writer.GetReader(true)).Search(new PhraseQuery { new Term("actorId", actorId) }, 1);
+            // search by actorId
+            TopDocs hits = searcher.Search(new PhraseQuery { new Term("actorId", actorId) }, 1);
 
             if (hits.TotalHits > 0)
             {
-                ScoreDoc doc = hits.ScoreDocs[0];
-                return JsonSerializer.Deserialize<Actor>(searcher.Doc(doc.Doc).GetBinaryValue("json").Bytes);
+                // deserialize the json from the doc
+                return JsonSerializer.Deserialize<Actor>(searcher.Doc(hits.ScoreDocs[0].Doc).GetBinaryValue("json").Bytes);
             }
 
             throw new CosmosException("Not Found", System.Net.HttpStatusCode.NotFound, 404, string.Empty, 0);
@@ -195,24 +196,30 @@ namespace Ngsa.Application.DataAccessLayer
 
             IndexSearcher searcher = new IndexSearcher(writer.GetReader(true));
 
+            // type == Actor
             BooleanQuery bq = new BooleanQuery
             {
                 { new PhraseQuery { new Term("type", "Actor") }, Occur.MUST },
             };
 
+            // nameSort == name.ToLower()
             TopFieldCollector collector = TopFieldCollector.Create(new Sort(new SortField("nameSort", SortFieldType.STRING)), end, false, false, false, false);
 
+            // add the search query
             if (!string.IsNullOrWhiteSpace(q))
             {
                 bq.Add(new WildcardQuery(new Term("name", $"*{q.ToLowerInvariant()}*")), Occur.MUST);
             }
 
+            // search
             searcher.Search(bq, collector);
 
             TopDocs results = collector.GetTopDocs();
 
+            // check array bounds
             end = end <= results.ScoreDocs.Length ? end : results.ScoreDocs.Length;
 
+            // deserialize each Actor
             for (int i = start; i < end; i++)
             {
                 res.Add(JsonSerializer.Deserialize<Actor>(searcher.Doc(results.ScoreDocs[i].Doc).GetBinaryValue("json").Bytes));
@@ -288,21 +295,22 @@ namespace Ngsa.Application.DataAccessLayer
         /// <returns>Movie</returns>
         public Movie GetMovie(string movieId)
         {
-            // handle the upserted movies
             if (movieId.StartsWith("tt"))
             {
                 IndexSearcher searcher = new IndexSearcher(writer.GetReader(true));
 
-                TopDocs hits = new IndexSearcher(writer.GetReader(true)).Search(new PhraseQuery { new Term("movieId", movieId) }, 1);
+                // search by movieId
+                TopDocs hits = searcher.Search(new PhraseQuery { new Term("movieId", movieId) }, 1);
 
                 if (hits.TotalHits > 0)
                 {
-                    ScoreDoc doc = hits.ScoreDocs[0];
-                    return JsonSerializer.Deserialize<Movie>(searcher.Doc(doc.Doc).GetBinaryValue("json").Bytes);
+                    // deserialze the json from the index
+                    return JsonSerializer.Deserialize<Movie>(searcher.Doc(hits.ScoreDocs[0].Doc).GetBinaryValue("json").Bytes);
                 }
             }
             else
             {
+                // handle the upserted movies
                 if (MoviesIndex.ContainsKey(movieId))
                 {
                     return MoviesIndex[movieId];
@@ -387,36 +395,43 @@ namespace Ngsa.Application.DataAccessLayer
 
             IndexSearcher searcher = new IndexSearcher(writer.GetReader(true));
 
+            // type == Movie
             BooleanQuery bq = new BooleanQuery
             {
                 { new PhraseQuery { new Term("type", "Movie") }, Occur.MUST },
             };
 
+            // titleSort == title.ToLower()
             TopFieldCollector collector = TopFieldCollector.Create(new Sort(new SortField("titleSort", SortFieldType.STRING)), end, false, false, false, false);
 
+            // add the search term
             if (!string.IsNullOrWhiteSpace(q))
             {
                 bq.Add(new WildcardQuery(new Term("title", $"*{q.ToLowerInvariant()}*")), Occur.MUST);
             }
 
+            // add the actorId
             if (!string.IsNullOrWhiteSpace(actorId))
             {
                 bq.Add(new PhraseQuery { new Term("role.actorId", actorId.ToLowerInvariant()) }, Occur.MUST);
             }
 
+            // add the year
             if (year > 0)
             {
                 bq.Add(NumericRangeQuery.NewInt32Range("year", year, year, true, true), Occur.MUST);
             }
 
+            // add the genre
             if (!string.IsNullOrWhiteSpace(genre))
             {
                 bq.Add(new PhraseQuery { new Term("genre", genre.ToLowerInvariant().Replace("-", string.Empty)) }, Occur.MUST);
             }
 
+            // add the rating
             if (rating > 0)
             {
-                bq.Add(NumericRangeQuery.NewDoubleRange("rating", rating, end, true, true), Occur.MUST);
+                bq.Add(NumericRangeQuery.NewDoubleRange("rating", rating, 100, true, true), Occur.MUST);
             }
 
             // run the search
@@ -424,10 +439,12 @@ namespace Ngsa.Application.DataAccessLayer
 
             TopDocs results = collector.GetTopDocs();
 
+            // check array index bounds
             end = end <= results.ScoreDocs.Length ? end : results.ScoreDocs.Length;
 
             for (int i = start; i < end; i++)
             {
+                // deserialze the json from the document
                 res.Add(JsonSerializer.Deserialize<Movie>(searcher.Doc(results.ScoreDocs[i].Doc).GetBinaryValue("json").Bytes));
             }
 
