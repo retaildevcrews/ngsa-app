@@ -23,6 +23,7 @@ namespace Ngsa.Middleware
     {
         private static Histogram requestHistogram = null;
         private static Summary requestSummary = null;
+        private static Gauge cpuGauge = null;
 
         // next action to Invoke
         private readonly RequestDelegate next;
@@ -64,6 +65,15 @@ namespace Ngsa.Middleware
                         SuppressInitialValue = true,
                         MaxAge = TimeSpan.FromMinutes(5),
                         Objectives = new List<QuantileEpsilonPair> { new QuantileEpsilonPair(.9, .0), new QuantileEpsilonPair(.95, .0), new QuantileEpsilonPair(.99, .0), new QuantileEpsilonPair(1.0, .0) },
+                        LabelNames = new string[] { "code", "cosmos", "mode", "region", "zone" },
+                    });
+
+                cpuGauge = Metrics.CreateGauge(
+                    "NgsaCpuPercent",
+                    "CPU Percent Used",
+                    new GaugeConfiguration
+                    {
+                        SuppressInitialValue = true,
                         LabelNames = new string[] { "code", "cosmos", "mode", "region", "zone" },
                     });
             }
@@ -203,6 +213,7 @@ namespace Ngsa.Middleware
             {
                 requestHistogram.WithLabels(GetPrometheusCode(context.Response.StatusCode), (!App.Config.InMemory).ToString(), mode, App.Config.Region, App.Config.Zone).Observe(duration);
                 requestSummary.WithLabels(GetPrometheusCode(context.Response.StatusCode), (!App.Config.InMemory).ToString(), mode, App.Config.Region, App.Config.Zone).Observe(duration);
+                cpuGauge.Set(CpuCounter.CpuPercent);
             }
         }
 
