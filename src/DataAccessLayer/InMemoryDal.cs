@@ -4,10 +4,14 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Imdb.Model;
+using Lucene.Net.Analysis.Standard;
+using Lucene.Net.Index;
+using Lucene.Net.Search;
+using Lucene.Net.Store;
+using Lucene.Net.Util;
 using Microsoft.Azure.Cosmos;
 using Ngsa.Middleware;
 
@@ -22,26 +26,33 @@ namespace Ngsa.Application.DataAccessLayer
 {
     public class InMemoryDal : IDAL
     {
+        private const LuceneVersion Version = LuceneVersion.LUCENE_48;
+
         private const string ActorsSQL = "select m.id, m.partitionKey, m.actorId, m.type, m.name, m.birthYear, m.deathYear, m.profession, m.textSearch, m.movies from m where m.id in ({0}) order by m.textSearch ASC";
         private const string MoviesSQL = "select m.id, m.partitionKey, m.movieId, m.type, m.textSearch, m.title, m.year, m.runtime, m.rating, m.votes, m.totalScore, m.genres, m.roles from m where m.id in ({0}) order by m.textSearch ASC, m.movieId ASC";
 
         // benchmark results buffer
         private readonly string benchmarkData;
+        private readonly List<string> genreList;
+
+        // Lucene in-memory index
+        private readonly IndexWriter writer = new IndexWriter(new RAMDirectory(), new IndexWriterConfig(Version, new StandardAnalyzer(Version)));
 
         /// <summary>
         /// Initializes a new instance of the <see cref="InMemoryDal"/> class.
         /// </summary>
         public InMemoryDal()
         {
-            JsonSerializerOptions settings = new JsonSerializerOptions
+            JsonSerializerOptions jsonOptions = new JsonSerializerOptions
             {
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
             };
 
-            // load the data
-            LoadActors(settings);
-            LoadGenres(settings);
-            LoadMovies(settings);
+            // load data
+            genreList = LoadGenres(jsonOptions);
+
+            // temporary storage for upsert / delete
+            MoviesIndex = new Dictionary<string, Movie>();
 
             // 16 bytes
             benchmarkData = "0123456789ABCDEF";
@@ -51,19 +62,25 @@ namespace Ngsa.Application.DataAccessLayer
             {
                 benchmarkData += benchmarkData;
             }
+
+            // load movies into Lucene index
+            foreach (Movie movie in LoadMovies(jsonOptions))
+            {
+                writer.AddDocument(movie.ToDocument());
+            }
+
+            // load actors into Lucene index
+            foreach (Actor a in LoadActors(jsonOptions))
+            {
+                writer.AddDocument(a.ToDocument());
+            }
+
+            // flush the writes to the index
+            writer.Flush(true, true);
         }
 
-        public static List<Actor> Actors { get; set; }
-        public static List<Movie> Movies { get; set; }
-        public static List<string> Genres { get; set; } = new List<string>();
-
-        // O(1) dictionary for retrieving by ID
-        public static Dictionary<string, Actor> ActorsIndex { get; set; } = new Dictionary<string, Actor>();
-        public static Dictionary<string, Movie> MoviesIndex { get; set; } = new Dictionary<string, Movie>();
-        public static Dictionary<int, List<Movie>> YearIndex { get; set; } = new Dictionary<int, List<Movie>>();
-
-        // List subsets to improve search speed
-        public static Dictionary<string, List<Movie>> GenreIndex { get; set; } = new Dictionary<string, List<Movie>>();
+        // used for upsert / delete
+        public static Dictionary<string, Movie> MoviesIndex { get; set; }
 
         /// <summary>
         /// Get a single actor by ID
@@ -82,9 +99,15 @@ namespace Ngsa.Application.DataAccessLayer
         /// <returns>Actor object</returns>
         public Actor GetActor(string actorId)
         {
-            if (ActorsIndex.ContainsKey(actorId))
+            IndexSearcher searcher = new IndexSearcher(writer.GetReader(true));
+
+            // search by actorId
+            TopDocs hits = searcher.Search(new PhraseQuery { new Term("actorId", actorId) }, 1);
+
+            if (hits.TotalHits > 0)
             {
-                return ActorsIndex[actorId];
+                // deserialize the json from the doc
+                return JsonSerializer.Deserialize<Actor>(searcher.Doc(hits.ScoreDocs[0].Doc).GetBinaryValue("json").Bytes);
             }
 
             throw new CosmosException("Not Found", System.Net.HttpStatusCode.NotFound, 404, string.Empty, 0);
@@ -161,26 +184,45 @@ namespace Ngsa.Application.DataAccessLayer
         public List<Actor> GetActors(string q, int offset = 0, int limit = 100)
         {
             List<Actor> res = new List<Actor>();
-            int skip = 0;
+            int start = 0;
+            int end = limit;
 
-            foreach (Actor a in Actors)
+            // compute start and end for paging
+            if (offset > 0)
             {
-                if (string.IsNullOrWhiteSpace(q) || a.TextSearch.Contains(q.Trim(), StringComparison.OrdinalIgnoreCase))
-                {
-                    if (skip < offset)
-                    {
-                        skip++;
-                    }
-                    else
-                    {
-                        res.Add(a);
-                    }
+                start = offset + limit;
+                end = start + limit;
+            }
 
-                    if (res.Count >= limit)
-                    {
-                        break;
-                    }
-                }
+            IndexSearcher searcher = new IndexSearcher(writer.GetReader(true));
+
+            // type == Actor
+            BooleanQuery bq = new BooleanQuery
+            {
+                { new PhraseQuery { new Term("type", "Actor") }, Occur.MUST },
+            };
+
+            // nameSort == name.ToLower()
+            TopFieldCollector collector = TopFieldCollector.Create(new Sort(new SortField("nameSort", SortFieldType.STRING)), end, false, false, false, false);
+
+            // add the search query
+            if (!string.IsNullOrWhiteSpace(q))
+            {
+                bq.Add(new WildcardQuery(new Term("name", $"*{q.ToLowerInvariant()}*")), Occur.MUST);
+            }
+
+            // search
+            searcher.Search(bq, collector);
+
+            TopDocs results = collector.GetTopDocs();
+
+            // check array bounds
+            end = end <= results.ScoreDocs.Length ? end : results.ScoreDocs.Length;
+
+            // deserialize each Actor
+            for (int i = start; i < end; i++)
+            {
+                res.Add(JsonSerializer.Deserialize<Actor>(searcher.Doc(results.ScoreDocs[i].Doc).GetBinaryValue("json").Bytes));
             }
 
             return res;
@@ -224,7 +266,7 @@ namespace Ngsa.Application.DataAccessLayer
         {
             return await Task<List<string>>.Factory.StartNew(() =>
             {
-                return Genres;
+                return genreList;
             }).ConfigureAwait(false);
         }
 
@@ -253,9 +295,26 @@ namespace Ngsa.Application.DataAccessLayer
         /// <returns>Movie</returns>
         public Movie GetMovie(string movieId)
         {
-            if (MoviesIndex.ContainsKey(movieId))
+            if (movieId.StartsWith("tt"))
             {
-                return MoviesIndex[movieId];
+                IndexSearcher searcher = new IndexSearcher(writer.GetReader(true));
+
+                // search by movieId
+                TopDocs hits = searcher.Search(new PhraseQuery { new Term("movieId", movieId) }, 1);
+
+                if (hits.TotalHits > 0)
+                {
+                    // deserialze the json from the index
+                    return JsonSerializer.Deserialize<Movie>(searcher.Doc(hits.ScoreDocs[0].Doc).GetBinaryValue("json").Bytes);
+                }
+            }
+            else
+            {
+                // handle the upserted movies
+                if (MoviesIndex.ContainsKey(movieId))
+                {
+                    return MoviesIndex[movieId];
+                }
             }
 
             throw new CosmosException("Not Found", System.Net.HttpStatusCode.NotFound, 404, string.Empty, 0);
@@ -323,96 +382,70 @@ namespace Ngsa.Application.DataAccessLayer
         public List<Movie> GetMovies(string q, string genre, int year = 0, double rating = 0.0, string actorId = "", int offset = 0, int limit = 100)
         {
             List<Movie> res = new List<Movie>();
-            int skip = 0;
-            bool add;
 
-            if ((year > 0 || !string.IsNullOrWhiteSpace(genre)) &&
-                !(year > 0 && !string.IsNullOrWhiteSpace(genre)) &&
-                string.IsNullOrWhiteSpace(q) &&
-                rating == 0 &&
-                string.IsNullOrWhiteSpace(actorId) &&
-                offset == 0)
+            int start = 0;
+            int end = limit;
+
+            // compute start and end for paging
+            if (offset > 0)
             {
-                if (year > 0)
-                {
-                    if (YearIndex.ContainsKey(year))
-                    {
-                        foreach (Movie m in YearIndex[year])
-                        {
-                            res.Add(m);
-
-                            if (res.Count >= limit)
-                            {
-                                break;
-                            }
-                        }
-                    }
-                }
-                else if (!string.IsNullOrWhiteSpace(genre))
-                {
-                    genre = genre.ToLowerInvariant().Trim();
-
-                    if (GenreIndex.ContainsKey(genre))
-                    {
-                        foreach (Movie m in GenreIndex[genre])
-                        {
-                            if (res.Count < limit)
-                            {
-                                res.Add(m);
-                            }
-                            else
-                            {
-                                break;
-                            }
-                        }
-                    }
-                }
+                start = offset + limit;
+                end = start + limit;
             }
-            else
+
+            IndexSearcher searcher = new IndexSearcher(writer.GetReader(true));
+
+            // type == Movie
+            BooleanQuery bq = new BooleanQuery
             {
-                foreach (Movie m in Movies)
-                {
-                    if ((string.IsNullOrWhiteSpace(q) || m.TextSearch.Contains(q, StringComparison.OrdinalIgnoreCase)) &&
-                        (string.IsNullOrWhiteSpace(genre) || m.Genres.Contains(genre, StringComparer.OrdinalIgnoreCase)) &&
-                        (year < 1 || m.Year == year) &&
-                        (rating <= 0 || m.Rating >= rating))
-                    {
-                        add = true;
+                { new PhraseQuery { new Term("type", "Movie") }, Occur.MUST },
+            };
 
-                        if (!string.IsNullOrWhiteSpace(actorId))
-                        {
-                            add = false;
+            // titleSort == title.ToLower()
+            TopFieldCollector collector = TopFieldCollector.Create(new Sort(new SortField("titleSort", SortFieldType.STRING)), end, false, false, false, false);
 
-                            actorId = actorId.Trim().ToLowerInvariant();
+            // add the search term
+            if (!string.IsNullOrWhiteSpace(q))
+            {
+                bq.Add(new WildcardQuery(new Term("title", $"*{q.ToLowerInvariant()}*")), Occur.MUST);
+            }
 
-                            foreach (Role a in m.Roles)
-                            {
-                                if (a.ActorId == actorId)
-                                {
-                                    add = true;
-                                    break;
-                                }
-                            }
-                        }
+            // add the actorId
+            if (!string.IsNullOrWhiteSpace(actorId))
+            {
+                bq.Add(new PhraseQuery { new Term("role.actorId", actorId.ToLowerInvariant()) }, Occur.MUST);
+            }
 
-                        if (add)
-                        {
-                            if (skip >= offset)
-                            {
-                                res.Add(m);
+            // add the year
+            if (year > 0)
+            {
+                bq.Add(NumericRangeQuery.NewInt32Range("year", year, year, true, true), Occur.MUST);
+            }
 
-                                if (res.Count >= limit)
-                                {
-                                    break;
-                                }
-                            }
-                            else
-                            {
-                                skip++;
-                            }
-                        }
-                    }
-                }
+            // add the genre
+            if (!string.IsNullOrWhiteSpace(genre))
+            {
+                bq.Add(new PhraseQuery { new Term("genre", genre.ToLowerInvariant().Replace("-", string.Empty)) }, Occur.MUST);
+            }
+
+            // add the rating
+            if (rating > 0)
+            {
+                bq.Add(NumericRangeQuery.NewDoubleRange("rating", rating, 100, true, true), Occur.MUST);
+            }
+
+            // run the search
+            searcher.Search(bq, collector);
+
+            TopDocs results = collector.GetTopDocs();
+
+            // check array index bounds
+            end = end <= results.ScoreDocs.Length ? end : results.ScoreDocs.Length;
+
+            for (int i = start; i < end; i++)
+            {
+                // deserialze the json from the document
+                res.Add(JsonSerializer.Deserialize<Movie>(searcher.Doc(results.ScoreDocs[i].Doc).GetBinaryValue("json").Bytes));
             }
 
             return res;
@@ -431,23 +464,35 @@ namespace Ngsa.Application.DataAccessLayer
             });
         }
 
-        public async Task<Movie> UpsertMovieAsync(Movie m)
+        /// <summary>
+        /// Upsert a movie
+        ///
+        /// Do not store in index or WebV tests will break
+        /// </summary>
+        /// <param name="movie">Movie to upsert</param>
+        /// <returns>Movie</returns>
+        public async Task<Movie> UpsertMovieAsync(Movie movie)
         {
             await Task.Run(() =>
             {
-                if (MoviesIndex.ContainsKey(m.MovieId))
+                if (MoviesIndex.ContainsKey(movie.MovieId))
                 {
-                    m = MoviesIndex[m.MovieId];
+                    movie = MoviesIndex[movie.MovieId];
                 }
                 else
                 {
-                    MoviesIndex.Add(m.MovieId, m);
+                    MoviesIndex.Add(movie.MovieId, movie);
                 }
             }).ConfigureAwait(false);
 
-            return m;
+            return movie;
         }
 
+        /// <summary>
+        /// Delete the movie from temporary storage
+        /// </summary>
+        /// <param name="movieId">Movie ID</param>
+        /// <returns>void</returns>
         public async Task DeleteMovieAsync(string movieId)
         {
             await Task.Run(() =>
@@ -459,88 +504,36 @@ namespace Ngsa.Application.DataAccessLayer
             }).ConfigureAwait(false);
         }
 
-        private static void LoadActors(JsonSerializerOptions settings)
+        // load actor list from json file
+        private static List<Actor> LoadActors(JsonSerializerOptions options)
         {
-            if (Actors?.Count == null)
-            {
-                // load the data from the json file
-                Actors = JsonSerializer.Deserialize<List<Actor>>(File.ReadAllText("src/data/actors.json"), settings);
-
-                // sort by Name
-                Actors.Sort(Actor.NameCompare);
-            }
-
-            if (ActorsIndex.Count == 0)
-            {
-                // Loads an O(1) dictionary for retrieving by ID
-                // Could also use a binary search to reduce memory usage
-                foreach (Actor a in Actors)
-                {
-                    ActorsIndex.Add(a.ActorId, a);
-                }
-            }
+            // load the data from the json file
+            return JsonSerializer.Deserialize<List<Actor>>(File.ReadAllText("src/data/actors.json"), options);
         }
 
-        private static void LoadGenres(JsonSerializerOptions settings)
+        // load genre list from json file
+        private static List<string> LoadGenres(JsonSerializerOptions options)
         {
-            if (Genres.Count == 0)
+            List<string> genres = new List<string>();
+
+            // load the data from the json file
+            List<Genre> list = JsonSerializer.Deserialize<List<Genre>>(File.ReadAllText("src/data/genres.json"), options);
+
+            // Convert Genre object to List<string> per API spec
+            foreach (Genre g in list)
             {
-                // load the data from the json file
-                List<Genre> list = JsonSerializer.Deserialize<List<Genre>>(File.ReadAllText("src/data/genres.json"), settings);
-
-                // Convert Genre object to List<string> per API spec
-                foreach (Genre g in list)
-                {
-                    Genres.Add(g.Name);
-                }
-
-                Genres.Sort();
+                genres.Add(g.Name);
             }
+
+            genres.Sort();
+
+            return genres;
         }
 
-        private static void LoadMovies(JsonSerializerOptions settings)
+        // load Movie List from json file
+        private static List<Movie> LoadMovies(JsonSerializerOptions options)
         {
-            if (Movies?.Count == null)
-            {
-                // load the data from the json file
-                Movies = JsonSerializer.Deserialize<List<Movie>>(File.ReadAllText("src/data/movies.json"), settings);
-
-                // sort by Title
-                Movies.Sort(Movie.TitleCompare);
-            }
-
-            string ge;
-
-            if (MoviesIndex.Count == 0)
-            {
-                foreach (Movie m in Movies)
-                {
-                    // Loads an O(1) dictionary for retrieving by ID
-                    // Could also use a binary search to reduce memory usage
-                    MoviesIndex.Add(m.MovieId, m);
-
-                    // Add to by year dictionary
-                    if (!YearIndex.ContainsKey(m.Year))
-                    {
-                        YearIndex.Add(m.Year, new List<Movie>());
-                    }
-
-                    YearIndex[m.Year].Add(m);
-
-                    // Add to by Genre dictionary
-                    foreach (string g in m.Genres)
-                    {
-                        ge = g.ToLowerInvariant().Trim();
-
-                        if (!GenreIndex.ContainsKey(ge))
-                        {
-                            GenreIndex.Add(ge, new List<Movie>());
-                        }
-
-                        GenreIndex[ge].Add(m);
-                    }
-                }
-            }
+            return JsonSerializer.Deserialize<List<Movie>>(File.ReadAllText("src/data/movies.json"), options);
         }
     }
 }
