@@ -96,7 +96,7 @@ namespace Ngsa.Application
             root.AddOption(EnvVarOption(new string[] { "--in-memory", "-m" }, "Use in-memory database", false));
             root.AddOption(EnvVarOption(new string[] { "--no-cache", "-n" }, "Don't cache results", false));
             root.AddOption(EnvVarOption(new string[] { "--url-prefix" }, "URL prefix for ingress mapping", string.Empty));
-            root.AddOption(EnvVarOption(new string[] { "--port" }, "Listen Port", 8080, 1));
+            root.AddOption(EnvVarOption(new string[] { "--port" }, "Listen Port", 8080, 1, (64 * 1024) - 1));
             root.AddOption(EnvVarOption(new string[] { "--cache-duration", "-d" }, "Cache for duration (seconds)", 300, 1));
             root.AddOption(EnvVarOption(new string[] { "--burst-target" }, "Target level for bursting metrics (int)", 60, 1));
             root.AddOption(EnvVarOption(new string[] { "--burst-max" }, "Max level for bursting metrics (int)", 80, 1));
@@ -265,7 +265,7 @@ namespace Ngsa.Application
         }
 
         // insert env vars as default with min val for ints
-        private static Option<int> EnvVarOption(string[] names, string description, int defaultValue, int minValue)
+        private static Option<int> EnvVarOption(string[] names, string description, int defaultValue, int minValue, int? maxValue = null)
         {
             if (string.IsNullOrWhiteSpace(description))
             {
@@ -297,7 +297,7 @@ namespace Ngsa.Application
                 {
                     val = (int)res.GetValueOrDefault();
 
-                    if (val <= minValue)
+                    if (val < minValue)
                     {
                         s = $"{names[0]} must be >= {minValue}";
                     }
@@ -308,6 +308,30 @@ namespace Ngsa.Application
 
                 return s;
             });
+
+            if (maxValue != null)
+            {
+                opt.AddValidator((res) =>
+                {
+                    string s = string.Empty;
+                    int val;
+
+                    try
+                    {
+                        val = (int)res.GetValueOrDefault();
+
+                        if (val > maxValue)
+                        {
+                            s = $"{names[0]} must be <= {maxValue}";
+                        }
+                    }
+                    catch
+                    {
+                    }
+
+                    return s;
+                });
+            }
 
             return opt;
         }
