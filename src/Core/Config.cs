@@ -35,6 +35,7 @@ namespace Ngsa.Application
         public LogLevel RequestLogLevel { get; set; } = LogLevel.Information;
         public InMemoryDal CacheDal { get; set; }
         public IDAL CosmosDal { get; set; }
+        public string BurstService { get; set; }
         public int BurstTarget { get; set; }
         public int BurstMax { get; set; }
         public string UrlPrefix { get; set; }
@@ -54,6 +55,7 @@ namespace Ngsa.Application
             Prometheus = config.Prometheus;
             CacheDal = config.CacheDal;
             CosmosDal = config.CosmosDal;
+            BurstService = config.BurstService;
             BurstMax = config.BurstMax;
             BurstTarget = config.BurstTarget;
             UrlPrefix = string.IsNullOrWhiteSpace(config.UrlPrefix) ? string.Empty : config.UrlPrefix;

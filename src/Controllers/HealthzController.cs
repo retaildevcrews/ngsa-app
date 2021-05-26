@@ -59,7 +59,7 @@ namespace Ngsa.Application.Controllers
                 StatusCode = res.Status == HealthStatus.Unhealthy ? (int)System.Net.HttpStatusCode.ServiceUnavailable : (int)System.Net.HttpStatusCode.OK,
             };
 
-            Response.Headers.Add(CpuCounter.CapacityHeader, $"current={CpuCounter.CpuPercent}, target={App.Config.BurstTarget}, max={App.Config.BurstMax}");
+            Response.Headers.Add(CpuCounter.CapacityHeader, $"service={App.Config.BurstService}, current-load={CpuCounter.CpuPercent}, target-load={App.Config.BurstTarget}, max-load={App.Config.BurstMax}");
 
             return result;
         }

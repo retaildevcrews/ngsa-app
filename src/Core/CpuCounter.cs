@@ -13,7 +13,7 @@ namespace Ngsa.Application
     /// </summary>
     public class CpuCounter : IDisposable
     {
-        public const string CapacityHeader = "X-Capacity-Metric";
+        public const string CapacityHeader = "X-Load-Feedback";
 
         private static readonly Process Proc = Process.GetCurrentProcess();
         private static long lastTicks = Environment.TickCount64;
