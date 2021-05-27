@@ -15,11 +15,17 @@ namespace Ngsa.Middleware
         // cached values
         private static byte[] responseBytes;
         private static string version = string.Empty;
+        private static string name = string.Empty;
 
         /// <summary>
         /// Gets the app version
         /// </summary>
         public static string Version => version;
+
+        /// <summary>
+        /// Gets the app name
+        /// </summary>
+        public static string Name => name;
 
         /// <summary>
         /// Middleware extension method to handle /version request
@@ -32,6 +38,12 @@ namespace Ngsa.Middleware
             if (Attribute.GetCustomAttribute(Assembly.GetEntryAssembly(), typeof(AssemblyInformationalVersionAttribute)) is AssemblyInformationalVersionAttribute v)
             {
                 version = v.InformationalVersion;
+            }
+
+            // cache the application name
+            if (Attribute.GetCustomAttribute(Assembly.GetEntryAssembly(), typeof(AssemblyTitleAttribute)) is AssemblyTitleAttribute n)
+            {
+                name = n.Title;
             }
 
             responseBytes = System.Text.Encoding.UTF8.GetBytes(version);

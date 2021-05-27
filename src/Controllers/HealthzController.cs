@@ -8,6 +8,7 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 using Ngsa.Application.DataAccessLayer;
 using Ngsa.Application.Model;
+using Ngsa.Middleware;
 
 namespace Ngsa.Application.Controllers
 {
@@ -59,7 +60,7 @@ namespace Ngsa.Application.Controllers
                 StatusCode = res.Status == HealthStatus.Unhealthy ? (int)System.Net.HttpStatusCode.ServiceUnavailable : (int)System.Net.HttpStatusCode.OK,
             };
 
-            Response.Headers.Add(CpuCounter.CapacityHeader, $"service={App.Config.BurstService}, current-load={CpuCounter.CpuPercent}, target-load={App.Config.BurstTarget}, max-load={App.Config.BurstMax}");
+            Response.Headers.Add(CpuCounter.CapacityHeader, $"service={VersionExtension.Name}, current-load={CpuCounter.CpuPercent}, target-load={App.Config.BurstTarget}, max-load={App.Config.BurstMax}");
 
             return result;
         }
