@@ -98,8 +98,9 @@ namespace Ngsa.Application
             root.AddOption(EnvVarOption(new string[] { "--url-prefix" }, "URL prefix for ingress mapping", string.Empty));
             root.AddOption(EnvVarOption(new string[] { "--port" }, "Listen Port", 8080, 1, (64 * 1024) - 1));
             root.AddOption(EnvVarOption(new string[] { "--cache-duration", "-d" }, "Cache for duration (seconds)", 300, 1));
-            root.AddOption(EnvVarOption(new string[] { "--burst-target" }, "Target level for bursting metrics (int)", 60, 1));
-            root.AddOption(EnvVarOption(new string[] { "--burst-max" }, "Max level for bursting metrics (int)", 80, 1));
+            root.AddOption(EnvVarOption(new string[] { "--burst-header" }, "Enable burst metrics header in healthz", false));
+            root.AddOption(EnvVarOption(new string[] { "--burst-target" }, "Target level for bursting metrics (int)", 60, 1, 100));
+            root.AddOption(EnvVarOption(new string[] { "--burst-max" }, "Max level for bursting metrics (int)", 80, 1, 100));
             root.AddOption(EnvVarOption(new string[] { "--retries" }, "Cosmos 429 retries", 10, 0));
             root.AddOption(EnvVarOption(new string[] { "--timeout" }, "Request timeout", 10, 1));
             root.AddOption(EnvVarOption(new string[] { "--data-service", "-s" }, "Data Service URL", string.Empty));
