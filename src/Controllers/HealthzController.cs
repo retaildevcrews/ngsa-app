@@ -62,7 +62,8 @@ namespace Ngsa.Application.Controllers
 
             if (App.Config.BurstHeader)
             {
-                Response.Headers.Add(CpuCounter.CapacityHeader, $"service={VersionExtension.Name}, current-load={CpuCounter.CpuPercent}, target-load={App.Config.BurstTarget}, max-load={App.Config.BurstMax}");
+                string serviceName = string.IsNullOrWhiteSpace(App.Config.BurstService) ? VersionExtension.Name : App.Config.BurstService;
+                Response.Headers.Add(CpuCounter.CapacityHeader, $"service={serviceName}, current-load={CpuCounter.CpuPercent}, target-load={App.Config.BurstTarget}, max-load={App.Config.BurstMax}");
             }
 
             return result;

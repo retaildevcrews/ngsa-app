@@ -36,6 +36,7 @@ namespace Ngsa.Application
         public InMemoryDal CacheDal { get; set; }
         public IDAL CosmosDal { get; set; }
         public bool BurstHeader { get; set; }
+        public string BurstService { get; set; }
         public int BurstTarget { get; set; }
         public int BurstMax { get; set; }
         public string UrlPrefix { get; set; }
@@ -56,6 +57,7 @@ namespace Ngsa.Application
             CacheDal = config.CacheDal;
             CosmosDal = config.CosmosDal;
             BurstHeader = config.BurstHeader;
+            BurstService = config.BurstService;
             BurstMax = config.BurstMax;
             BurstTarget = config.BurstTarget;
             UrlPrefix = string.IsNullOrWhiteSpace(config.UrlPrefix) ? string.Empty : config.UrlPrefix;
