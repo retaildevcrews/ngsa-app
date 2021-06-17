@@ -4,6 +4,7 @@
 using System;
 using System.Reflection;
 using Microsoft.AspNetCore.Builder;
+using Ngsa.Application;
 
 namespace Ngsa.Middleware
 {
@@ -58,6 +59,13 @@ namespace Ngsa.Middleware
                 {
                     // return the version info
                     context.Response.ContentType = "text/plain";
+
+                    if (App.Config.BurstHeader)
+                    {
+                        string serviceName = string.IsNullOrWhiteSpace(App.Config.BurstService) ? VersionExtension.Name : App.Config.BurstService;
+                        context.Response.Headers.Add(CpuCounter.CapacityHeader, $"service={serviceName}, current-load={CpuCounter.CpuPercent}, target-load={App.Config.BurstTarget}, max-load={App.Config.BurstMax}");
+                    }
+
                     await context.Response.Body.WriteAsync(responseBytes).ConfigureAwait(false);
                 }
                 else
