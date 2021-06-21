@@ -113,7 +113,7 @@ namespace Ngsa.Application
                     c.RoutePrefix = string.Empty;
                 })
                 .UseSwaggerReplaceJson("swagger.json", App.Config.UrlPrefix)
-                .UseVersion();
+                .UseVersion(App.Config.BurstService);
         }
 
         /// <summary>

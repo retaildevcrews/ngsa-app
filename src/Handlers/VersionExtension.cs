@@ -32,8 +32,9 @@ namespace Ngsa.Middleware
         /// Middleware extension method to handle /version request
         /// </summary>
         /// <param name="builder">this IApplicationBuilder</param>
+        /// <param name="burstServiceName">service name for bursting</param>
         /// <returns>IApplicationBuilder</returns>
-        public static IApplicationBuilder UseVersion(this IApplicationBuilder builder)
+        public static IApplicationBuilder UseVersion(this IApplicationBuilder builder, string burstServiceName)
         {
             // cache the version info
             if (Attribute.GetCustomAttribute(Assembly.GetEntryAssembly(), typeof(AssemblyInformationalVersionAttribute)) is AssemblyInformationalVersionAttribute v)
@@ -42,9 +43,16 @@ namespace Ngsa.Middleware
             }
 
             // cache the application name
-            if (Attribute.GetCustomAttribute(Assembly.GetEntryAssembly(), typeof(AssemblyTitleAttribute)) is AssemblyTitleAttribute n)
+            if (string.IsNullOrWhiteSpace(burstServiceName))
             {
-                name = n.Title;
+                if (Attribute.GetCustomAttribute(Assembly.GetEntryAssembly(), typeof(AssemblyTitleAttribute)) is AssemblyTitleAttribute n)
+                {
+                    name = n.Title;
+                }
+            }
+            else
+            {
+                name = burstServiceName;
             }
 
             responseBytes = System.Text.Encoding.UTF8.GetBytes(version);
@@ -62,8 +70,7 @@ namespace Ngsa.Middleware
 
                     if (App.Config.BurstHeader)
                     {
-                        string serviceName = string.IsNullOrWhiteSpace(App.Config.BurstService) ? VersionExtension.Name : App.Config.BurstService;
-                        context.Response.Headers.Add(CpuCounter.CapacityHeader, $"service={serviceName}, current-load={CpuCounter.CpuPercent}, target-load={App.Config.BurstTarget}, max-load={App.Config.BurstMax}");
+                        context.Response.Headers.Add(CpuCounter.CapacityHeader, $"service={name}, current-load={CpuCounter.CpuPercent}, target-load={App.Config.BurstTarget}, max-load={App.Config.BurstMax}");
                     }
 
                     await context.Response.Body.WriteAsync(responseBytes).ConfigureAwait(false);
