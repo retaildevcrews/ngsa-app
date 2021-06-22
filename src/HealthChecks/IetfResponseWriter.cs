@@ -92,10 +92,7 @@ namespace Ngsa.Application
                 new Dictionary<string, HealthReportEntry> { { CosmosHealthCheck.ServiceId, new HealthReportEntry(res.Status, res.Description, totalTime, res.Exception, res.Data) } },
                 totalTime);
 
-            if (App.Config.BurstHeader)
-            {
-                httpContext.Response.Headers.Add(CpuCounter.CapacityHeader, $"service={VersionExtension.Name}, current-load={CpuCounter.CpuPercent}, target-load={App.Config.BurstTarget}, max-load={App.Config.BurstMax}");
-            }
+            CpuCounter.AddBurstHeader(httpContext);
 
             // call the response writer
             return IetfResponseWriter(httpContext, rpt);

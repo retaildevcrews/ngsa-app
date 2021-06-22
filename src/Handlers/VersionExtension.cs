@@ -29,12 +29,9 @@ namespace Ngsa.Middleware
         public static string Name => name;
 
         /// <summary>
-        /// Middleware extension method to handle /version request
+        /// Cache version and application name values with refelction
         /// </summary>
-        /// <param name="builder">this IApplicationBuilder</param>
-        /// <param name="burstServiceName">service name for bursting</param>
-        /// <returns>IApplicationBuilder</returns>
-        public static IApplicationBuilder UseVersion(this IApplicationBuilder builder, string burstServiceName)
+        public static void GetReflectionValues()
         {
             // cache the version info
             if (Attribute.GetCustomAttribute(Assembly.GetEntryAssembly(), typeof(AssemblyInformationalVersionAttribute)) is AssemblyInformationalVersionAttribute v)
@@ -43,17 +40,21 @@ namespace Ngsa.Middleware
             }
 
             // cache the application name
-            if (string.IsNullOrWhiteSpace(burstServiceName))
+            if (Attribute.GetCustomAttribute(Assembly.GetEntryAssembly(), typeof(AssemblyTitleAttribute)) is AssemblyTitleAttribute n)
             {
-                if (Attribute.GetCustomAttribute(Assembly.GetEntryAssembly(), typeof(AssemblyTitleAttribute)) is AssemblyTitleAttribute n)
-                {
-                    name = n.Title;
-                }
+                name = n.Title;
             }
-            else
-            {
-                name = burstServiceName;
-            }
+        }
+
+        /// <summary>
+        /// Middleware extension method to handle /version request
+        /// </summary>
+        /// <param name="builder">this IApplicationBuilder</param>
+        /// <param name="burstServiceName">service name for bursting</param>
+        /// <returns>IApplicationBuilder</returns>
+        public static IApplicationBuilder UseVersion(this IApplicationBuilder builder)
+        {
+            GetReflectionValues();
 
             responseBytes = System.Text.Encoding.UTF8.GetBytes(version);
 
@@ -68,10 +69,7 @@ namespace Ngsa.Middleware
                     // return the version info
                     context.Response.ContentType = "text/plain";
 
-                    if (App.Config.BurstHeader)
-                    {
-                        context.Response.Headers.Add(CpuCounter.CapacityHeader, $"service={name}, current-load={CpuCounter.CpuPercent}, target-load={App.Config.BurstTarget}, max-load={App.Config.BurstMax}");
-                    }
+                    CpuCounter.AddBurstHeader(context);
 
                     await context.Response.Body.WriteAsync(responseBytes).ConfigureAwait(false);
                 }

@@ -32,4 +32,4 @@ USER ngsa
 ### copy the app
 COPY --from=build /app .
 
-ENTRYPOINT [ "dotnet",  "ngsa-aspnetapp.dll" ]
+ENTRYPOINT [ "dotnet",  "aspnetapp.dll" ]
