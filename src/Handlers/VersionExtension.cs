@@ -4,6 +4,7 @@
 using System;
 using System.Reflection;
 using Microsoft.AspNetCore.Builder;
+using Ngsa.Application;
 
 namespace Ngsa.Middleware
 {
@@ -28,11 +29,9 @@ namespace Ngsa.Middleware
         public static string Name => name;
 
         /// <summary>
-        /// Middleware extension method to handle /version request
+        /// Cache version and application name values with reflection
         /// </summary>
-        /// <param name="builder">this IApplicationBuilder</param>
-        /// <returns>IApplicationBuilder</returns>
-        public static IApplicationBuilder UseVersion(this IApplicationBuilder builder)
+        public static void Init()
         {
             // cache the version info
             if (Attribute.GetCustomAttribute(Assembly.GetEntryAssembly(), typeof(AssemblyInformationalVersionAttribute)) is AssemblyInformationalVersionAttribute v)
@@ -45,6 +44,17 @@ namespace Ngsa.Middleware
             {
                 name = n.Title;
             }
+        }
+
+        /// <summary>
+        /// Middleware extension method to handle /version request
+        /// </summary>
+        /// <param name="builder">this IApplicationBuilder</param>
+        /// <param name="burstServiceName">service name for bursting</param>
+        /// <returns>IApplicationBuilder</returns>
+        public static IApplicationBuilder UseVersion(this IApplicationBuilder builder)
+        {
+            Init();
 
             responseBytes = System.Text.Encoding.UTF8.GetBytes(version);
 
@@ -58,6 +68,9 @@ namespace Ngsa.Middleware
                 {
                     // return the version info
                     context.Response.ContentType = "text/plain";
+
+                    CpuCounter.AddBurstHeader(context);
+
                     await context.Response.Body.WriteAsync(responseBytes).ConfigureAwait(false);
                 }
                 else

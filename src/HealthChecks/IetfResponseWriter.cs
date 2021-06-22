@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Ngsa.Application.Model;
+using Ngsa.Middleware;
 
 namespace Ngsa.Application
 {
@@ -91,7 +92,7 @@ namespace Ngsa.Application
                 new Dictionary<string, HealthReportEntry> { { CosmosHealthCheck.ServiceId, new HealthReportEntry(res.Status, res.Description, totalTime, res.Exception, res.Data) } },
                 totalTime);
 
-            httpContext.Response.Headers.Add(CpuCounter.CapacityHeader, $"current={CpuCounter.CpuPercent}, target={App.Config.BurstTarget}, max={App.Config.BurstMax}");
+            CpuCounter.AddBurstHeader(httpContext);
 
             // call the response writer
             return IetfResponseWriter(httpContext, rpt);
