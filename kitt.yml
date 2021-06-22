@@ -1,18 +1,13 @@
 profiles:
-  - aspnetcore
+  - aspnet5
 owner:
   group: wcnp-ms-ngsa
 services:
   - path: kitt-service.yml
-build:
-  docker:
-    app:
-      buildArgs:
-        dotnetVersion: 3.1
-        alpineVersion: 3.12
 
 deploy:
-  namespace: ms-ngsa    
+  namespace: ms-ngsa
+  useTempNamespace: false
   stages:
     - name: azure
       refs: [master]
@@ -30,7 +25,7 @@ deploy:
           endpoints:
           - targetPort: 8080
             path: "/metrics"
-          remoteWriteSampleLimit: 100
+          remoteWriteSampleLimit: 50
           whitelist:
             - NgsaAppDuration_bucket
             - NgsaAppDuration_count
