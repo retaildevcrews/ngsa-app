@@ -31,7 +31,7 @@ namespace Ngsa.Middleware
         /// <summary>
         /// Cache version and application name values with reflection
         /// </summary>
-        public static void LoadReflectionValues()
+        public static void Init()
         {
             // cache the version info
             if (Attribute.GetCustomAttribute(Assembly.GetEntryAssembly(), typeof(AssemblyInformationalVersionAttribute)) is AssemblyInformationalVersionAttribute v)
@@ -54,7 +54,7 @@ namespace Ngsa.Middleware
         /// <returns>IApplicationBuilder</returns>
         public static IApplicationBuilder UseVersion(this IApplicationBuilder builder)
         {
-            LoadReflectionValues();
+            Init();
 
             responseBytes = System.Text.Encoding.UTF8.GetBytes(version);
 

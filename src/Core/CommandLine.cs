@@ -407,7 +407,7 @@ namespace Ngsa.Application
             // set burst headers service name
             if (string.IsNullOrWhiteSpace(Config.BurstService))
             {
-                VersionExtension.LoadReflectionValues();
+                VersionExtension.Init();
                 Config.BurstService = VersionExtension.Name;
             }
 
