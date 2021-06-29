@@ -27,16 +27,45 @@ jobs:
         registry: ghcr.io
         username: ${{ secrets.GHCR_ID }}
         password: ${{ secrets.GHCR_PAT }}
-
+    - name: Set Secrets
+      run: |
+            echo -n ${{ secrets.NGSA_PRE_COSMOS_RO_KEY}} >| secrets/CosmosKey
+            echo -n ${{ secrets.NGSA_PRE_COSMOS_URL }} >| secrets/CosmosUrl
     - name: Docker Build
       run: |
-        docker build . -t image
-        
+        docker build . --progress auto -t image
+
+    - name: Docker Run and Test
+      run: |
+            #docker run --rm image --version
+            #docker network create runandtestnet 
+            #docker run --rm --net=runandtestnet --network-alias=ngsacsapi --name ngsacs -p 8080:8080 image
+            
+            docker run --rm -d --name ngsacs -p 8080:8080 image
+
+            echo "Waiting for web server to start ..."
+            sleep 25
+
+            #docker run --rm --net=runandtestnet ghcr.io/retaildevcrews/ngsa-lr:beta -l 500 -s http://ngsacsapi:8080/ --max-errors 1 -f baseline.json 
+
+            docker run --rm --network=host ghcr.io/retaildevcrews/ngsa-lr:beta -s "http://localhost:8080" --max-errors 1 -f baseline.json
+
+    - name: Display coverage results
+      run: |
+           # wait for ngsa-lr to shutdown
+           sleep 15
+
+           # display the results
+           docker logs ngsacs | tail -n 24
+    
+    - name: Delete Secrets
+      run: |
+            rm -rf ./secrets
+
     - name: Docker Tag and Push
       run: |
 
-        # run image with --version flag
-        docker run --rm image --version
+        #VERSION=$(docker run --rm image --version)
 
         # tag the repo with :dev
         docker tag image $DOCKER_REPO:dev
