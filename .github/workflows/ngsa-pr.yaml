@@ -58,11 +58,8 @@ jobs:
                 ((wait_time=wait_time+1))
             done
 
-            echo "Running In-Memory baseline"
-            docker run --rm --network=host ghcr.io/retaildevcrews/ngsa-lr:beta -s "http://localhost:8080" --max-errors 1 -f baseline.json
-            
-            echo "Running In-Memory benchmark"
-            docker run --rm --network=host ghcr.io/retaildevcrews/ngsa-lr:beta -s "http://localhost:8080" --max-errors 1 -f benchmark.json
+            echo "Running In-Memory benchmark and baseline"
+            docker run --rm --network=host ghcr.io/retaildevcrews/ngsa-lr:beta -s "http://localhost:8080" --max-errors 1 -f benchmark.json baseline.json
     
     - name: Set Secrets
       run: |
@@ -98,12 +95,9 @@ jobs:
                 ((wait_time=wait_time+1))
             done
 
-            echo "Running Cosmos baseline"
-            docker run --rm --network=host ghcr.io/retaildevcrews/ngsa-lr:beta -s "http://localhost:8081" --max-errors 1 -f baseline.json
-            
-            echo "Running Cosmos benchmark"
-            docker run --rm --network=host ghcr.io/retaildevcrews/ngsa-lr:beta -s "http://localhost:8081" --max-errors 1 -f benchmark.json
-    
+            echo "Running Cosmos benchmark and baseline"
+            docker run --rm --network=host ghcr.io/retaildevcrews/ngsa-lr:beta -s "http://localhost:8081" --max-errors 1 -f benchmark.json baseline.json
+   
     - name: Delete Secrets
       run: |
             rm -rf /tmp/secrets    
