@@ -8,7 +8,7 @@ on:
       - 'Dockerfile'
       - '*.csproj'
       - '**.cs'
-      - '.github/workflows/ngsa_pr.yaml'
+      - '.github/workflows/ngsa-pr.yaml'
 
 jobs:
 
