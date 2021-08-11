@@ -21,7 +21,7 @@ namespace Ngsa.Application.Controllers
         };
 
         /// <summary>
-        /// Returns a JSON string array of Genre
+        /// Returns a string value of benchmark data
         /// </summary>
         /// <param name="size">size of return</param>
         /// <response code="200">text/plain of size</response>

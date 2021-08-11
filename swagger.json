@@ -789,6 +789,51 @@
         }
       }
     },
+    "{urlPrefix}/api/benchmark/{size}": {
+      "get": {
+        "tags": [ "Benchmark" ],
+        "summary": "Get benchmark data",
+        "description": "Returns a text/plain value of benchmark data",
+        "parameters": [
+          {
+            "name": "size",
+            "in": "path",
+            "description": "Size of Beanchmark data.<br><br>`valid: 0 < size <= 1024*1024`<br><br>example: 23",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "23"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "`string`",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": "0123456789ABCDEF0123456"
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid Size",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": "Invalid Size"
+              }
+            }
+          }
+        }
+      }
+    },
     "{urlPrefix}/healthz": {
       "get": {
         "tags": [ "Health Check" ],
