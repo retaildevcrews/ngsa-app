@@ -45,7 +45,7 @@ namespace Ngsa.Application.Controllers
 
                 Logger.LogWarning(nameof(GetDataAsync), "Invalid Size", NgsaLog.LogEvent400, HttpContext);
 
-                return BadRequest("Invalid Size");
+                return ResultHandler.CreateResult(list, RequestLogger.GetPathAndQuerystring(Request));
             }
 
             if (size > 1024 * 1024)
@@ -61,7 +61,7 @@ namespace Ngsa.Application.Controllers
 
                 Logger.LogWarning(nameof(GetDataAsync), "Invalid Size", NgsaLog.LogEvent400, HttpContext);
 
-                return BadRequest("Invalid Size");
+                return ResultHandler.CreateResult(list, RequestLogger.GetPathAndQuerystring(Request));
             }
 
             if (App.Config.AppType == AppType.WebAPI)
