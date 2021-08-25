@@ -12,9 +12,9 @@ using Ngsa.Middleware;
 /// This service consumes burst metrics from an external service and will also
 /// inject these metrics into a response header.
 /// </summary>
-namespace Ngsa.Application.Metrics
+namespace Ngsa.Application
 {
-    public class BurstMetricsService : IDisposable, IBurstMetricsService
+    public class BurstMetricsService : IDisposable
     {
         private const int ClientTimeout = 5;
         private const int MetricsRefreshFrequency = 5;
@@ -37,8 +37,11 @@ namespace Ngsa.Application.Metrics
             logger = new NgsaLog { Name = typeof(BurstMetricsService).FullName };
             burstMetricsResult = string.Empty;
 
+            // get burst service endpoint from env vars
+            string burstServiceHost = SetupBurstServiceEndpoint();
+
             // read burst service endpoint from env vars and setup http client
-            SetupHTTPClient();
+            client = OpenHTTPClient(burstServiceHost);
 
             // run timed burst metrics service
             StartTimer();
@@ -78,12 +81,16 @@ namespace Ngsa.Application.Metrics
                 {
                     timer.Stop();
                     timer.Dispose();
+                }
+
+                if (client != null)
+                {
                     client.Dispose();
                 }
             }
         }
 
-        private void SetupHTTPClient()
+        private string SetupBurstServiceEndpoint()
         {
             // read burst service endpoint env variables
             string baseAddress = Environment.GetEnvironmentVariable(EnvBurstEndpoint);
@@ -97,15 +104,21 @@ namespace Ngsa.Application.Metrics
                 throw new Exception("Burst metrics service endpoint is not a valid URI. Ensure you have set burst env vars.");
             }
 
+            return baseAddress;
+        }
+
+        private HttpClient OpenHTTPClient(string baseAddress)
+        {
             try
             {
                 // Create a http client
-                client = new ()
+                HttpClient client = new ()
                 {
                     Timeout = new TimeSpan(0, 0, ClientTimeout),
                     BaseAddress = new Uri(baseAddress),
                 };
                 client.DefaultRequestHeaders.Add("User-Agent", $"ngsa/{VersionExtension.ShortVersion}");
+                return client;
             }
             catch (Exception ex)
             {
@@ -146,7 +159,7 @@ namespace Ngsa.Application.Metrics
             // verify http client
             if (client == null)
             {
-                Console.WriteLine("Error: Burst Metrics Service http client is null");
+                logger.LogError("BurstMetricsServiceTimer", "Burst Metrics Service HTTP Client is null.");
                 return;
             }
 
@@ -161,7 +174,7 @@ namespace Ngsa.Application.Metrics
                 else
                 {
                     burstMetricsResult = string.Empty;
-                    logger.LogWarning("BurstMetricsServiceTimer", "Received error status code from burst service.");
+                    logger.LogWarning("BurstMetricsServiceTimer", "Received error status code from burst service.", new LogEventId((int)resp.StatusCode, resp.StatusCode.ToString()));
                 }
             }
             catch (Exception ex)

@@ -59,6 +59,13 @@ namespace Ngsa.Application
                 // log startup messages
                 LogStartup(logger);
 
+                // set burst metrics service
+                if (config.BurstHeader)
+                {
+                    Console.WriteLine(config.BurstHeader);
+                    Config.BurstMetricsService = new BurstMetricsService();
+                }
+
                 // start the webserver
                 Task w = host.RunAsync();
 
@@ -105,8 +112,8 @@ namespace Ngsa.Application
             root.AddOption(EnvVarOption(new string[] { "--secrets-volume", "-v" }, "Secrets Volume Path", "secrets"));
             root.AddOption(EnvVarOption(new string[] { "--zone", "-z" }, "Zone for log", "dev"));
             root.AddOption(EnvVarOption(new string[] { "--region", "-r" }, "Region for log", "dev"));
-            root.AddOption(EnvVarOption(new string[] { "--log-level", "-l" }, "Log Level", LogLevel.Error));
-            root.AddOption(EnvVarOption(new string[] { "--request-log-level", "-q" }, "Request Log Level", LogLevel.Information));
+            root.AddOption(EnvVarOption(new string[] { "--log-level", "-l" }, "Log Level", LogLevel.Debug));
+            root.AddOption(EnvVarOption(new string[] { "--request-log-level", "-q" }, "Request Log Level", LogLevel.Debug));
             root.AddOption(new Option<bool>(new string[] { "--dry-run" }, "Validates configuration"));
 
             // validate dependencies
@@ -383,12 +390,6 @@ namespace Ngsa.Application
                 {
                     Config.CosmosDal = new DataAccessLayer.CosmosDal(Config.Secrets, Config);
                 }
-            }
-
-            // set burst metrics service
-            if (config.BurstHeader)
-            {
-                Config.BurstMetricsService = new Metrics.BurstMetricsService();
             }
 
             SetLoggerConfig();

@@ -3,7 +3,6 @@
 
 using Microsoft.Extensions.Logging;
 using Ngsa.Application.DataAccessLayer;
-using Ngsa.Application.Metrics;
 
 namespace Ngsa.Application
 {
@@ -37,7 +36,7 @@ namespace Ngsa.Application
         public InMemoryDal CacheDal { get; set; }
         public IDAL CosmosDal { get; set; }
         public bool BurstHeader { get; set; }
-        public IBurstMetricsService BurstMetricsService { get; set; }
+        public BurstMetricsService BurstMetricsService { get; set; }
         public string UrlPrefix { get; set; }
 
         public void SetConfig(Config config)
