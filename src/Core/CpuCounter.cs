@@ -14,8 +14,6 @@ namespace Ngsa.Application
     /// </summary>
     public class CpuCounter : IDisposable
     {
-        public const string CapacityHeader = "X-Load-Feedback";
-
         private static readonly Process Proc = Process.GetCurrentProcess();
         private static long lastTicks = Environment.TickCount64;
         private static long lastCpu = Proc.TotalProcessorTime.Ticks;
@@ -71,17 +69,6 @@ namespace Ngsa.Application
         {
             Dispose(true);
             GC.SuppressFinalize(this);
-        }
-
-        /// <summary>
-        /// Insert bursting headers
-        /// </summary>
-        public static void AddBurstHeader(HttpContext context)
-        {
-            if (App.Config.BurstHeader)
-            {
-                context.Response.Headers.Add(CapacityHeader, $"service={App.Config.BurstService}, current-load={CpuPercent}, target-load={App.Config.BurstTarget}, max-load={App.Config.BurstMax}");
-            }
         }
 
         protected virtual void Dispose(bool disposing)
