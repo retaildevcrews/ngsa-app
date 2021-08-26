@@ -19,9 +19,6 @@ namespace Ngsa.Application
         private const int ClientTimeout = 5;
         private const int MetricsRefreshFrequency = 5;
         private const string CapacityHeader = "X-Load-Feedback";
-        private const string EnvBurstEndpoint = "BURST_SERVICE_ENDPOINT";
-        private const string EnvNamespace = "BURST_SERVICE_NS";
-        private const string EnvHPA = "BURST_SERVICE_HPA";
 
         private static readonly NgsaLog Logger = new NgsaLog { Name = typeof(BurstMetricsService).FullName };
         private static HttpClient client;
@@ -37,15 +34,13 @@ namespace Ngsa.Application
         {
             burstMetricsResult = string.Empty;
             Token = token;
-
-            // get burst service endpoint from env vars
-            string burstServiceHost = SetupBurstServiceEndpoint();
+            burstMetricsPath = $"{App.Config.BurstServiceNs}/{App.Config.BurstServiceHPA}";
 
             // ensure version is set for client's user-agent
             VersionExtension.Init();
 
-            // read burst service endpoint from env vars and setup http client
-            client = OpenHTTPClient(burstServiceHost);
+            // setup http client
+            client = OpenHTTPClient(App.Config.BurstServiceEndpoint);
         }
 
         /// <summary>
@@ -121,23 +116,6 @@ namespace Ngsa.Application
             }
         }
 
-        private static string SetupBurstServiceEndpoint()
-        {
-            // read burst service endpoint env variables
-            string baseAddress = Environment.GetEnvironmentVariable(EnvBurstEndpoint);
-            string ns = Environment.GetEnvironmentVariable(EnvNamespace);
-            string hpa = Environment.GetEnvironmentVariable(EnvHPA);
-            burstMetricsPath = $"{ns}/{hpa}";
-
-            // verify burst service endpoint
-            if (!Uri.IsWellFormedUriString($"{baseAddress}/{burstMetricsPath}", UriKind.Absolute))
-            {
-                throw new Exception("Burst metrics service endpoint is not a valid URI. Ensure you have set burst env vars.");
-            }
-
-            return baseAddress;
-        }
-
         private static HttpClient OpenHTTPClient(string baseAddress)
         {
             try
@@ -172,8 +150,7 @@ namespace Ngsa.Application
                 Logger.LogError("BurstMetricsServiceTimer", "Burst Metrics Service HTTP Client is null. Attempting to recreate.");
 
                 // recreate http client
-                string burstServiceHost = SetupBurstServiceEndpoint();
-                client = OpenHTTPClient(burstServiceHost);
+                client = OpenHTTPClient(App.Config.BurstServiceEndpoint);
                 return;
             }
 
