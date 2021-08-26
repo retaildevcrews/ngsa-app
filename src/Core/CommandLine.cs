@@ -62,6 +62,7 @@ namespace Ngsa.Application
                 // start burst metrics service
                 if (config.BurstHeader)
                 {
+                    BurstMetricsService.Init(ctCancel.Token);
                     BurstMetricsService.Start();
                 }
 

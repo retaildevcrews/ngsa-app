@@ -33,9 +33,10 @@ namespace Ngsa.Application
         /// <summary>
         /// Initializes burst metrics service
         /// </summary>
-        public static void Init()
+        public static void Init(CancellationToken token)
         {
             burstMetricsResult = string.Empty;
+            Token = token;
 
             // get burst service endpoint from env vars
             string burstServiceHost = SetupBurstServiceEndpoint();
@@ -52,10 +53,38 @@ namespace Ngsa.Application
         /// </summary>
         public static void Start()
         {
-            Init();
-
             // run timed burst metrics service
-            StartTimer();
+            timer = new ()
+            {
+                Enabled = true,
+                Interval = MetricsRefreshFrequency * 1000,
+            };
+            timer.Elapsed += TimerWork;
+
+            // Run once before the timer
+            TimerWork(null, null);
+
+            // Start the timer, it will be called after Interval
+            timer.Start();
+        }
+
+        /// <summary>
+        /// Stop collecting burst metrics
+        /// </summary>
+        public static void Stop()
+        {
+            if (timer != null)
+            {
+                timer.Stop();
+                timer.Dispose();
+                timer = null;
+            }
+
+            if (client != null)
+            {
+                client.Dispose();
+                client = null;
+            }
         }
 
         /// <summary>
@@ -88,16 +117,7 @@ namespace Ngsa.Application
         {
             if (disposing)
             {
-                if (timer != null)
-                {
-                    timer.Stop();
-                    timer.Dispose();
-                }
-
-                if (client != null)
-                {
-                    client.Dispose();
-                }
+                Stop();
             }
         }
 
@@ -137,40 +157,23 @@ namespace Ngsa.Application
             }
         }
 
-        private static void StartTimer()
-        {
-            timer = new ()
-            {
-                Enabled = true,
-                Interval = MetricsRefreshFrequency * 1000,
-            };
-            timer.Elapsed += TimerWork;
-
-            // Run once before the timer
-            TimerWork(null, null);
-
-            // Start the timer, it will be called after Interval
-            timer.Start();
-        }
-
         private static async void TimerWork(object state, ElapsedEventArgs e)
         {
             // exit if cancelled
             if (Token.IsCancellationRequested)
             {
-                timer.Stop();
-                timer.Dispose();
-                timer = null;
-                client.Dispose();
-                client = null;
-
+                Stop();
                 return;
             }
 
             // verify http client
             if (client == null)
             {
-                Logger.LogError("BurstMetricsServiceTimer", "Burst Metrics Service HTTP Client is null.");
+                Logger.LogError("BurstMetricsServiceTimer", "Burst Metrics Service HTTP Client is null. Attempting to recreate.");
+
+                // recreate http client
+                string burstServiceHost = SetupBurstServiceEndpoint();
+                client = OpenHTTPClient(burstServiceHost);
                 return;
             }
 
