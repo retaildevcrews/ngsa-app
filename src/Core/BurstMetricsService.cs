@@ -22,26 +22,37 @@ namespace Ngsa.Application
         private const string EnvBurstEndpoint = "BURST_SERVICE_ENDPOINT";
         private const string EnvNamespace = "BURST_SERVICE_NS";
         private const string EnvHPA = "BURST_SERVICE_HPA";
-        private readonly NgsaLog logger;
-        private HttpClient client;
-        private System.Timers.Timer timer;
-        private string burstMetricsPath;
-        private string burstMetricsResult;
-        public CancellationToken Token { get; set; }
+
+        private static readonly NgsaLog Logger = new NgsaLog { Name = typeof(BurstMetricsService).FullName };
+        private static HttpClient client;
+        private static System.Timers.Timer timer;
+        private static string burstMetricsPath;
+        private static string burstMetricsResult;
+        private static CancellationToken Token { get; set; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="BurstMetricsService"/> class.
+        /// Initializes burst metrics service
         /// </summary>
-        public BurstMetricsService()
+        public static void Init()
         {
-            logger = new NgsaLog { Name = typeof(BurstMetricsService).FullName };
             burstMetricsResult = string.Empty;
 
             // get burst service endpoint from env vars
             string burstServiceHost = SetupBurstServiceEndpoint();
 
+            // ensure version is set for client's user-agent
+            VersionExtension.Init();
+
             // read burst service endpoint from env vars and setup http client
             client = OpenHTTPClient(burstServiceHost);
+        }
+
+        /// <summary>
+        /// Start consuming data from burst metrics service
+        /// </summary>
+        public static void Start()
+        {
+            Init();
 
             // run timed burst metrics service
             StartTimer();
@@ -50,7 +61,7 @@ namespace Ngsa.Application
         /// <summary>
         /// Return burst metrics
         /// </summary>
-        public string GetBurstMetrics()
+        public static string GetBurstMetrics()
         {
             return burstMetricsResult;
         }
@@ -59,9 +70,9 @@ namespace Ngsa.Application
         /// Inject burst metrics, if present, into the response header
         /// </summary>
         /// <param name="context">response context</param>
-        public void InjectBurstMetricsHeader(HttpContext context)
+        public static void InjectBurstMetricsHeader(HttpContext context)
         {
-            if (!string.IsNullOrEmpty(burstMetricsResult))
+            if (App.Config.BurstHeader && !string.IsNullOrEmpty(burstMetricsResult))
             {
                 context.Response.Headers.Add(CapacityHeader, burstMetricsResult);
             }
@@ -90,7 +101,7 @@ namespace Ngsa.Application
             }
         }
 
-        private string SetupBurstServiceEndpoint()
+        private static string SetupBurstServiceEndpoint()
         {
             // read burst service endpoint env variables
             string baseAddress = Environment.GetEnvironmentVariable(EnvBurstEndpoint);
@@ -107,7 +118,7 @@ namespace Ngsa.Application
             return baseAddress;
         }
 
-        private HttpClient OpenHTTPClient(string baseAddress)
+        private static HttpClient OpenHTTPClient(string baseAddress)
         {
             try
             {
@@ -126,7 +137,7 @@ namespace Ngsa.Application
             }
         }
 
-        private void StartTimer()
+        private static void StartTimer()
         {
             timer = new ()
             {
@@ -136,13 +147,13 @@ namespace Ngsa.Application
             timer.Elapsed += TimerWork;
 
             // Run once before the timer
-            TimerWork(this, null);
+            TimerWork(null, null);
 
             // Start the timer, it will be called after Interval
             timer.Start();
         }
 
-        private async void TimerWork(object state, ElapsedEventArgs e)
+        private static async void TimerWork(object state, ElapsedEventArgs e)
         {
             // exit if cancelled
             if (Token.IsCancellationRequested)
@@ -159,7 +170,7 @@ namespace Ngsa.Application
             // verify http client
             if (client == null)
             {
-                logger.LogError("BurstMetricsServiceTimer", "Burst Metrics Service HTTP Client is null.");
+                Logger.LogError("BurstMetricsServiceTimer", "Burst Metrics Service HTTP Client is null.");
                 return;
             }
 
@@ -174,12 +185,12 @@ namespace Ngsa.Application
                 else
                 {
                     burstMetricsResult = string.Empty;
-                    logger.LogWarning("BurstMetricsServiceTimer", "Received error status code from burst service.", new LogEventId((int)resp.StatusCode, resp.StatusCode.ToString()));
+                    Logger.LogWarning("BurstMetricsServiceTimer", "Received error status code from burst service.", new LogEventId((int)resp.StatusCode, resp.StatusCode.ToString()));
                 }
             }
             catch (Exception ex)
             {
-                logger.LogError("BurstMetricsServiceTimer", "Failed to get response from burst service.", ex: ex);
+                Logger.LogError("BurstMetricsServiceTimer", "Failed to get response from burst service.", ex: ex);
             }
         }
     }

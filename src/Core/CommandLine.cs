@@ -59,11 +59,10 @@ namespace Ngsa.Application
                 // log startup messages
                 LogStartup(logger);
 
-                // set burst metrics service
+                // start burst metrics service
                 if (config.BurstHeader)
                 {
-                    Console.WriteLine(config.BurstHeader);
-                    Config.BurstMetricsService = new BurstMetricsService();
+                    BurstMetricsService.Start();
                 }
 
                 // start the webserver

@@ -66,10 +66,7 @@ namespace Ngsa.Middleware
                     // return the version info
                     context.Response.ContentType = "text/plain";
 
-                    if (App.Config.BurstHeader)
-                    {
-                        App.Config.BurstMetricsService.InjectBurstMetricsHeader(context);
-                    }
+                    BurstMetricsService.InjectBurstMetricsHeader(context);
 
                     await context.Response.Body.WriteAsync(responseBytes).ConfigureAwait(false);
                 }
