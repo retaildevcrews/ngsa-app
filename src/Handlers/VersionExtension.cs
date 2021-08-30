@@ -53,6 +53,11 @@ namespace Ngsa.Middleware
         /// <returns>IApplicationBuilder</returns>
         public static IApplicationBuilder UseVersion(this IApplicationBuilder builder)
         {
+            if (string.IsNullOrWhiteSpace(version))
+            {
+                Init();
+            }
+
             responseBytes = System.Text.Encoding.UTF8.GetBytes(version);
 
             // implement the middleware
