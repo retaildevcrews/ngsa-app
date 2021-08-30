@@ -36,9 +36,9 @@ namespace Ngsa.Application
         public InMemoryDal CacheDal { get; set; }
         public IDAL CosmosDal { get; set; }
         public bool BurstHeader { get; set; }
-        public string BurstService { get; set; }
-        public int BurstTarget { get; set; }
-        public int BurstMax { get; set; }
+        public string BurstServiceEndpoint { get; set; } = string.Empty;
+        public string BurstServiceNs { get; set; } = string.Empty;
+        public string BurstServiceHPA { get; set; } = string.Empty;
         public string UrlPrefix { get; set; }
 
         public void SetConfig(Config config)
@@ -57,9 +57,9 @@ namespace Ngsa.Application
             CacheDal = config.CacheDal;
             CosmosDal = config.CosmosDal;
             BurstHeader = config.BurstHeader;
-            BurstService = config.BurstService;
-            BurstMax = config.BurstMax;
-            BurstTarget = config.BurstTarget;
+            BurstServiceEndpoint = config.BurstServiceEndpoint;
+            BurstServiceNs = config.BurstServiceNs;
+            BurstServiceHPA = config.BurstServiceHPA;
             UrlPrefix = string.IsNullOrWhiteSpace(config.UrlPrefix) ? string.Empty : config.UrlPrefix;
 
             // remove trailing / if present

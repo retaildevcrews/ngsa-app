@@ -8,7 +8,6 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 using Ngsa.Application.DataAccessLayer;
 using Ngsa.Application.Model;
-using Ngsa.Middleware;
 
 namespace Ngsa.Application.Controllers
 {
@@ -60,7 +59,7 @@ namespace Ngsa.Application.Controllers
                 StatusCode = res.Status == HealthStatus.Unhealthy ? (int)System.Net.HttpStatusCode.ServiceUnavailable : (int)System.Net.HttpStatusCode.OK,
             };
 
-            CpuCounter.AddBurstHeader(Response.HttpContext);
+            BurstMetricsService.InjectBurstMetricsHeader(Response.HttpContext);
 
             return result;
         }

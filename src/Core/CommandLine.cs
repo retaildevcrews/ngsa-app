@@ -59,6 +59,13 @@ namespace Ngsa.Application
                 // log startup messages
                 LogStartup(logger);
 
+                // start burst metrics service
+                if (config.BurstHeader)
+                {
+                    BurstMetricsService.Init(ctCancel.Token);
+                    BurstMetricsService.Start();
+                }
+
                 // start the webserver
                 Task w = host.RunAsync();
 
@@ -98,10 +105,10 @@ namespace Ngsa.Application
             root.AddOption(EnvVarOption(new string[] { "--url-prefix" }, "URL prefix for ingress mapping", string.Empty));
             root.AddOption(EnvVarOption(new string[] { "--port" }, "Listen Port", 8080, 1, (64 * 1024) - 1));
             root.AddOption(EnvVarOption(new string[] { "--cache-duration", "-d" }, "Cache for duration (seconds)", 300, 1));
-            root.AddOption(EnvVarOption(new string[] { "--burst-header" }, "Enable burst metrics header in healthz", false));
-            root.AddOption(EnvVarOption(new string[] { "--burst-service" }, "Service name for bursting metrics", string.Empty));
-            root.AddOption(EnvVarOption(new string[] { "--burst-target" }, "Target level for bursting metrics (int)", 60, 1, 100));
-            root.AddOption(EnvVarOption(new string[] { "--burst-max" }, "Max level for bursting metrics (int)", 80, 1, 100));
+            root.AddOption(EnvVarOption(new string[] { "--burst-header" }, "Enable burst metrics header in health and version endpoints. If true, the other burst-service* args/env must be set.", false));
+            root.AddOption(EnvVarOption(new string[] { "--burst-service-endpoint" }, "Burst metrics service endpoint", string.Empty));
+            root.AddOption(EnvVarOption(new string[] { "--burst-service-ns" }, "Namespace parameter for burst metrics service", string.Empty));
+            root.AddOption(EnvVarOption(new string[] { "--burst-service-hpa" }, "HPA name parameter for burst metrics service", string.Empty));
             root.AddOption(EnvVarOption(new string[] { "--retries" }, "Cosmos 429 retries", 10, 0));
             root.AddOption(EnvVarOption(new string[] { "--timeout" }, "Request timeout", 10, 1));
             root.AddOption(EnvVarOption(new string[] { "--data-service", "-s" }, "Data Service URL", string.Empty));
@@ -135,9 +142,12 @@ namespace Ngsa.Application
                 string secrets = result.Children.FirstOrDefault(c => c.Symbol.Name == "secrets-volume") is OptionResult secretsRes ? secretsRes.GetValueOrDefault<string>() : string.Empty;
                 string dataService = result.Children.FirstOrDefault(c => c.Symbol.Name == "data-service") is OptionResult dsRes ? dsRes.GetValueOrDefault<string>() : string.Empty;
                 string urlPrefix = result.Children.FirstOrDefault(c => c.Symbol.Name == "urlPrefix") is OptionResult urlRes ? urlRes.GetValueOrDefault<string>() : string.Empty;
-                string burstService = result.Children.FirstOrDefault(c => c.Symbol.Name == "burst-service") is OptionResult bsRes ? bsRes.GetValueOrDefault<string>() : string.Empty;
+                string bsEndpoint = result.Children.FirstOrDefault(c => c.Symbol.Name == "burst-service-endpoint") is OptionResult bsEndpointRes ? bsEndpointRes.GetValueOrDefault<string>() : string.Empty;
+                string bsNamespace = result.Children.FirstOrDefault(c => c.Symbol.Name == "burst-service-ns") is OptionResult bsNamespaceRes ? bsNamespaceRes.GetValueOrDefault<string>() : string.Empty;
+                string bsHpa = result.Children.FirstOrDefault(c => c.Symbol.Name == "burst-service-hpa") is OptionResult bsHpaRes ? bsHpaRes.GetValueOrDefault<string>() : string.Empty;
                 bool inMemory = result.Children.FirstOrDefault(c => c.Symbol.Name == "in-memory") is OptionResult inMemoryRes && inMemoryRes.GetValueOrDefault<bool>();
                 bool noCache = result.Children.FirstOrDefault(c => c.Symbol.Name == "no-cache") is OptionResult noCacheRes && noCacheRes.GetValueOrDefault<bool>();
+                bool burstHeader = result.Children.FirstOrDefault(c => c.Symbol.Name == "burst-header") is OptionResult burstHeaderRes && burstHeaderRes.GetValueOrDefault<bool>();
 
                 // validate url-prefix
                 if (!string.IsNullOrWhiteSpace(urlPrefix))
@@ -185,21 +195,6 @@ namespace Ngsa.Application
                     }
                 }
 
-                // validate burst-service
-                if (!string.IsNullOrWhiteSpace(burstService))
-                {
-                    burstService = burstService.Trim();
-
-                    if (burstService.Length > 64 ||
-                        burstService.Contains('\n') ||
-                        burstService.Contains('\t') ||
-                        burstService.Contains(' ') ||
-                        burstService.Contains('\r'))
-                    {
-                        msg += "--burst-service is invalid";
-                    }
-                }
-
                 // validate secrets volume
                 if (!inMemory && appType == AppType.App)
                 {
@@ -221,6 +216,21 @@ namespace Ngsa.Application
                         {
                             msg += $"--secrets-volume exception: {ex.Message}\n";
                         }
+                    }
+                }
+
+                // validate burst headers
+                if (burstHeader)
+                {
+                    if (string.IsNullOrWhiteSpace(bsEndpoint) ||
+                        string.IsNullOrWhiteSpace(bsNamespace) ||
+                        string.IsNullOrWhiteSpace(bsHpa))
+                    {
+                        msg += "burst metrics service variable(s) cannot be empty\n";
+                    }
+                    else if (!Uri.IsWellFormedUriString($"{bsEndpoint}/{bsNamespace}/{bsHpa}", UriKind.Absolute))
+                    {
+                        msg += "burst metrics service endpoint is not a valid URI\n";
                     }
                 }
 
@@ -402,13 +412,6 @@ namespace Ngsa.Application
                 {
                     Config.CosmosDal = new DataAccessLayer.CosmosDal(Config.Secrets, Config);
                 }
-            }
-
-            // set burst headers service name
-            if (string.IsNullOrWhiteSpace(Config.BurstService))
-            {
-                VersionExtension.Init();
-                Config.BurstService = VersionExtension.Name;
             }
 
             SetLoggerConfig();

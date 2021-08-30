@@ -16,7 +16,7 @@ namespace Ngsa.Middleware
         // cached values
         private static byte[] responseBytes;
         private static string version = string.Empty;
-        private static string name = string.Empty;
+        private static string shortVersion = string.Empty;
 
         /// <summary>
         /// Gets the app version
@@ -24,12 +24,12 @@ namespace Ngsa.Middleware
         public static string Version => version;
 
         /// <summary>
-        /// Gets the app name
+        /// Gets the app short version
         /// </summary>
-        public static string Name => name;
+        public static string ShortVersion => shortVersion;
 
         /// <summary>
-        /// Cache version and application name values with reflection
+        /// Cache version values with reflection
         /// </summary>
         public static void Init()
         {
@@ -37,12 +37,12 @@ namespace Ngsa.Middleware
             if (Attribute.GetCustomAttribute(Assembly.GetEntryAssembly(), typeof(AssemblyInformationalVersionAttribute)) is AssemblyInformationalVersionAttribute v)
             {
                 version = v.InformationalVersion;
-            }
+                shortVersion = version;
 
-            // cache the application name
-            if (Attribute.GetCustomAttribute(Assembly.GetEntryAssembly(), typeof(AssemblyTitleAttribute)) is AssemblyTitleAttribute n)
-            {
-                name = n.Title;
+                if (version.Contains('-', StringComparison.OrdinalIgnoreCase))
+                {
+                    shortVersion = version.Substring(0, version.IndexOf('-', StringComparison.OrdinalIgnoreCase));
+                }
             }
         }
 
@@ -50,12 +50,9 @@ namespace Ngsa.Middleware
         /// Middleware extension method to handle /version request
         /// </summary>
         /// <param name="builder">this IApplicationBuilder</param>
-        /// <param name="burstServiceName">service name for bursting</param>
         /// <returns>IApplicationBuilder</returns>
         public static IApplicationBuilder UseVersion(this IApplicationBuilder builder)
         {
-            Init();
-
             responseBytes = System.Text.Encoding.UTF8.GetBytes(version);
 
             // implement the middleware
@@ -69,7 +66,7 @@ namespace Ngsa.Middleware
                     // return the version info
                     context.Response.ContentType = "text/plain";
 
-                    CpuCounter.AddBurstHeader(context);
+                    BurstMetricsService.InjectBurstMetricsHeader(context);
 
                     await context.Response.Body.WriteAsync(responseBytes).ConfigureAwait(false);
                 }
