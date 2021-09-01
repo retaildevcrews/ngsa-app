@@ -21,14 +21,14 @@ namespace Ngsa.Application.Controllers
     public static class DataService
     {
         // json serialization options
-        private static readonly JsonSerializerOptions Options = new JsonSerializerOptions
+        private static readonly JsonSerializerOptions Options = new ()
         {
             IgnoreNullValues = true,
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         };
 
         // http client used to call data layer
-        private static readonly HttpClient Client = new HttpClient
+        private static readonly HttpClient Client = new ()
         {
             BaseAddress = new Uri(App.Config.DataService),
         };
@@ -52,7 +52,7 @@ namespace Ngsa.Application.Controllers
 
             try
             {
-                HttpRequestMessage req = new HttpRequestMessage(HttpMethod.Get, path);
+                HttpRequestMessage req = new (HttpMethod.Get, path);
 
                 if (cVector != null)
                 {
@@ -96,7 +96,7 @@ namespace Ngsa.Application.Controllers
 
             try
             {
-                HttpRequestMessage req = new HttpRequestMessage(HttpMethod.Put, path);
+                HttpRequestMessage req = new (HttpMethod.Put, path);
 
                 if (cVector != null)
                 {
@@ -142,7 +142,7 @@ namespace Ngsa.Application.Controllers
 
             try
             {
-                HttpRequestMessage req = new HttpRequestMessage(HttpMethod.Delete, path);
+                HttpRequestMessage req = new (HttpMethod.Delete, path);
 
                 if (cVector != null)
                 {

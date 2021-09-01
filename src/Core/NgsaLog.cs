@@ -15,7 +15,7 @@ namespace Ngsa.Middleware
     {
         public const string MessageInvalidQueryString = "Invalid query string";
 
-        private static readonly JsonSerializerOptions Options = new JsonSerializerOptions
+        private static readonly JsonSerializerOptions Options = new ()
         {
             IgnoreNullValues = true,
         };
@@ -124,7 +124,7 @@ namespace Ngsa.Middleware
         // convert log to dictionary
         private Dictionary<string, object> GetDictionary(string method, string message, LogLevel logLevel, LogEventId eventId = null, HttpContext context = null, Dictionary<string, object> dictionary = null)
         {
-            Dictionary<string, object> data = new Dictionary<string, object>
+            Dictionary<string, object> data = new ()
             {
                 { "Date", DateTime.UtcNow },
                 { "LogName", Name },

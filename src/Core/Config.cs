@@ -8,7 +8,14 @@ namespace Ngsa.Application
 {
     public enum AppType
     {
+        /// <summary>
+        /// The app type.
+        /// </summary>
         App,
+
+        /// <summary>
+        /// The web API type.
+        /// </summary>
         WebAPI,
     }
 

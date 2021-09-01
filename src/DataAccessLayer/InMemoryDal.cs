@@ -36,14 +36,14 @@ namespace Ngsa.Application.DataAccessLayer
         private readonly List<string> genreList;
 
         // Lucene in-memory index
-        private readonly IndexWriter writer = new IndexWriter(new RAMDirectory(), new IndexWriterConfig(Version, new StandardAnalyzer(Version)));
+        private readonly IndexWriter writer = new (new RAMDirectory(), new IndexWriterConfig(Version, new StandardAnalyzer(Version)));
 
         /// <summary>
         /// Initializes a new instance of the <see cref="InMemoryDal"/> class.
         /// </summary>
         public InMemoryDal()
         {
-            JsonSerializerOptions jsonOptions = new JsonSerializerOptions
+            JsonSerializerOptions jsonOptions = new ()
             {
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
             };
@@ -99,7 +99,7 @@ namespace Ngsa.Application.DataAccessLayer
         /// <returns>Actor object</returns>
         public Actor GetActor(string actorId)
         {
-            IndexSearcher searcher = new IndexSearcher(writer.GetReader(true));
+            IndexSearcher searcher = new (writer.GetReader(true));
 
             // search by actorId
             TopDocs hits = searcher.Search(new PhraseQuery { new Term("actorId", actorId) }, 1);
@@ -183,7 +183,7 @@ namespace Ngsa.Application.DataAccessLayer
         /// <returns>List of Actor</returns>
         public List<Actor> GetActors(string q, int offset = 0, int limit = 100)
         {
-            List<Actor> res = new List<Actor>();
+            List<Actor> res = new ();
             int start = 0;
             int end = limit;
 
@@ -194,10 +194,10 @@ namespace Ngsa.Application.DataAccessLayer
                 end = start + limit;
             }
 
-            IndexSearcher searcher = new IndexSearcher(writer.GetReader(true));
+            IndexSearcher searcher = new (writer.GetReader(true));
 
             // type == Actor
-            BooleanQuery bq = new BooleanQuery
+            BooleanQuery bq = new ()
             {
                 { new PhraseQuery { new Term("type", "Actor") }, Occur.MUST },
             };
@@ -297,7 +297,7 @@ namespace Ngsa.Application.DataAccessLayer
         {
             if (movieId.StartsWith("tt"))
             {
-                IndexSearcher searcher = new IndexSearcher(writer.GetReader(true));
+                IndexSearcher searcher = new (writer.GetReader(true));
 
                 // search by movieId
                 TopDocs hits = searcher.Search(new PhraseQuery { new Term("movieId", movieId) }, 1);
@@ -381,7 +381,7 @@ namespace Ngsa.Application.DataAccessLayer
         /// <returns>List of Movie</returns>
         public List<Movie> GetMovies(string q, string genre, int year = 0, double rating = 0.0, string actorId = "", int offset = 0, int limit = 100)
         {
-            List<Movie> res = new List<Movie>();
+            List<Movie> res = new ();
 
             int start = 0;
             int end = limit;
@@ -393,10 +393,10 @@ namespace Ngsa.Application.DataAccessLayer
                 end = start + limit;
             }
 
-            IndexSearcher searcher = new IndexSearcher(writer.GetReader(true));
+            IndexSearcher searcher = new (writer.GetReader(true));
 
             // type == Movie
-            BooleanQuery bq = new BooleanQuery
+            BooleanQuery bq = new ()
             {
                 { new PhraseQuery { new Term("type", "Movie") }, Occur.MUST },
             };
@@ -514,7 +514,7 @@ namespace Ngsa.Application.DataAccessLayer
         // load genre list from json file
         private static List<string> LoadGenres(JsonSerializerOptions options)
         {
-            List<string> genres = new List<string>();
+            List<string> genres = new ();
 
             // load the data from the json file
             List<Genre> list = JsonSerializer.Deserialize<List<Genre>>(File.ReadAllText("src/data/genres.json"), options);

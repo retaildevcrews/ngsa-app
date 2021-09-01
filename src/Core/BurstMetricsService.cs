@@ -20,7 +20,7 @@ namespace Ngsa.Application
         private const int MetricsRefreshFrequency = 5;
         private const string CapacityHeader = "X-Load-Feedback";
 
-        private static readonly NgsaLog Logger = new NgsaLog { Name = typeof(BurstMetricsService).FullName };
+        private static readonly NgsaLog Logger = new () { Name = typeof(BurstMetricsService).FullName };
         private static HttpClient client;
         private static System.Timers.Timer timer;
         private static string burstMetricsPath;
@@ -30,6 +30,7 @@ namespace Ngsa.Application
         /// <summary>
         /// Initializes burst metrics service
         /// </summary>
+        /// <param name="token">Cancellation token.</param>
         public static void Init(CancellationToken token)
         {
             burstMetricsResult = string.Empty;
@@ -85,6 +86,7 @@ namespace Ngsa.Application
         /// <summary>
         /// Return burst metrics
         /// </summary>
+        /// <returns>Burst Metrics Header String.</returns>
         public static string GetBurstMetrics()
         {
             return burstMetricsResult;

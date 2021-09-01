@@ -14,7 +14,7 @@ namespace Ngsa.Application.Controllers
     [Route("api/[controller]")]
     public class BenchmarkController : Controller
     {
-        private static readonly NgsaLog Logger = new NgsaLog
+        private static readonly NgsaLog Logger = new ()
         {
             Name = typeof(BenchmarkController).FullName,
             ErrorMessage = "BenchmarkControllerException",
@@ -34,7 +34,7 @@ namespace Ngsa.Application.Controllers
             // validate size
             if (size < 1)
             {
-                List<Middleware.Validation.ValidationError> list = new List<Middleware.Validation.ValidationError>
+                List<Middleware.Validation.ValidationError> list = new ()
                 {
                     new Middleware.Validation.ValidationError
                     {
@@ -50,7 +50,7 @@ namespace Ngsa.Application.Controllers
 
             if (size > 1024 * 1024)
             {
-                List<Middleware.Validation.ValidationError> list = new List<Middleware.Validation.ValidationError>
+                List<Middleware.Validation.ValidationError> list = new ()
                 {
                     new Middleware.Validation.ValidationError
                     {

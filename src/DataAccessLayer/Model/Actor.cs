@@ -100,7 +100,7 @@ namespace Imdb.Model
         /// <returns>Lucene Document</returns>
         public Document ToDocument()
         {
-            Document doc = new Document
+            Document doc = new ()
             {
                 new StringField("id", Id, Store.YES),
                 new Int32Field("partitionKey", int.Parse(PartitionKey), Store.YES),

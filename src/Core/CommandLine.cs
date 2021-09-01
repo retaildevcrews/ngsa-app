@@ -21,7 +21,7 @@ namespace Ngsa.Application
     public sealed partial class App
     {
         // capture parse errors from env vars
-        private static readonly List<string> EnvVarErrors = new List<string>();
+        private static readonly List<string> EnvVarErrors = new ();
 
         /// <summary>
         /// Run the app
@@ -30,7 +30,7 @@ namespace Ngsa.Application
         /// <returns>status</returns>
         public static async Task<int> RunApp(Config config)
         {
-            NgsaLog logger = new NgsaLog { Name = typeof(App).FullName };
+            NgsaLog logger = new () { Name = typeof(App).FullName };
 
             // start collecting CPU usage
             CpuCounter.Start();
@@ -90,7 +90,7 @@ namespace Ngsa.Application
         /// <returns>RootCommand</returns>
         public static RootCommand BuildRootCommand()
         {
-            RootCommand root = new RootCommand
+            RootCommand root = new ()
             {
                 Name = "Ngsa.Application",
                 Description = "NGSA Validation App",
@@ -314,7 +314,7 @@ namespace Ngsa.Application
                 }
             }
 
-            Option<int> opt = new Option<int>(names, () => value, description);
+            Option<int> opt = new (names, () => value, description);
 
             opt.AddValidator((res) =>
             {

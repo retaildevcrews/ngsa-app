@@ -36,7 +36,7 @@ namespace Ngsa.Application
             }
 
             // get k8s secrets from volume
-            Secrets sec = new Secrets
+            Secrets sec = new ()
             {
                 Volume = volume,
                 CosmosCollection = GetSecretFromFile(volume, "CosmosCollection"),
