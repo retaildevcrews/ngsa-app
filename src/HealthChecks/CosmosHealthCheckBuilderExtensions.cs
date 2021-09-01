@@ -16,9 +16,7 @@ namespace Ngsa.Application
             IEnumerable<string> tags = null)
         {
             // Register a check of type Cosmos
-            builder.AddCheck<CosmosHealthCheck>(name, failureStatus ?? HealthStatus.Degraded, tags);
-
-            return builder;
+            return builder.AddCheck<CosmosHealthCheck>(name, failureStatus ?? HealthStatus.Degraded, tags);
         }
     }
 }

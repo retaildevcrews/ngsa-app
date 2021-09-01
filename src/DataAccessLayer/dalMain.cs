@@ -15,8 +15,8 @@ namespace Ngsa.Application.DataAccessLayer
     /// </summary>
     public partial class CosmosDal : IDAL, IDisposable
     {
-        private readonly CacheItemPolicy cachePolicy = new CacheItemPolicy { SlidingExpiration = TimeSpan.FromMinutes(5) };
-        private readonly MemoryCache cache = new MemoryCache("cache");
+        private readonly CacheItemPolicy cachePolicy = new () { SlidingExpiration = TimeSpan.FromMinutes(5) };
+        private readonly MemoryCache cache = new ("cache");
         private readonly CosmosConfig cosmosDetails;
         private bool disposedValue;
 
@@ -55,7 +55,7 @@ namespace Ngsa.Application.DataAccessLayer
         /// <returns>IEnumerable T</returns>
         private static async Task<IEnumerable<T>> InternalCosmosDbResults<T>(FeedIterator<T> query)
         {
-            List<T> results = new List<T>();
+            List<T> results = new ();
 
             while (query.HasMoreResults)
             {
@@ -100,7 +100,7 @@ namespace Ngsa.Application.DataAccessLayer
             }
 
             // open and test a new client / container
-            CosmosClient c = new CosmosClient(cosmosServer, cosmosKey, cosmosDetails.CosmosClientOptions);
+            CosmosClient c = new (cosmosServer, cosmosKey, cosmosDetails.CosmosClientOptions);
             Container con = c.GetContainer(cosmosDatabase, cosmosCollection);
             await con.ReadItemAsync<dynamic>("action", new PartitionKey("0")).ConfigureAwait(false);
 

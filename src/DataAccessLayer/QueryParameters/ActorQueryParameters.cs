@@ -22,7 +22,7 @@ namespace Ngsa.Middleware
         /// <returns>empty list on valid</returns>
         public static List<ValidationError> ValidateActorId(string actorId)
         {
-            List<ValidationError> errors = new List<ValidationError>();
+            List<ValidationError> errors = new ();
 
             if (!string.IsNullOrWhiteSpace(actorId) &&
                     (actorId != actorId.ToLowerInvariant().Trim() ||
@@ -53,7 +53,7 @@ namespace Ngsa.Middleware
         /// <returns>list of validation errors or empty list</returns>
         public List<ValidationError> Validate()
         {
-            List<ValidationError> errors = new List<ValidationError>();
+            List<ValidationError> errors = new ();
 
             if (!string.IsNullOrWhiteSpace(Q) &&
                 (Q.Length < 2 || Q.Length > 20))
