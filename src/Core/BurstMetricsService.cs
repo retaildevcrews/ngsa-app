@@ -30,6 +30,7 @@ namespace Ngsa.Application
         /// <summary>
         /// Initializes burst metrics service
         /// </summary>
+        /// <param name="token">Cancellation token.</param>
         public static void Init(CancellationToken token)
         {
             burstMetricsResult = string.Empty;
@@ -85,6 +86,7 @@ namespace Ngsa.Application
         /// <summary>
         /// Return burst metrics
         /// </summary>
+        /// <returns>Burst Metrics Header String.</returns>
         public static string GetBurstMetrics()
         {
             return burstMetricsResult;

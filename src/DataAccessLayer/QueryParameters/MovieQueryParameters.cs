@@ -55,7 +55,6 @@ namespace Ngsa.Middleware
         /// Validate this object
         /// </summary>
         /// <returns>list of validation errors or empty list</returns>
-
         public List<ValidationError> Validate()
         {
             List<ValidationError> errors = new ();

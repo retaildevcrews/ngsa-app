@@ -113,6 +113,7 @@ namespace Ngsa.Application.DataAccessLayer
         /// <typeparam name="T">POCO type to which results are serialized and returned.</typeparam>
         /// <param name="queryDefinition">Query to be executed.</param>
         /// <returns>Enumerable list of objects of type T.</returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "it will be refactored later.")]
         private async Task<IEnumerable<T>> InternalCosmosDBSqlQuery<T>(QueryDefinition queryDefinition)
         {
             // run query
