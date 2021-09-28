@@ -14,7 +14,7 @@ spec:
     metadata:
       labels:
         app: {{gitops.name}}
-        aadpodidbinding: {{gitops.config.asb.ngsa.mi.name}}
+        aadpodidbinding: {{gitops.config.mi.name}}
       annotations:
         prometheus.io/scrape: 'true'
         prometheus.io/port: '8080'
@@ -94,9 +94,9 @@ metadata:
 spec:
   tls:
   - hosts:
-      - {{gitops.config.asb.domain}}
+      - {{gitops.config.domain}}
   rules:
-  - host: {{gitops.config.asb.domain}}
+  - host: {{gitops.config.domain}}
     http:
       paths:
       - path: /cosmos
