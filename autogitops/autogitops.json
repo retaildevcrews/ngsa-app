@@ -1,7 +1,7 @@
 {
-    "name": "ngsa-memory",
+    "name": "ngsa-cosmos",
     "namespace": "ngsa",
     "imageName": "ghcr.io/retaildevcrews/ngsa-app",
     "imageTag": "beta",
-    "targets": ["preprod-east"]
+    "targets": ["ngsadev"]
 }
