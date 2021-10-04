@@ -13,8 +13,10 @@ spec:
   template:
     metadata:
       labels:
-        app: {{gitops.name}}
         aadpodidbinding: {{gitops.config.mi.name}}
+        app: {{gitops.name}}
+        deploy: {{gitops.deploy}}
+        version: beta-{{gitops.version}}
       annotations:
         prometheus.io/scrape: 'true'
         prometheus.io/port: '8080'
