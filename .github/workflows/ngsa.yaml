@@ -7,7 +7,7 @@ on:
 
   push:
     branches:
-      - main
+      - joaquinrz-ngsaMemory
 
     paths:
     - 'Dockerfile'
@@ -122,4 +122,7 @@ jobs:
 
     - name: GitOps Deploy
       run: |
-        docker run ghcr.io/retaildevcrews/autogitops:beta -u ${{ secrets.GHCR_ID }} -p ${{ secrets.GHCR_PAT }} -r /retaildevcrews/ngsa-asb
+        dotnet tool install -g autogitops --version 0.0.3-beta-1 --add-source nupkg 
+        git config --get user.email
+        git config --get user.name
+        ago -u ${{ secrets.GHCR_ID }} -p ${{ secrets.GHCR_PAT }} -r /retaildevcrews/ngsa-asb
