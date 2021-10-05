@@ -1,20 +1,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{gitops.name}}
+  name: {{gitops.name}}-cosmos
   namespace: {{gitops.namespace}}
   labels:
-    app.kubernetes.io/name: {{gitops.name}}
+    app.kubernetes.io/name: {{gitops.name}}-cosmos
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: {{gitops.name}}
+      app: {{gitops.name}}-cosmos
   template:
     metadata:
       labels:
         aadpodidbinding: {{gitops.config.mi.name}}
-        app: {{gitops.name}}
+        app: {{gitops.name}}-cosmos
         deploy: {{gitops.deploy}}
         version: beta-{{gitops.version}}
       annotations:
@@ -25,7 +25,6 @@ spec:
         - name: app
           image: {{gitops.imageName}}:{{gitops.imageTag}}
           imagePullPolicy: Always
-
           args:
           - --prometheus
           - --url-prefix
@@ -34,12 +33,10 @@ spec:
           - {{gitops.config.zone}}
           - --region
           - {{gitops.config.region}}
-
           ports:
             - name: http
               containerPort: 8080
               protocol: TCP
-
           resources:
             limits:
               cpu: 500m
@@ -47,7 +44,6 @@ spec:
             requests:
               cpu: 500m
               memory: 512Mi
-
           volumeMounts:
             - name: secrets
               mountPath: "/app/secrets"
@@ -58,7 +54,6 @@ spec:
             readOnly: true
             volumeAttributes:
               secretProviderClass: ngsa-secrets
-
       nodeSelector:
         agentpool: npuser01
 
@@ -67,7 +62,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{gitops.name}}
+  name: {{gitops.name}}-cosmos
   namespace: {{gitops.namespace}}
 spec:
   type: ClusterIP
@@ -77,14 +72,14 @@ spec:
       protocol: TCP
       name: http
   selector:
-    app: {{gitops.name}}
+    app: {{gitops.name}}-cosmos
 
 ---
 
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: {{gitops.name}}-ingress
+  name: {{gitops.name}}-cosmos-ingress
   namespace: {{gitops.namespace}}
   annotations:
     kubernetes.io/ingress.allow-http: "false"
@@ -105,6 +100,6 @@ spec:
         pathType: Prefix
         backend:
           service:
-            name: {{gitops.name}}
+            name: {{gitops.name}}-cosmos
             port:
               number: 8080
