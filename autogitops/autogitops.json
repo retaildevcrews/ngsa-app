@@ -1,5 +1,5 @@
 {
-    "name": "ngsa-cosmos",
+    "name": "ngsa",
     "namespace": "ngsa",
     "imageName": "ghcr.io/retaildevcrews/ngsa-app",
     "imageTag": "beta",
