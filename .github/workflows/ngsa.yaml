@@ -123,6 +123,5 @@ jobs:
     - name: GitOps Deploy
       run: |
         dotnet tool install -g autogitops --version 0.0.3-beta-1 --add-source nupkg 
-        git config --get user.email
-        git config --get user.name
+        git config -l 
         ago -u ${{ secrets.GHCR_ID }} -p ${{ secrets.GHCR_PAT }} -r /retaildevcrews/ngsa-asb
