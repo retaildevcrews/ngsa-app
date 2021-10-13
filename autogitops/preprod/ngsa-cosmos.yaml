@@ -27,6 +27,7 @@ spec:
           imagePullPolicy: Always
           args:
           - --prometheus
+          - --no-cache
           - --url-prefix
           - /cosmos
           - --zone
