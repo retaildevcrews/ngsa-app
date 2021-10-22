@@ -77,30 +77,26 @@ spec:
 
 ---
 
-apiVersion: networking.k8s.io/v1
-kind: Ingress
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
 metadata:
-  name: {{gitops.name}}-cosmos-ingress
+  name: {{gitops.name}}-cosmos-vs
   namespace: {{gitops.namespace}}
-  annotations:
-    kubernetes.io/ingress.allow-http: "false"
-    kubernetes.io/ingress.class: traefik-internal
-    traefik.ingress.kubernetes.io/router.entrypoints: websecure
-    traefik.ingress.kubernetes.io/router.tls: "true"
-    traefik.ingress.kubernetes.io/router.tls.options: default
-    traefik.ingress.kubernetes.io/router.middlewares: ngsa-stripprefix@file
 spec:
-  tls:
-  - hosts:
-      - {{gitops.config.domain}}
-  rules:
-  - host: {{gitops.config.domain}}
-    http:
-      paths:
-      - path: /cosmos
-        pathType: Prefix
-        backend:
-          service:
-            name: {{gitops.name}}-cosmos
-            port:
-              number: 8080
+  gateways:
+  - ngsa-gateway
+  hosts:
+  - {{gitops.config.domain}}
+  http:
+  - match:
+    - uri:
+        prefix: /cosmos/
+    - uri:
+        exact: /cosmos
+    rewrite:
+      uri: /
+    route:
+    - destination:
+        port:
+          number: 8080
+        host: {{gitops.name}}-cosmos
