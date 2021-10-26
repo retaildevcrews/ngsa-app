@@ -17,9 +17,6 @@ spec:
         app: {{gitops.name}}-cosmos
         deploy: {{gitops.deploy}}
         version: beta-{{gitops.version}}
-      annotations:
-        prometheus.io/scrape: 'true'
-        prometheus.io/port: '8080'
     spec:
       containers:
         - name: app
