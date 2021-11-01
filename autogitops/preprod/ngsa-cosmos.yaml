@@ -81,7 +81,7 @@ metadata:
   namespace: {{gitops.namespace}}
 spec:
   gateways:
-  - ngsa-gateway
+  - istio-system/istio-gateway
   hosts:
   - {{gitops.config.domain}}
   http:
