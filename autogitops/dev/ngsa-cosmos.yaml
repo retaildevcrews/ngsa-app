@@ -83,7 +83,7 @@ spec:
   hosts:
   - {{gitops.name}}-cosmos-{{gitops.config.region}}-{{gitops.config.environment}}.{{gitops.config.domain}}
   http:
-    - route:
+  - route:
     - destination:
         port:
           number: 8080
