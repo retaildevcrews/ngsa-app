@@ -69,7 +69,7 @@ spec:
   gateways:
   - istio-system/istio-gateway
   hosts:
-  - {{gitops.name}}-memory-{{gitops.config.region}}-{{gitops.config.environment}}.{{gitops.config.domain}}
+  - {{gitops.name}}-memory-{{gitops.config.region}}-dev.{{gitops.config.domain}}
   http:
   - route:
     - destination:
