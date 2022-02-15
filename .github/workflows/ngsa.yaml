@@ -23,6 +23,7 @@ jobs:
     runs-on: ubuntu-20.04
     env:
       DOCKER_REPO: ghcr.io/retaildevcrews/ngsa-app
+      AGO_REPO: ghcr.io/bartr/autogitops:beta
 
     steps:
     - uses: actions/checkout@v2
@@ -122,7 +123,7 @@ jobs:
 
     - name: AutoGitOps Pull
       run: |        
-        docker pull ghcr.io/bartr/autogitops
+        docker pull $AGO_REPO
 
     - name: GitOps Deploy
       run: |        
@@ -130,4 +131,4 @@ jobs:
         --name ago \
         --rm \
         -v $(pwd)/autogitops:/ago/autogitops \
-        ghcr.io/bartr/autogitops -r /retaildevcrews/ngsa-asb -p ${{ secrets.GHCR_PAT }}
+        $AGO_REPO -r /retaildevcrews/ngsa-asb -p ${{ secrets.GHCR_PAT }}
