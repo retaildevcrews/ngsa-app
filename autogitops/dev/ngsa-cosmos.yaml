@@ -36,8 +36,8 @@ spec:
           readinessProbe:
             initialDelaySeconds: 5
             httpGet:
-            path: /version
-          port: 8080
+              path: /version
+              port: 8080
           livenessProbe:
             initialDelaySeconds: 60
             periodSeconds: 300
