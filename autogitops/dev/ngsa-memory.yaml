@@ -42,7 +42,7 @@ spec:
             periodSeconds: 300
             httpGet:
               path: /healthz
-              port: 8080              
+              port: 8080
           resources:
             limits:
               cpu: 500m
