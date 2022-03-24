@@ -6,7 +6,12 @@ metadata:
   labels:
     app.kubernetes.io/name: {{gitops.name}}-memory
 spec:
-  replicas: 1
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
   selector:
     matchLabels:
       app: {{gitops.name}}-memory
@@ -48,8 +53,8 @@ spec:
               cpu: 500m
               memory: 512Mi
             requests:
-              cpu: 500m
-              memory: 512Mi
+              cpu: 250m
+              memory: 256Mi
       nodeSelector:
         agentpool: npuser01
 
