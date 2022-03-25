@@ -99,3 +99,26 @@ spec:
         port:
           number: 8080
         host: {{gitops.name}}-cosmos
+
+---
+
+apiVersion: autoscaling/v2beta1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{gitops.name}}-cosmos
+  namespace: {{gitops.namespace}}
+  labels:
+    app: {{gitops.name}}-cosmos
+    version: v1
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{gitops.name}}-cosmos
+  minReplicas: 1
+  maxReplicas: 3
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      targetAverageUtilization: 50
