@@ -92,3 +92,26 @@ spec:
         port:
           number: 8080
         host: {{gitops.name}}-memory
+
+---
+
+apiVersion: autoscaling/v2beta1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{gitops.name}}-memory
+  namespace: {{gitops.namespace}}
+  labels:
+    app: {{gitops.name}}-memory
+    version: v1
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{gitops.name}}-memory
+  minReplicas: 3
+  maxReplicas: 5
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      targetAverageUtilization: 50
