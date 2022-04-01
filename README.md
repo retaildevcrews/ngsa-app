@@ -50,7 +50,12 @@ Options:
 
 > Visual Studio Codespaces is the easiest way to evaluate ngsa. 
 
-TODO: Describe opening and running a codespaces
+To open with codespaces:
+
+- Click the `Code` button on this repo
+- Click the `Codespaces` tab
+- Click `New Codespace`
+- Choose the `4 core` option
 
 ### Using bash shell
 
