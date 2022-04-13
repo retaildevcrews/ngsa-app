@@ -124,6 +124,12 @@ dotnet run -- -m --burst-header --burst-service-endpoint="http://localhost:4120/
 
 If the env variables are set AND you pass in the burst env variables as args, the CLI argument values take precedence.
 
+## Autogitops
+
+The Ngsa application when running as `--in-memory` mode, utilizes its built-in data storage, so having more than one replica deployed into a cluster will cause each `pod` to have its own local data storage. As a result, requests made to ngsa app endpoints will be managed by the default `load balancer` and can end up at a different `pod` each time where data requested may or may not exist returning unexpected error codes.
+
+🛑 According to the above explanation, there is a restriction for [Ngsa-memory template](./autogitops/dev/ngsa-memory.yaml#replicas), the deployment should only have `1` replica.  
+
 ## Contributing
 
 This project welcomes contributions and suggestions. Most contributions require you to agree to a
