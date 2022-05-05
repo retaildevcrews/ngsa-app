@@ -19,19 +19,13 @@ spec:
         deploy: {{gitops.deploy}}
         version: beta-{{gitops.version}}
     spec:
+      automountServiceAccountToken: false
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: app
-          image: {{gitops.imageName}}:{{gitops.imageTag}}
-          securityContext:
-            runAsUser: 10001
-            runAsNonRoot: true
-            readOnlyRootFilesystem: true
-            seccompProfile:
-              type: RuntimeDefault
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-              - NET_RAW            
+          image: {{gitops.imageName}}:{{gitops.imageTag}}        
           imagePullPolicy: Always
           args:
           - --prometheus
@@ -65,6 +59,15 @@ spec:
           volumeMounts:
             - name: secrets
               mountPath: "/app/secrets"
+          securityContext:
+            runAsUser: 10001
+            runAsNonRoot: true
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - NET_RAW
+                - ALL
       volumes:
         - name: secrets
           csi:
