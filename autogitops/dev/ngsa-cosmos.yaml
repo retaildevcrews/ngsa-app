@@ -6,6 +6,7 @@ metadata:
   labels:
     app.kubernetes.io/name: {{gitops.name}}-cosmos
 spec:
+  automountServiceAccountToken: false
   replicas: 1
   selector:
     matchLabels:
@@ -21,6 +22,14 @@ spec:
       containers:
         - name: app
           image: {{gitops.imageName}}:{{gitops.imageTag}}
+          securityContext:
+            readOnlyRootFilesystem: true
+            seccompProfile:
+              type: RuntimeDefault
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - NET_RAW            
           imagePullPolicy: Always
           args:
           - --prometheus
