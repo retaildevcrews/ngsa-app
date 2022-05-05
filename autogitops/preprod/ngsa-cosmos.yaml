@@ -18,6 +18,18 @@ spec:
         deploy: {{gitops.deploy}}
         version: beta-{{gitops.version}}
     spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsUser: 10001
+        runAsNonRoot: true
+        readOnlyRootFilesystem: true
+        allowPrivilegeEscalation: false
+        seccompProfile:
+          type: RuntimeDefault
+        capabilities:
+          drop:
+            - NET_RAW
+            - ALL
       containers:
         - name: app
           image: {{gitops.imageName}}:{{gitops.imageTag}}
