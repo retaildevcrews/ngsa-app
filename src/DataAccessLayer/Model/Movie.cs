@@ -25,6 +25,7 @@ namespace Imdb.Model
         public string TextSearch { get; set; }
         public List<string> Genres { get; set; }
         public List<Role> Roles { get; set; }
+        public string Payload { get; set; }
 
         /// <summary>
         /// Compute the partition key based on the movieId or actorId
@@ -148,6 +149,7 @@ namespace Imdb.Model
                     new Int64Field("votes", Votes, Store.YES),
                     new DoubleField("rating", Rating, Store.YES),
                     new Int32Field("year", Year, Store.YES),
+                    new StringField("payload", Payload, Store.YES),
                 };
 
             if (Genres != null && Genres.Count > 0)
