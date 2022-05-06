@@ -111,7 +111,7 @@ namespace Ngsa.Application.Controllers
         }
 
         [HttpPut("{movieId}")]
-        public async Task<IActionResult> UpsertMovieAsync([FromRoute] string movieId)
+        public async Task<IActionResult> UpsertMovieAsync([FromRoute] string movieId, [FromQuery] UpsertMovieQueryParameters upsertMovieQueryParameters)
         {
             try
             {
@@ -122,6 +122,18 @@ namespace Ngsa.Application.Controllers
                     Logger.LogWarning(nameof(UpsertMovieAsync), "Invalid Movie Id", NgsaLog.LogEvent400, HttpContext);
 
                     return ResultHandler.CreateResult(list, RequestLogger.GetPathAndQuerystring(Request));
+                }
+
+                if (upsertMovieQueryParameters != null)
+                {
+                    list = upsertMovieQueryParameters.Validate();
+
+                    if (list.Count > 0)
+                    {
+                        Logger.LogWarning(nameof(UpsertMovieAsync), NgsaLog.MessageInvalidQueryString, NgsaLog.LogEvent400, HttpContext);
+
+                        return ResultHandler.CreateResult(list, RequestLogger.GetPathAndQuerystring(Request));
+                    }
                 }
 
                 // duplicate the movie for upsert
@@ -141,6 +153,11 @@ namespace Ngsa.Application.Controllers
                     // upsert into Cosmos
                     if (!App.Config.InMemory)
                     {
+                        if (upsertMovieQueryParameters.PayloadSize > 0)
+                        {
+                            m.Payload = await App.Config.CacheDal.GetBenchmarkDataAsync(upsertMovieQueryParameters.PayloadSize);
+                        }
+
                         try
                         {
                             await App.Config.CosmosDal.UpsertMovieAsync(m).ConfigureAwait(false);
