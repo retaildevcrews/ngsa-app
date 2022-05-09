@@ -63,6 +63,12 @@ spec:
                 - ALL
             runAsNonRoot: true
             runAsUser: 10001
+          volumeMounts:
+            - mountPath: /tmp
+              name: tmp
+      volumes:
+        - emptyDir: {}
+          name: tmp
       automountServiceAccountToken: false
       securityContext:
         seccompProfile:
