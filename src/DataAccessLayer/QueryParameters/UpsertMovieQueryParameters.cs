@@ -21,9 +21,10 @@ namespace Ngsa.Middleware
         {
             List<ValidationError> errors = new ();
 
-            if (PayloadSize > 1024 * 1024)
+            // Cosmos item size limit is 2MB
+            if (PayloadSize > 2048 * 1024)
             {
-                errors.Add(new ValidationError { Target = "payload size", Message = $"payload size must be <= 1 MB ({1024 * 1024})" });
+                errors.Add(new ValidationError { Target = "payload size", Message = $"payload size must be <= 2 MB ({2048 * 1024})" });
             }
             else if (PayloadSize < 0)
             {

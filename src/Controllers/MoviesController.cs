@@ -155,7 +155,9 @@ namespace Ngsa.Application.Controllers
                     {
                         if (upsertMovieQueryParameters.PayloadSize > 0)
                         {
-                            m.Payload = await App.Config.CacheDal.GetBenchmarkDataAsync(upsertMovieQueryParameters.PayloadSize);
+                            // insert payload in 1MB increments up to 2MB
+                            m.Payload = await App.Config.CacheDal.GetBenchmarkDataAsync(Math.Min(1024 * 1024, upsertMovieQueryParameters.PayloadSize));
+                            m.Payload += await App.Config.CacheDal.GetBenchmarkDataAsync(Math.Max(0, upsertMovieQueryParameters.PayloadSize - (1024 * 1024)));
                         }
 
                         try
