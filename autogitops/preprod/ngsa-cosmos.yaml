@@ -54,6 +54,20 @@ spec:
           volumeMounts:
             - name: secrets
               mountPath: "/app/secrets"
+            - mountPath: /tmp
+              name: tmp
+          securityContext:
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            runAsNonRoot: true
+            runAsUser: 10001
+      automountServiceAccountToken: false
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
       volumes:
         - name: secrets
           csi:
@@ -61,6 +75,8 @@ spec:
             readOnly: true
             volumeAttributes:
               secretProviderClass: ngsa-secrets
+        - emptyDir: {}
+          name: tmp
       nodeSelector:
         agentpool: npuser01
 

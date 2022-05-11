@@ -69,14 +69,14 @@ spec:
         seccompProfile:
           type: RuntimeDefault
       volumes:
-        - emptyDir: {}
-          name: tmp
         - name: secrets
           csi:
             driver: secrets-store.csi.k8s.io
             readOnly: true
             volumeAttributes:
               secretProviderClass: ngsa-secrets
+        - emptyDir: {}
+          name: tmp
       nodeSelector:
         agentpool: npuser01
 
