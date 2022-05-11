@@ -54,6 +54,8 @@ spec:
           volumeMounts:
             - name: secrets
               mountPath: "/app/secrets"
+            - mountPath: /tmp
+              name: tmp
           securityContext:
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
@@ -67,6 +69,8 @@ spec:
         seccompProfile:
           type: RuntimeDefault
       volumes:
+        - emptyDir: {}
+          name: tmp
         - name: secrets
           csi:
             driver: secrets-store.csi.k8s.io
