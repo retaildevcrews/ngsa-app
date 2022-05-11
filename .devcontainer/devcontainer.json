@@ -1,0 +1,27 @@
+{
+	"name": "ngsa-app",
+
+	// Set container specific settings
+	"settings": {
+		"terminal.integrated.defaultProfile.linux": "zsh"
+	},
+
+  // Open port 8080 by default
+  "forwardPorts": [8080],
+  // Added for local developement
+  // Without this port forwarding to Windows Network sometime fails
+  "appPort": [8080],
+
+  // Install extensions
+  "extensions": [
+    "eamodio.gitlens",
+    "davidanson.vscode-markdownlint",
+    "gruntfuggly.todo-tree",
+    "ms-azuretools.vscode-docker",
+    "sonarsource.sonarlint-vscode",
+    "visualstudioexptteam.vscodeintellicode"
+  ],
+
+  // Run Bash script in .devcontainer directory
+  "onCreateCommand": "/bin/bash ./.devcontainer/on-create.sh"
+}
