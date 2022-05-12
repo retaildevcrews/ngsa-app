@@ -48,16 +48,9 @@ namespace Ngsa.Application.Controllers
 
             string path = RequestLogger.GetPathAndQuerystring(request);
 
-            CorrelationVector cVector = Middleware.CorrelationVectorExtensions.GetCorrelationVectorFromContext(request.HttpContext);
-
             try
             {
                 HttpRequestMessage req = new (HttpMethod.Get, path);
-
-                if (cVector != null)
-                {
-                    req.Headers.Add(CorrelationVector.HeaderName, cVector.Value);
-                }
 
                 HttpResponseMessage resp = await Client.SendAsync(req);
 
@@ -92,16 +85,9 @@ namespace Ngsa.Application.Controllers
 
             string path = RequestLogger.GetPathAndQuerystring(request);
 
-            CorrelationVector cVector = Middleware.CorrelationVectorExtensions.GetCorrelationVectorFromContext(request.HttpContext);
-
             try
             {
                 HttpRequestMessage req = new (HttpMethod.Put, path);
-
-                if (cVector != null)
-                {
-                    req.Headers.Add(CorrelationVector.HeaderName, cVector.Value);
-                }
 
                 req.Content = new ByteArrayContent(JsonSerializer.SerializeToUtf8Bytes(m));
                 req.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
@@ -138,16 +124,9 @@ namespace Ngsa.Application.Controllers
 
             string path = RequestLogger.GetPathAndQuerystring(request);
 
-            CorrelationVector cVector = Middleware.CorrelationVectorExtensions.GetCorrelationVectorFromContext(request.HttpContext);
-
             try
             {
                 HttpRequestMessage req = new (HttpMethod.Delete, path);
-
-                if (cVector != null)
-                {
-                    req.Headers.Add(CorrelationVector.HeaderName, cVector.Value);
-                }
 
                 HttpResponseMessage resp = await Client.SendAsync(req);
 

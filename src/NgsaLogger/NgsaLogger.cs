@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text.Json;
 using Microsoft.AspNetCore.Http;
@@ -99,12 +100,7 @@ namespace Ngsa.Middleware
 
                         if (c != null && c.Items != null)
                         {
-                            CorrelationVector cv = CorrelationVectorExtensions.GetCorrelationVectorFromContext(c);
-
-                            if (cv != null)
-                            {
-                                d.Add("CVector", cv.Value);
-                            }
+                            d.Add("TraceID", Activity.Current.Context.TraceId.ToString());
                         }
                     }
                     else

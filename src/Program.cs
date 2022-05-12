@@ -9,8 +9,13 @@ using System.IO;
 using System.Threading;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Ngsa.Middleware;
+using OpenTelemetry;
+using OpenTelemetry.Context.Propagation;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 
 namespace Ngsa.Application
 {
@@ -160,6 +165,21 @@ namespace Ngsa.Application
                         .AddFilter("Ngsa.Application", Config.LogLevel);
                     }
                 });
+
+            string serviceName = "Ngsa.Application";
+            string serviceVersion = "1.1.0";
+            builder.ConfigureServices(services => services.AddOpenTelemetryTracing(b =>
+            {
+                b
+                    //.AddConsoleExporter()
+                    .AddSource(serviceName)
+                    .SetResourceBuilder(
+                        ResourceBuilder.CreateDefault()
+                            .AddService(serviceName: serviceName, serviceVersion: serviceVersion))
+                    .AddHttpClientInstrumentation()
+                    .AddAspNetCoreInstrumentation();
+            }));
+            Sdk.SetDefaultTextMapPropagator(new B3Propagator());
 
             // build the host
             return builder.Build();
