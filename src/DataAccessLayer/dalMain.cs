@@ -40,10 +40,10 @@ namespace Ngsa.Application.DataAccessLayer
                 CosmosUrl = secrets.CosmosServer,
                 Retries = config.Retries,
                 Timeout = config.Timeout,
-            };
 
-            // create the CosmosDB client and container
-            cosmosDetails.Client = OpenAndTestCosmosClient(secrets.CosmosServer, secrets.CosmosKey, secrets.CosmosDatabase, secrets.CosmosCollection).GetAwaiter().GetResult();
+                // create the CosmosDB client and container
+                Client = OpenAndTestCosmosClient(secrets.CosmosServer, secrets.CosmosKey, secrets.CosmosDatabase, secrets.CosmosCollection).GetAwaiter().GetResult(),
+            };
             cosmosDetails.Container = cosmosDetails.Client.GetContainer(secrets.CosmosDatabase, secrets.CosmosCollection);
         }
 

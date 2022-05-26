@@ -41,7 +41,7 @@ namespace Ngsa.Middleware
 
                 if (version.Contains('-', StringComparison.OrdinalIgnoreCase))
                 {
-                    shortVersion = version.Substring(0, version.IndexOf('-', StringComparison.OrdinalIgnoreCase));
+                    shortVersion = version[..version.IndexOf('-', StringComparison.OrdinalIgnoreCase)];
                 }
             }
         }
