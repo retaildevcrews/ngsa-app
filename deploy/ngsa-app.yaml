@@ -68,15 +68,11 @@ spec:
           type: RuntimeDefault
       volumes:
         - name: secrets
-          csi:
-            driver: secrets-store.csi.k8s.io
-            readOnly: true
-            volumeAttributes:
-              secretProviderClass: ngsa-secrets
+          secret:
+            secretName: ngsa-secrets
+            defaultMode: 444
         - emptyDir: {}
           name: tmp
-      nodeSelector:
-        agentpool: npuser01
 
 ---
 
@@ -86,14 +82,31 @@ metadata:
   name: ngsa-cosmos
   namespace: ngsa
 spec:
-  type: ClusterIP
   ports:
-    - port: 8080
-      targetPort: http
-      protocol: TCP
-      name: http
+  - port: 8080
+    name: http
+    nodePort: 30080
+  type: NodePort # For external access (k3d, kind)
   selector:
     app: ngsa-cosmos
+
+---
+
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  namespace: ngsa
+  name: ngsa-gateway
+spec:
+  selector:
+    istio: ingressgateway # use istio default controller
+  servers:
+  - port:
+      number: 80
+      name: http
+      protocol: HTTP
+    hosts:
+    - "*"
 
 ---
 
@@ -103,36 +116,16 @@ metadata:
   name: ngsa-cosmos-vs
   namespace: ngsa
 spec:
-  gateways:
-  - istio-system/istio-gateway
   hosts:
-  - ngsa-cosmos-dev-dev.dev
+  - "*"
+  gateways:
+  - ngsa-gateway
   http:
-  - route:
+  - match:
+    - uri:
+        prefix: /
+    route:
     - destination:
+        host: ngsa-cosmos
         port:
           number: 8080
-        host: ngsa-cosmos
-
----
-
-apiVersion: autoscaling/v2beta1
-kind: HorizontalPodAutoscaler
-metadata:
-  name: ngsa-cosmos
-  namespace: ngsa
-  labels:
-    app: ngsa-cosmos
-    version: v1
-spec:
-  scaleTargetRef:
-    apiVersion: apps/v1
-    kind: Deployment
-    name: ngsa-cosmos
-  minReplicas: 1
-  maxReplicas: 3
-  metrics:
-  - type: Resource
-    resource:
-      name: cpu
-      targetAverageUtilization: 50
