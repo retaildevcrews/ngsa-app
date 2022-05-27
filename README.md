@@ -17,7 +17,7 @@ NGSA App is inteneded for platform testing and monitoring in one or many Kuberne
 
 Usage:
   Ngsa.Application [options]
-  
+
 Options:
   -a, --app-type <App|WebAPI>                                                      Application Type [default: App]
   -p, --prometheus                                                                 Send metrics to Prometheus [default: False]
@@ -48,7 +48,7 @@ Options:
 
 ### Using Visual Studio Codespaces
 
-> Visual Studio Codespaces is the easiest way to evaluate ngsa. 
+> Visual Studio Codespaces is the easiest way to evaluate ngsa.
 
 To open with codespaces:
 
@@ -128,7 +128,21 @@ If the env variables are set AND you pass in the burst env variables as args, th
 
 The Ngsa application when running as `--in-memory` mode, utilizes its built-in data storage, so having more than one replica deployed into a cluster will cause each `pod` to have its own local data storage. As a result, requests made to ngsa app endpoints will be managed by the default `load balancer` and can end up at a different `pod` each time where data requested may or may not exist returning unexpected error codes.
 
-🛑 According to the above explanation, there is a restriction for [Ngsa-memory template](./autogitops/dev/ngsa-memory.yaml#replicas), the deployment should only have `1` replica.  
+🛑 According to the above explanation, there is a restriction for [Ngsa-memory template](./autogitops/dev/ngsa-memory.yaml#replicas), the deployment should only have `1` replica.
+
+## Deploying With Local Cluster
+
+```bash
+# delete cluster if exists, create cluster, and build/deploy application
+# makes ngsa-memory, to make ngsa-cosmos, run: make create deploy-ngsa-cosmos
+make all
+
+# deploy latest changes locally if cluster already exists
+make deploy-ngsa-memory
+
+# check if cluster and application is deployed
+make check
+```
 
 ## Contributing
 
