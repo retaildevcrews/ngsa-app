@@ -32,6 +32,10 @@ namespace Ngsa.Application.DataAccessLayer
                 throw new ArgumentNullException(nameof(secrets));
             }
 
+#pragma warning disable IDE0017 // Simplify object initialization.
+
+            //Justification: if Client is set within the new() block, "docker run" command will throw
+            //System.NullReferenceException with the message "Object reference not set to an instance of an object"
             cosmosDetails = new CosmosConfig
             {
                 CosmosCollection = secrets.CosmosCollection,
@@ -42,8 +46,10 @@ namespace Ngsa.Application.DataAccessLayer
                 Timeout = config.Timeout,
 
                 // create the CosmosDB client and container
-                Client = OpenAndTestCosmosClient(secrets.CosmosServer, secrets.CosmosKey, secrets.CosmosDatabase, secrets.CosmosCollection).GetAwaiter().GetResult(),
             };
+#pragma warning restore IDE0017 // Simplify object initialization
+
+            cosmosDetails.Client = OpenAndTestCosmosClient(secrets.CosmosServer, secrets.CosmosKey, secrets.CosmosDatabase, secrets.CosmosCollection).GetAwaiter().GetResult();
             cosmosDetails.Container = cosmosDetails.Client.GetContainer(secrets.CosmosDatabase, secrets.CosmosCollection);
         }
 
