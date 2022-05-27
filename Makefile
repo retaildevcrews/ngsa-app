@@ -23,7 +23,12 @@ build-ngsa-app:
 	docker build . -t localhost:5000/ngsa-app:local
 	docker push localhost:5000/ngsa-app:local
 
-deploy-ngsa-cosmos: build-ngsa-app
+delete-ngsa-deploys:
+	-@kubectl delete --ignore-not-found -f deploy/ngsa-memory.yaml
+	-@kubectl delete --ignore-not-found -f deploy/ngsa-cosmos.yaml
+	-@kubectl delete --ignore-not-found secret ngsa-secrets -n ngsa
+
+deploy-ngsa-cosmos: build-ngsa-app delete-ngsa-deploys
 	@kubectl create secret generic ngsa-secrets -n ngsa \
       --from-file=CosmosDatabase=secrets/CosmosDatabase \
       --from-file=CosmosCollection=secrets/CosmosCollection \
@@ -31,7 +36,7 @@ deploy-ngsa-cosmos: build-ngsa-app
       --from-file=CosmosUrl=secrets/CosmosUrl
 	@kubectl apply -f deploy/ngsa-cosmos.yaml
 
-deploy-ngsa-memory: build-ngsa-app
+deploy-ngsa-memory: build-ngsa-app delete-ngsa-deploys
 	@kubectl apply -f deploy/ngsa-memory.yaml
 
 check:
