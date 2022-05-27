@@ -1,7 +1,7 @@
 SHELL=/bin/bash
 .PHONY: build-ngsa-app create delete
 
-all: create deploy-ngsa-app
+all: create deploy-ngsa-memory
 
 delete:
 	@k3d cluster delete ngsa-app
@@ -23,14 +23,16 @@ build-ngsa-app:
 	docker build . -t localhost:5000/ngsa-app:local
 	docker push localhost:5000/ngsa-app:local
 
-deploy-ngsa-app: build-ngsa-app
+deploy-ngsa-cosmos: build-ngsa-app
 	@kubectl create secret generic ngsa-secrets -n ngsa \
       --from-file=CosmosDatabase=secrets/CosmosDatabase \
       --from-file=CosmosCollection=secrets/CosmosCollection \
       --from-file=CosmosKey=secrets/CosmosKey \
       --from-file=CosmosUrl=secrets/CosmosUrl
-	
-	@kubectl apply -f deploy/ngsa-app.yaml
+	@kubectl apply -f deploy/ngsa-cosmos.yaml
+
+deploy-ngsa-memory: build-ngsa-app
+	@kubectl apply -f deploy/ngsa-memory.yaml
 
 check:
 	@http http://localhost:30000/version
