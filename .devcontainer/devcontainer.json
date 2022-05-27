@@ -45,7 +45,7 @@
     "gruntfuggly.todo-tree",
     "ms-azuretools.vscode-docker",
     "ms-dotnettools.csharp",
-	"ms-kubernetes-tools.vscode-kubernetes-tools",
+    "ms-kubernetes-tools.vscode-kubernetes-tools",
     "visualstudioexptteam.vscodeintellicode"
   ],
 
