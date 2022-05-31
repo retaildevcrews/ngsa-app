@@ -6,6 +6,7 @@ using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.CommandLine.Parsing;
 using System.IO;
+using System.Reflection;
 using System.Threading;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
@@ -166,8 +167,9 @@ namespace Ngsa.Application
                     }
                 });
 
-            string serviceName = "Ngsa.Application";
-            string serviceVersion = "1.1.0";
+            AssemblyName assembly = Assembly.GetExecutingAssembly().GetName();
+            string serviceName = assembly.Name;
+            string serviceVersion = assembly.Version.ToString();
             builder.ConfigureServices(services => services.AddOpenTelemetryTracing(b =>
             {
                 b
