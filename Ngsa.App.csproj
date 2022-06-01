@@ -11,6 +11,7 @@
     <NoWarn>$(NoWarn);1591</NoWarn>
     <LangVersion>Latest</LangVersion>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+	  <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup> 
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

@@ -29,7 +29,6 @@ namespace Ngsa.Application.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="FeaturedController"/> class.
         /// </summary>
-        /// <param name="dal">data access layer instance</param>
         public FeaturedController()
         {
             dal = App.Config.CosmosDal;

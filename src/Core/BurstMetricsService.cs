@@ -8,12 +8,12 @@ using System.Timers;
 using Microsoft.AspNetCore.Http;
 using Ngsa.Middleware;
 
-/// <summary>
-/// This service consumes burst metrics from an external service and will also
-/// inject these metrics into a response header.
-/// </summary>
 namespace Ngsa.Application
 {
+    /// <summary>
+    /// This service consumes burst metrics from an external service and will also
+    /// inject these metrics into a response header.
+    /// </summary>
     public class BurstMetricsService : IDisposable
     {
         private const int ClientTimeout = 5;

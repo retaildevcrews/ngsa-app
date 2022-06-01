@@ -15,15 +15,15 @@ using Lucene.Net.Util;
 using Microsoft.Azure.Cosmos;
 using Ngsa.Middleware;
 
-/// <summary>
-/// This code is used to support performance testing
-///
-/// This loads the IMDb data into memory which removes the roundtrip to Cosmos
-/// This provides higher performance and less variability which allows us to establish
-/// baseline performance metrics
-/// </summary>
 namespace Ngsa.Application.DataAccessLayer
 {
+    /// <summary>
+    /// This code is used to support performance testing
+    ///
+    /// This loads the IMDb data into memory which removes the roundtrip to Cosmos
+    /// This provides higher performance and less variability which allows us to establish
+    /// baseline performance metrics
+    /// </summary>
     public class InMemoryDal : IDAL
     {
         private const LuceneVersion Version = LuceneVersion.LUCENE_48;
