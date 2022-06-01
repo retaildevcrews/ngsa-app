@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text.Json;
 using Microsoft.AspNetCore.Http;
@@ -105,6 +106,9 @@ namespace Ngsa.Middleware
                             {
                                 d.Add("CVector", cv.Value);
                             }
+
+                            d.Add("TraceID", Activity.Current.Context.TraceId.ToString());
+                            d.Add("TraceID", Activity.Current.Context.SpanId.ToString());
                         }
                     }
                     else

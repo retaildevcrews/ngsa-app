@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text.Json;
 using System.Threading.Tasks;
 using System.Web;
@@ -170,6 +171,8 @@ namespace Ngsa.Middleware
                     { "UserAgent", context.Request.Headers["User-Agent"].ToString() },
                     { "CVector", cv.Value },
                     { "CVectorBase", cv.GetBase() },
+                    { "TraceID", Activity.Current.Context.TraceId.ToString() },
+                    { "SpanID", Activity.Current.Context.SpanId.ToString() },
                     { "Category", category },
                     { "Subcategory", subCategory },
                     { "Mode", mode },
