@@ -173,7 +173,6 @@ namespace Ngsa.Middleware
                     { "CVectorBase", cv.GetBase() },
                     { "TraceID", Activity.Current.Context.TraceId.ToString() },
                     { "SpanID", Activity.Current.Context.SpanId.ToString() },
-                    { "ParentID", Activity.Current.ParentId },
                     { "Category", category },
                     { "Subcategory", subCategory },
                     { "Mode", mode },
