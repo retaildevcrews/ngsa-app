@@ -21,6 +21,12 @@ namespace Ngsa.Application
     /// </summary>
     public partial class CosmosHealthCheck : IHealthCheck
     {
+        /// <summary>
+        /// Represents the Name of Message atttribute utilizes for logging.
+        /// It is utilized as 'format string' in the message template format.
+        /// </summary>
+        public const string LoggerMessageAttributeName = "{message}";
+
         public static readonly string ServiceId = "ngsa";
         public static readonly string Description = "NGSA Health Check";
 
@@ -46,8 +52,8 @@ namespace Ngsa.Application
                 // ignore nulls in json
                 jsonOptions = new JsonSerializerOptions
                 {
+                    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
                     PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                    IgnoreNullValues = true,
                     DictionaryKeyPolicy = JsonNamingPolicy.CamelCase,
                 };
 
@@ -105,7 +111,7 @@ namespace Ngsa.Application
             catch (CosmosException ce)
             {
                 // log and return Unhealthy
-                logger.LogError($"{ce}\nCosmosException:Healthz:{ce.StatusCode}:{ce.ActivityId}:{ce.Message}");
+                logger.LogError(LoggerMessageAttributeName, $"{ce}\nCosmosException:Healthz:{ce.StatusCode}:{ce.ActivityId}:{ce.Message}");
 
                 data.Add("CosmosException", ce.Message);
 
@@ -114,7 +120,7 @@ namespace Ngsa.Application
             catch (Exception ex)
             {
                 // log and return unhealthy
-                logger.LogError($"{ex}\nException:Healthz:{ex.Message}");
+                logger.LogError(LoggerMessageAttributeName, $"{ex}\nException:Healthz:{ex.Message}");
 
                 data.Add("Exception", ex.Message);
 

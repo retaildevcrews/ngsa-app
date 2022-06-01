@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Imdb.Model;
 using Microsoft.AspNetCore.Http;
@@ -23,7 +24,7 @@ namespace Ngsa.Application.Controllers
         // json serialization options
         private static readonly JsonSerializerOptions Options = new ()
         {
-            IgnoreNullValues = true,
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         };
 
