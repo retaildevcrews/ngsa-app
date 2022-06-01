@@ -108,7 +108,8 @@ namespace Ngsa.Middleware
                             }
 
                             d.Add("TraceID", Activity.Current.Context.TraceId.ToString());
-                            d.Add("TraceID", Activity.Current.Context.SpanId.ToString());
+                            d.Add("SpanID", Activity.Current.Context.SpanId.ToString());
+                            d.Add("ParentID", Activity.Current.ParentId);
                         }
                     }
                     else

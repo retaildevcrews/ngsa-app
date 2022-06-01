@@ -14,6 +14,7 @@ using Microsoft.Extensions.Logging;
 using Ngsa.Middleware;
 using OpenTelemetry;
 using OpenTelemetry.Context.Propagation;
+using OpenTelemetry.Trace;
 
 namespace Ngsa.Application
 {
@@ -162,9 +163,11 @@ namespace Ngsa.Application
                         .AddFilter("Default", Config.LogLevel)
                         .AddFilter("Ngsa.Application", Config.LogLevel);
                     }
-                });
-
-            builder.ConfigureServices(services => services.AddOpenTelemetryTracing());
+                })
+                .ConfigureServices(services => services.AddOpenTelemetryTracing(b =>
+                {
+                    b.AddAspNetCoreInstrumentation();
+                }));
             Sdk.SetDefaultTextMapPropagator(new B3Propagator());
 
             // build the host
