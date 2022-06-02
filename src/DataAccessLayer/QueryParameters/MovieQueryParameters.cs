@@ -26,7 +26,7 @@ namespace Ngsa.Middleware
         /// <returns>empty list on valid</returns>
         public static List<ValidationError> ValidateMovieId(string movieId)
         {
-            List<ValidationError> errors = new ();
+            List<ValidationError> errors = new();
 
             if (!string.IsNullOrWhiteSpace(movieId) &&
                     (movieId != movieId.ToLowerInvariant().Trim() ||
@@ -57,7 +57,7 @@ namespace Ngsa.Middleware
         /// <returns>list of validation errors or empty list</returns>
         public List<ValidationError> Validate()
         {
-            List<ValidationError> errors = new ();
+            List<ValidationError> errors = new();
 
             if (!string.IsNullOrWhiteSpace(Q) && (Q.Length < 2 || Q.Length > 20))
             {

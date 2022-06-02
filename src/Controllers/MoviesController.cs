@@ -20,7 +20,7 @@ namespace Ngsa.Application.Controllers
     [ApiController]
     public class MoviesController : Controller
     {
-        private static readonly NgsaLog Logger = new ()
+        private static readonly NgsaLog Logger = new()
         {
             Name = typeof(MoviesController).FullName,
             ErrorMessage = "MovieControllerException",

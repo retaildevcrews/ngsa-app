@@ -19,7 +19,7 @@ namespace Ngsa.Application.Controllers
     [ApiController]
     public class ActorsController : Controller
     {
-        private static readonly NgsaLog Logger = new ()
+        private static readonly NgsaLog Logger = new()
         {
             Name = typeof(ActorsController).FullName,
             ErrorMessage = "ActorControllerException",
