@@ -70,7 +70,7 @@ namespace Ngsa.Application.DataAccessLayer
 
             string sql = App.Config.CacheDal.GetMovieIds(movieQueryParameters);
 
-            List<Movie> movies = new ();
+            List<Movie> movies = new();
 
             // retrieve the items
             if (!string.IsNullOrWhiteSpace(sql))

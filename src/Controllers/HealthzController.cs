@@ -52,7 +52,7 @@ namespace Ngsa.Application.Controllers
 
             HttpContext.Items.Add(typeof(HealthCheckResult).ToString(), res);
 
-            ContentResult result = new ()
+            ContentResult result = new()
             {
                 Content = IetfCheck.ToIetfStatus(res.Status),
                 StatusCode = res.Status == HealthStatus.Unhealthy ? (int)System.Net.HttpStatusCode.ServiceUnavailable : (int)System.Net.HttpStatusCode.OK,
@@ -89,7 +89,7 @@ namespace Ngsa.Application.Controllers
         /// <returns>HealthCheckResult</returns>
         private async Task<HealthCheckResult> RunCosmosHealthCheck()
         {
-            CosmosHealthCheck chk = new (hcLogger, dal);
+            CosmosHealthCheck chk = new(hcLogger, dal);
 
             return await chk.CheckHealthAsync(new HealthCheckContext()).ConfigureAwait(false);
         }

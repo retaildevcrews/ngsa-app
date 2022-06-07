@@ -67,7 +67,7 @@ namespace Ngsa.Application.Model
             {
                 HealthStatus.Healthy => "pass",
                 HealthStatus.Degraded => "warn",
-                _ => "fail"
+                _ => "fail",
             };
         }
     }

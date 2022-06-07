@@ -14,7 +14,7 @@ namespace Ngsa.Application.Controllers
     [Route("api/[controller]")]
     public class GenresController : Controller
     {
-        private static readonly NgsaLog Logger = new ()
+        private static readonly NgsaLog Logger = new()
         {
             Name = typeof(GenresController).FullName,
             ErrorMessage = "GenreControllerException",
