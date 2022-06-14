@@ -85,7 +85,7 @@ jobs:
             # echo -n 'imdb' >| /tmp/secrets/CosmosDatabase
 
     - name: Docker Run and Test - Cosmos
-      if: (github.event_name == 'schedule')
+      # if: (github.event_name == 'schedule')
       run: |
 
             docker run -d --name ngsacscosmos -p 8081:8080 -v /tmp/secrets:/app/secrets:ro image --no-cache
