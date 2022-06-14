@@ -55,10 +55,10 @@ jobs:
                 fi
 
                 # check if container is still running
-                if [ -z "$(docker ps -q -f name=ngsacsmem)" ]; then
-                  docker logs ngsacsmem
-                  exit 1
-                fi
+                # if [ -z "$(docker ps -q -f name=ngsacsmem)" ]; then
+                #   docker logs ngsacsmem
+                #   exit 1
+                # fi
 
                 if [ $wait_time -gt 30 ] ; then
                   echo -e "\n timeout waiting for web server to start"
