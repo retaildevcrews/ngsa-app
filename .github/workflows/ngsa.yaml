@@ -40,7 +40,7 @@ jobs:
         docker build . --progress auto -t image
 
     - name: Docker Run and Test - In-Memory
-      if: (github.event_name == 'schedule')
+      # if: (github.event_name == 'schedule')
       run: |
 
             docker run -d --name ngsacs -p 8080:8080 image --in-memory --no-cache
@@ -76,7 +76,7 @@ jobs:
             # docker run --rm --network=host ghcr.io/retaildevcrews/ngsa-lr:beta -s "http://localhost:8080" --max-errors 1 -f benchmark.json baseline.json
 
     - name: Set Secrets
-      if: (github.event_name == 'schedule')
+      # if: (github.event_name == 'schedule')
       run: |
             mkdir -p /tmp/secrets
             # echo -n ${{ secrets.NGSA_PRE_COSMOS_RW_KEY}} >| /tmp/secrets/CosmosKey
