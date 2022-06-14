@@ -43,7 +43,7 @@ jobs:
       # if: (github.event_name == 'schedule')
       run: |
 
-            docker run -d --name ngsacs -p 8080:8080 image --in-memory --no-cache
+            docker run -d --name ngsacs -p 8080:8080 image --in-memory
 
             echo "Waiting for web server to start ..."
 
