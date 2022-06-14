@@ -39,7 +39,7 @@ jobs:
     - name: Docker Run and Test - In-Memory
       run: |
 
-            docker run -d --name ngsacsmem -p 8080:8080 image --in-memory
+            docker run -d --name ngsacsmem -p 8080:8080 image --in-memory --no-cache
 
             echo "Waiting for web server to start ..."
 
@@ -83,7 +83,7 @@ jobs:
     - name: Docker Run and Test - Cosmos
       run: |
 
-            docker run --rm -d --name ngsacscosmos -p 8081:8080 -v /tmp/secrets:/app/secrets:ro image --no-cache
+            docker run -d --name ngsacscosmos -p 8081:8080 image --no-cache
 
             echo "Waiting for web server to start ..."
 
