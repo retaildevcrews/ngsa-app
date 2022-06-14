@@ -1,18 +1,14 @@
 name: Build NGSA-App-PR
 
 on:
-  # pull_request:
-  #   types: [opened, reopened, synchronize]
+  pull_request:
+    types: [opened, reopened, synchronize]
 
-  #   paths:
-  #     - 'Dockerfile'
-  #     - '*.csproj'
-  #     - '**.cs'
-  #     - '.github/workflows/ngsa-pr.yaml'
-
-  push:
-    branches:
-      - "aakindele/gh-action-logs"
+    paths:
+      - 'Dockerfile'
+      - '*.csproj'
+      - '**.cs'
+      - '.github/workflows/ngsa-pr.yaml'
 
 jobs:
 
@@ -39,7 +35,7 @@ jobs:
     - name: Docker Run and Test - In-Memory
       run: |
 
-            docker run -d --name ngsacsmem -p 8080:8080 image --in-memory --no-cache
+            docker run -d --name ngsacsmem -p 8080:8080 image --in-memory
 
             echo "Waiting for web server to start ..."
 
@@ -55,10 +51,10 @@ jobs:
                 fi
 
                 # check if container is still running
-                # if [ -z "$(docker ps -q -f name=ngsacsmem)" ]; then
-                #   docker logs ngsacsmem
-                #   exit 1
-                # fi
+                if [ -z "$(docker ps -q -f name=ngsacsmem)" ]; then
+                  docker logs ngsacsmem
+                  exit 1
+                fi
 
                 if [ $wait_time -gt 30 ] ; then
                   echo -e "\n timeout waiting for web server to start"
@@ -70,7 +66,7 @@ jobs:
             done
 
             echo "Running In-Memory benchmark and baseline"
-            # docker run --rm --network=host ghcr.io/retaildevcrews/ngsa-lr:beta -s "http://localhost:8080" --max-errors 1 -f benchmark.json baseline.json
+            docker run --rm --network=host ghcr.io/retaildevcrews/ngsa-lr:beta -s "http://localhost:8080" --max-errors 1 -f benchmark.json baseline.json
 
     - name: Set Secrets
       run: |
@@ -83,7 +79,7 @@ jobs:
     - name: Docker Run and Test - Cosmos
       run: |
 
-            docker run -d --name ngsacscosmos -p 8081:8080 image --no-cache
+            docker run -d --name ngsacscosmos -p 8081:8080 -v /tmp/secrets:/app/secrets:ro image --no-cache
 
             echo "Waiting for web server to start ..."
 
@@ -115,7 +111,7 @@ jobs:
 
             echo "Running Cosmos benchmark and baseline"
 
-            # docker run --rm --network=host ghcr.io/retaildevcrews/ngsa-lr:beta -s "http://localhost:8081" --max-errors 1 -f benchmark.json baseline.json
+            docker run --rm --network=host ghcr.io/retaildevcrews/ngsa-lr:beta -s "http://localhost:8081" --max-errors 1 -f benchmark.json baseline.json
 
     - name: Delete Secrets
       run: |
@@ -125,7 +121,7 @@ jobs:
       run: |
 
         # tag the repo with :dev
-        # docker tag image $DOCKER_REPO:dev
+        docker tag image $DOCKER_REPO:dev
 
         # Push to the repo
-        # docker push -a $DOCKER_REPO
+        docker push -a $DOCKER_REPO
