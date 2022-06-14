@@ -8,6 +8,7 @@ on:
   push:
     branches:
       - main
+      - "aakindele/gh-action-logs"
 
     paths:
     - 'Dockerfile'
@@ -41,93 +42,107 @@ jobs:
     - name: Docker Run and Test - In-Memory
       if: (github.event_name == 'schedule')
       run: |
-           
-            docker run --rm -d --name ngsacs -p 8080:8080 image --in-memory
+
+            docker run -d --name ngsacs -p 8080:8080 image --in-memory --no-cache
 
             echo "Waiting for web server to start ..."
-        
-            wait_time=10        
+
+            wait_time=10
             sleep $wait_time
 
             # wait up to 30 seconds for web server to start
             while true
             do
-                if curl localhost:8080/version ; then
+                if curl -s localhost:8080/version ; then
                     echo -e "\n web server is running"
                     break
                 fi
+
+                # check if container is still running
+                if [ -z "$(docker ps -q -f name=ngsacs)" ]; then
+                  docker logs ngsacs
+                  exit 1
+                fi
+
                 if [ $wait_time -gt 30 ] ; then
                   echo -e "\n timeout waiting for web server to start"
                   exit 1
                 fi
-                
+
                 sleep 1
                 ((wait_time=wait_time+1))
             done
 
-            docker run --rm --network=host ghcr.io/retaildevcrews/ngsa-lr:beta -s "http://localhost:8080" --max-errors 1 -f benchmark.json baseline.json
+            # docker run --rm --network=host ghcr.io/retaildevcrews/ngsa-lr:beta -s "http://localhost:8080" --max-errors 1 -f benchmark.json baseline.json
 
     - name: Set Secrets
       if: (github.event_name == 'schedule')
       run: |
             mkdir -p /tmp/secrets
-            echo -n ${{ secrets.NGSA_PRE_COSMOS_RW_KEY}} >| /tmp/secrets/CosmosKey
-            echo -n ${{ secrets.NGSA_PRE_COSMOS_URL }} >| /tmp/secrets/CosmosUrl
-            echo -n 'movies' >| /tmp/secrets/CosmosCollection
-            echo -n 'imdb' >| /tmp/secrets/CosmosDatabase
+            # echo -n ${{ secrets.NGSA_PRE_COSMOS_RW_KEY}} >| /tmp/secrets/CosmosKey
+            # echo -n ${{ secrets.NGSA_PRE_COSMOS_URL }} >| /tmp/secrets/CosmosUrl
+            # echo -n 'movies' >| /tmp/secrets/CosmosCollection
+            # echo -n 'imdb' >| /tmp/secrets/CosmosDatabase
 
     - name: Docker Run and Test - Cosmos
-      if: (github.event_name == 'schedule')    
+      if: (github.event_name == 'schedule')
       run: |
-           
-            docker run --rm -d --name ngsacscosmos -p 8081:8080 -v /tmp/secrets:/app/secrets:ro image --no-cache
+
+            docker run -d --name ngsacscosmos -p 8081:8080 -v /tmp/secrets:/app/secrets:ro image --no-cache
 
             echo "Waiting for web server to start ..."
-        
-            wait_time=10        
+
+            wait_time=10
             sleep $wait_time
 
             # wait up to 30 seconds for web server to start
             while true
             do
-                if curl localhost:8081/version ; then
+                if curl -s localhost:8081/version ; then
                     echo -e "\n web server is running"
                     break
                 fi
+
+                # check if container is still running
+                if [ -z "$(docker ps -q -f name=ngsacscosmos)" ]; then
+                  docker logs ngsacscosmos
+                  exit 1
+                fi
+
                 if [ $wait_time -gt 30 ] ; then
                   echo -e "\n timeout waiting for web server to start"
                   exit 1
                 fi
-                
+
                 sleep 1
                 ((wait_time=wait_time+1))
             done
 
             echo "Running Cosmos benchmark and baseline"
 
-            docker run --rm --network=host ghcr.io/retaildevcrews/ngsa-lr:beta -s "http://localhost:8081" --max-errors 1 -f benchmark.json baseline.json
+            # docker run --rm --network=host ghcr.io/retaildevcrews/ngsa-lr:beta -s "http://localhost:8081" --max-errors 1 -f benchmark.json baseline.json
 
     - name: Delete Secrets
-      if: (github.event_name == 'schedule')    
+      if: (github.event_name == 'schedule')
       run: |
-            rm -rf /tmp/secrets    
+            rm -rf /tmp/secrets
 
     - name: Docker Tag and Push
       run: |
-        VERSION=$(docker run --rm image --version)
-        # tag the repo with :beta
-        docker tag image $DOCKER_REPO:beta
-        # Push to the repo
-        docker push -a $DOCKER_REPO
+        # VERSION=$(docker run --rm image --version)
+        # # tag the repo with :beta
+        # docker tag image $DOCKER_REPO:beta
+        # # Push to the repo
+        # docker push -a $DOCKER_REPO
 
     - name: AutoGitOps Pull
-      run: |        
-        docker pull ghcr.io/retaildevcrews/autogitops:0.3.0
+      run: |
+        # docker pull ghcr.io/retaildevcrews/autogitops:0.3.0
 
     - name: GitOps Deploy
-      run: |        
-        docker run \
-        --name ago \
-        --rm \
-        -v $(pwd)/autogitops:/ago/autogitops \
-        ghcr.io/retaildevcrews/autogitops:0.3.0 -r /retaildevcrews/ngsa-asb -p ${{ secrets.GHCR_PAT }}
+      run: |
+        # docker run \
+        # --name ago \
+        # --rm \
+        # -v $(pwd)/autogitops:/ago/autogitops \
+        # ghcr.io/retaildevcrews/autogitops:0.3.0 -r /retaildevcrews/ngsa-asb -p ${{ secrets.GHCR_PAT }}
