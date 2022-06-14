@@ -1,14 +1,18 @@
 name: Build NGSA-App-PR
 
 on:
-  pull_request:
-    types: [opened, reopened, synchronize]
+  # pull_request:
+  #   types: [opened, reopened, synchronize]
 
-    paths:
-      - 'Dockerfile'
-      - '*.csproj'
-      - '**.cs'
-      - '.github/workflows/ngsa-pr.yaml'
+  #   paths:
+  #     - 'Dockerfile'
+  #     - '*.csproj'
+  #     - '**.cs'
+  #     - '.github/workflows/ngsa-pr.yaml'
+
+  push:
+    branches:
+      - "aakindele/gh-action-logs"
 
 jobs:
 
@@ -34,33 +38,40 @@ jobs:
 
     - name: Docker Run and Test - In-Memory
       run: |
-           
-            docker run --rm -d --name ngsacsmem -p 8080:8080 image --in-memory
+
+            docker run -d --name ngsacsmem -p 8080:8080 image --in-memory
 
             echo "Waiting for web server to start ..."
-        
-            wait_time=10        
+
+            wait_time=10
             sleep $wait_time
 
             # wait up to 30 seconds for web server to start
             while true
             do
-                if curl localhost:8080/version ; then
+                if curl -s localhost:8080/version ; then
                     echo -e "\n web server is running"
                     break
                 fi
+
+                # check if container is still running
+                if [ -z "$(docker ps -q -f name=ngsacsmem)" ]; then
+                  docker logs ngsacsmem
+                  exit 1
+                fi
+
                 if [ $wait_time -gt 30 ] ; then
                   echo -e "\n timeout waiting for web server to start"
                   exit 1
                 fi
-                
+
                 sleep 1
                 ((wait_time=wait_time+1))
             done
 
             echo "Running In-Memory benchmark and baseline"
-            docker run --rm --network=host ghcr.io/retaildevcrews/ngsa-lr:beta -s "http://localhost:8080" --max-errors 1 -f benchmark.json baseline.json
-    
+            # docker run --rm --network=host ghcr.io/retaildevcrews/ngsa-lr:beta -s "http://localhost:8080" --max-errors 1 -f benchmark.json baseline.json
+
     - name: Set Secrets
       run: |
             mkdir -p /tmp/secrets
@@ -71,43 +82,50 @@ jobs:
 
     - name: Docker Run and Test - Cosmos
       run: |
-           
+
             docker run --rm -d --name ngsacscosmos -p 8081:8080 -v /tmp/secrets:/app/secrets:ro image --no-cache
 
             echo "Waiting for web server to start ..."
-        
-            wait_time=10        
+
+            wait_time=10
             sleep $wait_time
 
             # wait up to 30 seconds for web server to start
             while true
             do
-                if curl localhost:8081/version ; then
+                if curl -s localhost:8081/version ; then
                     echo -e "\n web server is running"
                     break
                 fi
+
+                # check if container is still running
+                if [ -z "$(docker ps -q -f name=ngsacscosmos)" ]; then
+                  docker logs ngsacscosmos
+                  exit 1
+                fi
+
                 if [ $wait_time -gt 30 ] ; then
                   echo -e "\n timeout waiting for web server to start"
                   exit 1
                 fi
-                
+
                 sleep 1
                 ((wait_time=wait_time+1))
             done
 
             echo "Running Cosmos benchmark and baseline"
 
-            docker run --rm --network=host ghcr.io/retaildevcrews/ngsa-lr:beta -s "http://localhost:8081" --max-errors 1 -f benchmark.json baseline.json
+            # docker run --rm --network=host ghcr.io/retaildevcrews/ngsa-lr:beta -s "http://localhost:8081" --max-errors 1 -f benchmark.json baseline.json
 
     - name: Delete Secrets
       run: |
-            rm -rf /tmp/secrets    
-    
+            rm -rf /tmp/secrets
+
     - name: Docker Tag and Push
       run: |
 
         # tag the repo with :dev
-        docker tag image $DOCKER_REPO:dev
+        # docker tag image $DOCKER_REPO:dev
 
         # Push to the repo
-        docker push -a $DOCKER_REPO
+        # docker push -a $DOCKER_REPO
