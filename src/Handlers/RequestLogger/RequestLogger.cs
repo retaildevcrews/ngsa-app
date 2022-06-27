@@ -8,7 +8,6 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using System.Web;
 using Microsoft.AspNetCore.Http;
-using Microsoft.CorrelationVector;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Ngsa.Application;
@@ -125,8 +124,6 @@ namespace Ngsa.Middleware
             double duration = 0;
             double ttfb = 0;
 
-            CorrelationVector cv = CorrelationVectorExtensions.Extend(context);
-
             // Invoke next handler
             if (next != null)
             {
@@ -141,11 +138,11 @@ namespace Ngsa.Middleware
             // compute request duration
             duration = Math.Round(DateTime.Now.Subtract(dtStart).TotalMilliseconds, 2);
 
-            LogRequest(context, cv, ttfb, duration);
+            LogRequest(context, ttfb, duration);
         }
 
         // log the request
-        private static void LogRequest(HttpContext context, CorrelationVector cv, double ttfb, double duration)
+        private static void LogRequest(HttpContext context, double ttfb, double duration)
         {
             DateTime dt = DateTime.UtcNow;
 
@@ -169,8 +166,6 @@ namespace Ngsa.Middleware
                     { "ClientIP", GetClientIp(context, out string xff) },
                     { "XFF", xff },
                     { "UserAgent", context.Request.Headers["User-Agent"].ToString() },
-                    { "CVector", cv.Value },
-                    { "CVectorBase", cv.GetBase() },
                     { "TraceID", Activity.Current.Context.TraceId.ToString() },
                     { "SpanID", Activity.Current.Context.SpanId.ToString() },
                     { "Category", category },

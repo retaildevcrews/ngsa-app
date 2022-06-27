@@ -7,7 +7,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text.Json;
 using Microsoft.AspNetCore.Http;
-using Microsoft.CorrelationVector;
 using Microsoft.Extensions.Logging;
 
 namespace Ngsa.Middleware
@@ -93,20 +92,12 @@ namespace Ngsa.Middleware
 
                 for (int i = list.Count - 1; i >= 0; i--)
                 {
-                    // get correlation vector from HttpContext.Items
                     if (c == null && list[i].Value is HttpContext)
                     {
                         c = list[i].Value as HttpContext;
 
                         if (c != null && c.Items != null)
                         {
-                            CorrelationVector cv = CorrelationVectorExtensions.GetCorrelationVectorFromContext(c);
-
-                            if (cv != null)
-                            {
-                                d.Add("CVector", cv.Value);
-                            }
-
                             d.Add("TraceID", Activity.Current.Context.TraceId.ToString());
                             d.Add("SpanID", Activity.Current.Context.SpanId.ToString());
                         }
