@@ -33,3 +33,4 @@ USER ngsa
 COPY --from=build /app .
 
 ENTRYPOINT [ "dotnet",  "aspnetapp.dll" ]
+#checkov:skip=CKV_DOCKER_2: No healthcheck is needed 

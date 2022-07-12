@@ -17,3 +17,7 @@ RUN chown -R ${USERNAME}:${USERNAME} "/home/${USERNAME}"
 
 # log completion - make sure this is last
 RUN echo "$(date +'%Y-%m-%d %H:%M:%S')    docker build complete" >> "/home/${USERNAME}/status"
+#checkov:skip=CKV_DOCKER_2: No healthcheck is needed 
+#checkov:skip=CKV_DOCKER_3: No user is needed 
+#checkov:skip=CKV_DOCKER_5: Update is used in same line as upgrade 
+#checkov:skip=CKV_DOCKER_7: Alright to use "latest" tag
