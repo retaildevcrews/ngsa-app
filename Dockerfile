@@ -1,4 +1,5 @@
 ### Build and Test the App
+#checkov:skip=CKV_DOCKER_2: No healthcheck is needed 
 FROM mcr.microsoft.com/dotnet/sdk:6.0-alpine AS build
 
 ### copy the source and tests
@@ -33,4 +34,3 @@ USER ngsa
 COPY --from=build /app .
 
 ENTRYPOINT [ "dotnet",  "aspnetapp.dll" ]
-#checkov:skip=CKV_DOCKER_2: No healthcheck is needed 
