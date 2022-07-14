@@ -100,6 +100,7 @@ namespace Ngsa.Middleware
                         {
                             d.Add("TraceID", Activity.Current.Context.TraceId.ToString());
                             d.Add("SpanID", Activity.Current.Context.SpanId.ToString());
+                            d.Add("ParentSpanID", Activity.Current.ParentId?.Substring(36, 16));
                         }
                     }
                     else
