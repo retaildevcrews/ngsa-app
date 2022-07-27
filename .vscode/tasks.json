@@ -4,7 +4,7 @@
         {
             "label": "SubTask-Run Checkov image",
             "type": "shell",
-            "command": "docker run -it --name checkov-lr -v /workspaces/loderunner:/loderunner --rm bridgecrew/checkov -d /loderunner --output-file-path /loderunner --framework 'kubernetes' 'dockerfile' ; returncode=$?; mv results_cli.txt checkov_scan_results.txt; code -r ${workspaceFolder}/checkov_scan_results.txt;echo Scan Complete - Please review 'checkov_scan_results.txt' for details.; exit $returncode"
+            "command": "docker run -it --name checkov-lr -v /workspaces/ngsa-app:/ngsa-app --rm bridgecrew/checkov -d /ngsa-app --output-file-path /ngsa-app --framework 'kubernetes' 'dockerfile' ; returncode=$?; mv results_cli.txt checkov_scan_results.txt; code -r ${workspaceFolder}/checkov_scan_results.txt;echo Scan Complete - Please review 'checkov_scan_results.txt' for details.; exit $returncode"
         },
         {
             "label": "Run Checkov Scan",
