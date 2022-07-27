@@ -168,6 +168,7 @@ namespace Ngsa.Middleware
                     { "UserAgent", context.Request.Headers["User-Agent"].ToString() },
                     { "TraceID", Activity.Current.Context.TraceId.ToString() },
                     { "SpanID", Activity.Current.Context.SpanId.ToString() },
+                    { "ParentSpanID", Activity.Current.ParentId?.Substring(36, 16) },
                     { "Category", category },
                     { "Subcategory", subCategory },
                     { "Mode", mode },
