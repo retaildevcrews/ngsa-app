@@ -40,6 +40,10 @@ bld/
 [Tt]est[Rr]esult*/
 [Bb]uild[Ll]og.*
 
+# Checkov scan result files
+results_cli.txt
+checkov_scan_results.txt
+
 # NUNIT
 *.VisualState.xml
 TestResult.xml
