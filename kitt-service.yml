@@ -13,8 +13,6 @@ instances:
               - --zone={{$.kittExec.currentCluster.provider}}
               - --prometheus
               - --no-cache
-              - --burst-header
-              - --burst-service=ngsa-cosmos
           secrets:
             file_refresh: true
             files:
@@ -52,8 +50,6 @@ instances:
               - --region={{$.kittExec.currentCluster.site}}
               - --zone={{$.kittExec.currentCluster.provider}}
               - --prometheus
-              - --burst-header
-              - --burst-service=ngsa-in-memory
 build:
   artifact: app
 deploy:
@@ -72,6 +68,6 @@ deploy:
         cpu: 1
         memory: 1Gi
       readinessProbe:
-        path: "/version" 
+        path: "/version"
       livenessProbe:
         path: "/version"

@@ -26,10 +26,6 @@ Options:
   --url-prefix <url-prefix>                                                        URL prefix for ingress mapping [default: ]
   --port <port>                                                                    Listen Port [default: 8080]
   -d, --cache-duration <cache-duration>                                            Cache for duration (seconds) [default: 300]
-  --burst-header                                                                   Enable burst metrics header in health and version endpoints. [default: False]
-  --burst-service-endpoint <burst-service-endpoint>                                Burst metrics service endpoint
-  --burst-service-ns <burst-service-ns>                                            Namespace parameter for burst metrics service
-  --burst-service-hpa <burst-service-hpa>                                          HPA name parameter for burst metrics service
   --retries <retries>                                                              Cosmos 429 retries [default: 10]
   --timeout <timeout>                                                              Request timeout [default: 10]
   -s, --data-service <data-service>                                                Data Service URL [default: ]
@@ -105,24 +101,6 @@ curl localhost:4120/version
 ```
 
 Stop ngsa by typing Ctrl-C or the stop button if run via F5
-
-### Run the app with burst service
-
-```bash
-
-# Option 1: set burst service env variables (recommended)
-export BURST_SERVICE_ENDPOINT="http://localhost:4120/burstmetrics/"
-export BURST_SERVICE_NS="default"
-export BURST_SERVICE_HPA="ngsa"
-
-dotnet run -- -m --burst-header
-
-# Option 2: pass in burst variables as args
-dotnet run -- -m --burst-header --burst-service-endpoint="http://localhost:4120/burstmetrics/" --burst-service-ns default --burst-service-hpa ngsa
-
-```
-
-If the env variables are set AND you pass in the burst env variables as args, the CLI argument values take precedence.
 
 ## Autogitops
 
