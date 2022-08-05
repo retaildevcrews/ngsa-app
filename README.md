@@ -93,10 +93,10 @@ Open a new bash shell
 # test the application
 
 # test using httpie (installed automatically in Codespaces)
-http localhost:4120/version
+http localhost:8080/version
 
 # test using curl
-curl localhost:4120/version
+curl localhost:8080/version
 
 ```
 
