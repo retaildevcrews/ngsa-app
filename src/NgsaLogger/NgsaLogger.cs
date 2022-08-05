@@ -113,7 +113,7 @@ namespace Ngsa.Middleware
             // add exception
             if (exception != null)
             {
-                d.Add("Exception", exception.Message);
+                d.Add("Exception", exception.ToString());
             }
 
             if (logLevel >= LogLevel.Error)
