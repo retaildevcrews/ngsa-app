@@ -58,8 +58,6 @@ namespace Ngsa.Application.Controllers
                 StatusCode = res.Status == HealthStatus.Unhealthy ? (int)System.Net.HttpStatusCode.ServiceUnavailable : (int)System.Net.HttpStatusCode.OK,
             };
 
-            BurstMetricsService.InjectBurstMetricsHeader(Response.HttpContext);
-
             return result;
         }
 
