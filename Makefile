@@ -42,3 +42,9 @@ deploy-ngsa-memory: build-ngsa-app delete-ngsa-deploys
 check:
 	@http http://localhost:30000/version
 	@http http://localhost:30080/version
+
+test-baseline:
+	@docker run -it --rm --net=host  ghcr.io/retaildevcrews/ngsa-lr:beta --server localhost:30080 --files baseline.json
+
+test-benchmark:
+	@docker run -it --rm --net=host  ghcr.io/retaildevcrews/ngsa-lr:beta --server localhost:30080 --files benchmark.json
