@@ -23,6 +23,15 @@ spec:
         deploy: {{gitops.deploy}}
     spec:
       containers:
+        - name: istio-proxy
+          image: auto
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 1000m
+              memory: 256Mi
         - name: app
           image: {{gitops.imageName}}:{{gitops.imageTag}}
           imagePullPolicy: Always
@@ -50,11 +59,11 @@ spec:
               port: 8080
           resources:
             limits:
-              cpu: 500m
+              cpu: 1000m
               memory: 512Mi
             requests:
-              cpu: 250m
-              memory: 256Mi
+              cpu: 50m
+              memory: 128Mi
           securityContext:
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
