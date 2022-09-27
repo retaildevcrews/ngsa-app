@@ -73,8 +73,6 @@ spec:
       securityContext:
         seccompProfile:
           type: RuntimeDefault
-      nodeSelector:
-        agentpool: npuser01
 
 ---
 apiVersion: v1
