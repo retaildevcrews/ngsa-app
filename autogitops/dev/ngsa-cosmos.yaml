@@ -22,6 +22,7 @@ spec:
         app: {{gitops.name}}-cosmos
         deploy: {{gitops.deploy}}
         version: beta-{{gitops.version}}
+        sidecar.istio.io/inject: "true"
     spec:
       containers:
         - name: istio-proxy

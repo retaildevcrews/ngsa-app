@@ -24,15 +24,6 @@ spec:
         version: beta-{{gitops.version}}
     spec:
       containers:
-        - name: istio-proxy
-          image: auto
-          resources:
-            requests:
-              cpu: 50m
-              memory: 64Mi
-            limits:
-              cpu: 1000m
-              memory: 256Mi
         - name: app
           image: {{gitops.imageName}}:{{gitops.imageTag}}
           imagePullPolicy: Always
