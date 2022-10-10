@@ -6,7 +6,6 @@ metadata:
   labels:
     app.kubernetes.io/name: {{gitops.name}}-cosmos
 spec:
-  replicas: 2
   selector:
     matchLabels:
       app: {{gitops.name}}-cosmos
@@ -39,7 +38,8 @@ spec:
               containerPort: 8080
               protocol: TCP
           readinessProbe:
-            initialDelaySeconds: 5
+            initialDelaySeconds: 30
+            timeoutSeconds: 120
             httpGet:
               path: /version
               port: 8080
