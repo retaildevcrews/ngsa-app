@@ -48,8 +48,7 @@ spec:
               containerPort: 8080
               protocol: TCP
           readinessProbe:
-            initialDelaySeconds: 30
-            timeoutSeconds: 120
+            initialDelaySeconds: 5
             httpGet:
               path: /version
               port: 8080
