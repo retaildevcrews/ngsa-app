@@ -79,7 +79,7 @@ namespace Ngsa.Application.DataAccessLayer
         /// <param name="cosmosCollection">Cosmos Collection</param>
         /// <param name="cosmosAuthType">CosmosDB Auth type</param>
         /// <returns>An open and validated CosmosClient</returns>
-        private async Task<CosmosClient> OpenAndTestCosmosClient(string cosmosServer, string cosmosKey, string cosmosDatabase, string cosmosCollection, CosmosAuthType cosmosAuthType = CosmosAuthType.Secrets)
+        private async Task<CosmosClient> OpenAndTestCosmosClient(string cosmosServer, string cosmosKey, string cosmosDatabase, string cosmosCollection, CosmosAuthType cosmosAuthType = CosmosAuthType.SecretKey)
         {
             // TODO: Do we want to have optional/default values for cosmosAuthType, since its a private method?
             // validate required parameters
@@ -105,7 +105,7 @@ namespace Ngsa.Application.DataAccessLayer
 
             CosmosClient c = cosmosAuthType switch
             {
-                CosmosAuthType.Secrets => new(cosmosServer, cosmosKey, cosmosDetails.CosmosClientOptions),
+                CosmosAuthType.SecretKey => new(cosmosServer, cosmosKey, cosmosDetails.CosmosClientOptions),
                 CosmosAuthType.ManagedIdentity or _ => new(cosmosServer, new DefaultAzureCredential(), cosmosDetails.CosmosClientOptions),
             };
 

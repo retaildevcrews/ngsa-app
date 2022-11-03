@@ -24,7 +24,7 @@ namespace Ngsa.Application
         /// <summary>
         /// Secrets specified in files type.
         /// </summary>
-        Secrets,
+        SecretKey,
 
         /// <summary>
         /// Managed Identity auth type.
@@ -42,7 +42,7 @@ namespace Ngsa.Application
         public string CosmosName { get; set; } = string.Empty;
         public bool IsLogLevelSet { get; set; }
         public Secrets Secrets { get; set; }
-        public CosmosAuthType CosmosAuthType { get; set; } = CosmosAuthType.Secrets;
+        public CosmosAuthType CosmosAuthType { get; set; } = CosmosAuthType.ManagedIdentity;
         public bool DryRun { get; set; }
         public bool InMemory { get; set; }
         public bool Cache => !NoCache;

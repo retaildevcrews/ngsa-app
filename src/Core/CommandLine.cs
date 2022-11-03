@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Lucene.Net.Search;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Logging;
 using Ngsa.Middleware;
@@ -107,7 +108,7 @@ namespace Ngsa.Application
             root.AddOption(EnvVarOption(new string[] { "--log-level", "-l" }, "Log Level", LogLevel.Error));
             root.AddOption(EnvVarOption(new string[] { "--request-log-level", "-q" }, "Request Log Level", LogLevel.Information));
             root.AddOption(new Option<bool>(new string[] { "--dry-run" }, "Validates configuration"));
-            root.AddOption(new Option<bool>(new string[] { "--use-mi" }, "Use Managed Identity to access CosmosDB"));
+            root.AddOption(EnvVarOption(new string[] { "--use-secret-key", "-k" }, "Cosmos Auth Type", CosmosAuthType.SecretKey));
 
             // validate dependencies
             root.AddValidator(ValidateDependencies);
@@ -129,6 +130,11 @@ namespace Ngsa.Application
             {
                 // get the values to validate
                 AppType appType = result.Children.FirstOrDefault(c => c.Symbol.Name == "app-type") is OptionResult appTypeRes ? appTypeRes.GetValueOrDefault<AppType>() : AppType.App;
+
+                //TODO:  Discuss if any validation is needed
+
+                //CosmosAuthType cosmosAuthType = result.Children.FirstOrDefault(c => c.Symbol.Name == "use-secret-key") is OptionResult cosmosAuthTypeRes ? cosmosAuthTypeRes.GetValueOrDefault<CosmosAuthType>() : CosmosAuthType.SecretKey;
+
                 string secrets = result.Children.FirstOrDefault(c => c.Symbol.Name == "secrets-volume") is OptionResult secretsRes ? secretsRes.GetValueOrDefault<string>() : string.Empty;
                 string dataService = result.Children.FirstOrDefault(c => c.Symbol.Name == "data-service") is OptionResult dsRes ? dsRes.GetValueOrDefault<string>() : string.Empty;
                 string urlPrefix = result.Children.FirstOrDefault(c => c.Symbol.Name == "urlPrefix") is OptionResult urlRes ? urlRes.GetValueOrDefault<string>() : string.Empty;
