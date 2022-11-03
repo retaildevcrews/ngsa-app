@@ -60,7 +60,9 @@ namespace Ngsa.Application
             }
             else
             {
-                Config.Secrets = Secrets.GetSecretsFromVolume(Config.SecretsVolume);
+                // We skip CosmosKey validation if we're using
+                bool skipCosmosKeyValidation = !Config.UseSecretKey;
+                Config.Secrets = Secrets.GetSecretsFromVolume(Config.SecretsVolume, skipCosmosKeyValidation);
 
                 // set the Cosmos server name for logging
                 Config.CosmosName = Config.Secrets.CosmosServer.Replace("https://", string.Empty, StringComparison.OrdinalIgnoreCase).Replace("http://", string.Empty, StringComparison.OrdinalIgnoreCase);

@@ -88,7 +88,7 @@ namespace Ngsa.Application.DataAccessLayer
                 throw new ArgumentNullException(nameof(cosmosServer));
             }
 
-            if (string.IsNullOrWhiteSpace(cosmosKey))
+            if (cosmosAuthType == CosmosAuthType.SecretKey && string.IsNullOrWhiteSpace(cosmosKey))
             {
                 throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, $"CosmosKey not set correctly {cosmosKey}"));
             }
