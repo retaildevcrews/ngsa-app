@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Runtime.Caching;
 using System.Threading.Tasks;
+using Azure.Identity;
 using Microsoft.Azure.Cosmos;
 
 namespace Ngsa.Application.DataAccessLayer
@@ -32,6 +33,7 @@ namespace Ngsa.Application.DataAccessLayer
                 throw new ArgumentNullException(nameof(secrets));
             }
 
+            // TODO: Should we put the CosmosAuthType enum in CosmosConfig??
             cosmosDetails = new CosmosConfig
             {
                 CosmosCollection = secrets.CosmosCollection,
@@ -43,7 +45,7 @@ namespace Ngsa.Application.DataAccessLayer
             };
 
             // create the CosmosDB client and container
-            cosmosDetails.Client = OpenAndTestCosmosClient(secrets.CosmosServer, secrets.CosmosKey, secrets.CosmosDatabase, secrets.CosmosCollection).GetAwaiter().GetResult();
+            cosmosDetails.Client = OpenAndTestCosmosClient(secrets.CosmosServer, secrets.CosmosKey, secrets.CosmosDatabase, secrets.CosmosCollection, config.CosmosAuthType).GetAwaiter().GetResult();
             cosmosDetails.Container = cosmosDetails.Client.GetContainer(secrets.CosmosDatabase, secrets.CosmosCollection);
         }
 
@@ -75,9 +77,11 @@ namespace Ngsa.Application.DataAccessLayer
         /// <param name="cosmosKey">Cosmos Key</param>
         /// <param name="cosmosDatabase">Cosmos Database</param>
         /// <param name="cosmosCollection">Cosmos Collection</param>
+        /// <param name="cosmosAuthType">CosmosDB Auth type</param>
         /// <returns>An open and validated CosmosClient</returns>
-        private async Task<CosmosClient> OpenAndTestCosmosClient(string cosmosServer, string cosmosKey, string cosmosDatabase, string cosmosCollection)
+        private async Task<CosmosClient> OpenAndTestCosmosClient(string cosmosServer, string cosmosKey, string cosmosDatabase, string cosmosCollection, CosmosAuthType cosmosAuthType = CosmosAuthType.Secrets)
         {
+            // TODO: Do we want to have optional/default values for cosmosAuthType, since its a private method?
             // validate required parameters
             if (cosmosServer == null)
             {
@@ -99,8 +103,12 @@ namespace Ngsa.Application.DataAccessLayer
                 throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, $"CosmosCollection not set correctly {cosmosCollection}"));
             }
 
-            // open and test a new client / container
-            CosmosClient c = new(cosmosServer, cosmosKey, cosmosDetails.CosmosClientOptions);
+            CosmosClient c = cosmosAuthType switch
+            {
+                CosmosAuthType.Secrets => new(cosmosServer, cosmosKey, cosmosDetails.CosmosClientOptions),
+                CosmosAuthType.ManagedIdentity or _ => new(cosmosServer, new DefaultAzureCredential(), cosmosDetails.CosmosClientOptions),
+            };
+
             Container con = c.GetContainer(cosmosDatabase, cosmosCollection);
             await con.ReadItemAsync<dynamic>("action", new PartitionKey("0")).ConfigureAwait(false);
 

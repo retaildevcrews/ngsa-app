@@ -107,6 +107,7 @@ namespace Ngsa.Application
             root.AddOption(EnvVarOption(new string[] { "--log-level", "-l" }, "Log Level", LogLevel.Error));
             root.AddOption(EnvVarOption(new string[] { "--request-log-level", "-q" }, "Request Log Level", LogLevel.Information));
             root.AddOption(new Option<bool>(new string[] { "--dry-run" }, "Validates configuration"));
+            root.AddOption(new Option<bool>(new string[] { "--use-mi" }, "Use Managed Identity to access CosmosDB"));
 
             // validate dependencies
             root.AddValidator(ValidateDependencies);
