@@ -103,6 +103,25 @@ curl localhost:8080/version
 
 Stop ngsa by typing Ctrl-C or the stop button if run via F5
 
+### [Alternative to secrets] Visual Studio: CosmosDB access using Identity
+
+In bash add your own AAD user to CosmosDB:
+
+```bash
+# Get your own Principal ID (replace the email with yours)
+export PRINCIPAL=$(az ad user show --id YOUR-MSFT-ID@microsoft.com --query 'id' -o tsv)
+
+export COSMOS_RG=rg-ngsa-asb-dev-cosmos
+export COSMOS_NAME=ngsa-asb-dev-cosmos
+export COSMOS_SCOPE=$(az cosmosdb show -g $COSMOS_RG -n $COSMOS_NAME --query id -o tsv)
+
+# Add yourself to CosmosDB SQL Access
+az cosmosdb sql role assignment create -g $COSMOS_RG --account-name $COSMOS_NAME --role-definition-id 00000000-0000-0000-0000-000000000002 --principal-id $PRINCIPAL --scope $COSMOS_SCOPE
+
+```
+
+Add `--use-mi-for-cosmos` arg for debugging
+
 ## Autogitops
 
 The Ngsa application when running as `--in-memory` mode, utilizes its built-in data storage, so having more than one replica deployed into a cluster will cause each `pod` to have its own local data storage. As a result, requests made to ngsa app endpoints will be managed by the default `load balancer` and can end up at a different `pod` each time where data requested may or may not exist returning unexpected error codes.
