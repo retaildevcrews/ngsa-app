@@ -42,8 +42,8 @@ namespace Ngsa.Application
         public string CosmosName { get; set; } = string.Empty;
         public bool IsLogLevelSet { get; set; }
         public Secrets Secrets { get; set; }
-        public bool UseSecretKey { get; set; } = false;
-        public CosmosAuthType CosmosAuthType { get; set; } = CosmosAuthType.ManagedIdentity;
+        public bool UseMIForCosmos { get; set; } = false;
+        public CosmosAuthType CosmosAuthType { get; set; } = CosmosAuthType.SecretKey;
         public bool DryRun { get; set; }
         public bool InMemory { get; set; }
         public bool Cache => !NoCache;
