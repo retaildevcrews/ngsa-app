@@ -309,5 +309,3 @@ dist
 ### OSX ###
 # General
 .DS_Store
-/Ngsa.App.sln
-.gitignore
