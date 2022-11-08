@@ -106,7 +106,7 @@ namespace Ngsa.Application
             root.AddOption(EnvVarOption(new string[] { "--region", "-r" }, "Region for log", "dev"));
             root.AddOption(EnvVarOption(new string[] { "--log-level", "-l" }, "Log Level", LogLevel.Error));
             root.AddOption(EnvVarOption(new string[] { "--request-log-level", "-q" }, "Request Log Level", LogLevel.Information));
-            root.AddOption(new Option<bool>(new string[] { "--use-mi-for-cosmos" }, "Use Managed Idendity to authenticate CosmosDB"));
+            root.AddOption(EnvVarOption(new string[] { "--cosmos-auth-type", "-c" }, "CosmosDB Authentication type", CosmosAuthType.SecretKey));
             root.AddOption(new Option<bool>(new string[] { "--dry-run" }, "Validates configuration"));
 
             // validate dependencies
@@ -377,11 +377,8 @@ namespace Ngsa.Application
             // create data access layer
             if (Config.AppType == AppType.App)
             {
-                CosmosAuthType cosmosAuthType = config.UseMIForCosmos == true ? CosmosAuthType.ManagedIdentity : CosmosAuthType.SecretKey;
-
                 // Class level variable for global access
-                Config.CosmosAuthType = cosmosAuthType;
-                Config.UseMIForCosmos = config.UseMIForCosmos;
+                Config.CosmosAuthType = config.CosmosAuthType;
                 LoadSecrets();
 
                 // load the cache

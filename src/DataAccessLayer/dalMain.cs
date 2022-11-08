@@ -105,8 +105,8 @@ namespace Ngsa.Application.DataAccessLayer
 
             CosmosClient c = cosmosAuthType switch
             {
-                CosmosAuthType.SecretKey => new(cosmosServer, cosmosKey, cosmosDetails.CosmosClientOptions),
-                CosmosAuthType.ManagedIdentity or _ => new(cosmosServer, new DefaultAzureCredential(), cosmosDetails.CosmosClientOptions),
+                CosmosAuthType.ManagedIdentity => new(cosmosServer, new DefaultAzureCredential(), cosmosDetails.CosmosClientOptions),
+                CosmosAuthType.SecretKey or _ => new(cosmosServer, cosmosKey, cosmosDetails.CosmosClientOptions),
             };
 
             Container con = c.GetContainer(cosmosDatabase, cosmosCollection);
