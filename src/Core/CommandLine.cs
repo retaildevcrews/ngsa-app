@@ -135,7 +135,6 @@ namespace Ngsa.Application
                 string urlPrefix = result.Children.FirstOrDefault(c => c.Symbol.Name == "urlPrefix") is OptionResult urlRes ? urlRes.GetValueOrDefault<string>() : string.Empty;
                 bool inMemory = result.Children.FirstOrDefault(c => c.Symbol.Name == "in-memory") is OptionResult inMemoryRes && inMemoryRes.GetValueOrDefault<bool>();
                 bool noCache = result.Children.FirstOrDefault(c => c.Symbol.Name == "no-cache") is OptionResult noCacheRes && noCacheRes.GetValueOrDefault<bool>();
-                bool useMI = result.Children.FirstOrDefault(c => c.Symbol.Name == "use-mi-for-cosmos") is OptionResult useMIRes && useMIRes.GetValueOrDefault<bool>();
 
                 // validate url-prefix
                 if (!string.IsNullOrWhiteSpace(urlPrefix))
@@ -211,12 +210,6 @@ namespace Ngsa.Application
                 if (inMemory && noCache)
                 {
                     msg += "--in-memory and --no-cache are exclusive\n";
-                }
-
-                // invalid combination
-                if (inMemory && useMI)
-                {
-                    msg += "--in-memory and --use-mi-for-cosmos are exclusive\n";
                 }
             }
             catch

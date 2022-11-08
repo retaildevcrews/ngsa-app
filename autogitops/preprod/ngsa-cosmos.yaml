@@ -33,7 +33,8 @@ spec:
           - {{gitops.config.zone}}
           - --region
           - {{gitops.config.region}}
-          - --use-mi-for-cosmos
+          - --cosmos-auth-type
+          - ManagedIdentity
           ports:
             - name: http
               containerPort: 8080
