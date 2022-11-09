@@ -34,7 +34,7 @@ Options:
   -r, --region <region>                                                            Region for log [default: dev]
   -l, --log-level <Critical|Debug|Error|Information|None|Trace|Warning>            Log Level [default: Error]
   -q, --request-log-level <Critical|Debug|Error|Information|None|Trace|Warning>    Request Log Level [default: Information]
-  --use-mi-for-cosmos                                                              Use Managed Idendity to authenticate CosmosDB
+  -c, --cosmos-auth-type <ManagedIdentity|SecretKey>                               CosmosDB Authentication type [default: SecretKey]
   --dry-run                                                                        Validates configuration
   --version                                                                        Show version information
   -?, -h, --help                                                                   Show help and usage information
