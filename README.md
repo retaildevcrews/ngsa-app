@@ -105,7 +105,7 @@ Stop ngsa by typing Ctrl-C or the stop button if run via F5
 
 ### [Alternative to secrets] Visual Studio: CosmosDB access using Identity
 
-Below will illistrate how to add your user's principal Id to the correct group so that local development can take advantage of the managed identity.  
+Below will illustrate how to add your user's principal Id to the correct group so that local development can take advantage of the managed identity.
 
 In bash add your AAD user to CosmosDB:
 
