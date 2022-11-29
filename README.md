@@ -1,6 +1,6 @@
 # NGSA App
 
-NGSA App is inteneded for platform testing and monitoring in one or many Kubernetes clusters and/or cloud deployments.
+NGSA App is intended for platform testing and monitoring in one or many Kubernetes clusters and/or cloud deployments.
 
 ## Prerequisites
 
@@ -10,6 +10,7 @@ NGSA App is inteneded for platform testing and monitoring in one or many Kuberne
 - Docker CLI ([download](https://docs.docker.com/install/))
 - .NET 5.0 ([download](https://docs.microsoft.com/en-us/dotnet/core/install/))
 - Visual Studio Code (optional) ([download](https://code.visualstudio.com/download))
+- Visual Studio 2022 (optional)  - Must export the AZURE_TENANT_ID value to an environment variable.
 
 ## Ngsa-app Usage
 
@@ -54,6 +55,27 @@ To open with codespaces:
 - Click `New Codespace`
 - Choose the `4 core` option
 
+Prior to running the application in Visual Studio Codespaces, use the command below to authenticate:
+
+```bash
+
+# These two values can be obtained from the Azure Portal
+local tenantId = ''
+local subscriptionId = ''
+
+az login --tenant $tenantId
+az account set --subscription $subscriptionId
+
+```
+
+The code above is uses to establish Azure credentials, and specify which tenant and subscription should be utilized for the execution.
+
+For ease of debugging, a launch.json file can be created in the .vscode directory, if there is one already created it can be modified with the following value:
+
+ "args": ["--cosmos-auth-type=ManagedIdentity"],
+
+--cosmos-auth-type has two potential values; ManagedIdentity and Secret.  If set to Secret, a secret key must be provided in the secrets directory.
+
 ### Using bash shell
 
 > This will work from a terminal in Visual Studio Codespaces as well
@@ -93,7 +115,7 @@ Open a new bash shell
 
 # test the application
 
-# test using httpie (installed automatically in Codespaces)
+# test using http ie (installed automatically in Codespaces)
 http localhost:8080/version
 
 # test using curl
@@ -102,6 +124,7 @@ curl localhost:8080/version
 ```
 
 Stop ngsa by typing Ctrl-C or the stop button if run via F5
+
 ## Autogitops
 
 The Ngsa application when running as `--in-memory` mode, utilizes its built-in data storage, so having more than one replica deployed into a cluster will cause each `pod` to have its own local data storage. As a result, requests made to ngsa app endpoints will be managed by the default `load balancer` and can end up at a different `pod` each time where data requested may or may not exist returning unexpected error codes.
