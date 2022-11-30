@@ -36,7 +36,6 @@ docker network create k3d
 # Install dotnet-sdk-6.0, since by default sdk is dotnet-sdk-7.0
 sudo apt install -y --no-install-recommends dotnet-sdk-6.0
 
-
 # Create local container registry
 k3d registry create registry.localhost --port 5000
 
