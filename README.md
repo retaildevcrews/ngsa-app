@@ -76,6 +76,23 @@ For ease of debugging, a launch.json file can be created in the .vscode director
 
 --cosmos-auth-type has two potential values; ManagedIdentity and Secret.  If set to Secret, a secret key must be provided in the secrets directory.
 
+If a user is testing locally there is not the option to use Managed Identity.  To move past this the following commands can be used to add the user in question to the correct Cosmos groups
+In bash add your own AAD user to CosmosDB:
+
+```bash
+# Get your own Principal ID (replace the email with yours)
+export PRINCIPAL=$(az ad user show --id YOUR-MSFT-ID@microsoft.com --query 'id' -o tsv)
+
+export COSMOS_RG=rg-ngsa-asb-dev-cosmos
+export COSMOS_NAME=ngsa-asb-dev-cosmos
+export COSMOS_SCOPE=$(az cosmosdb show -g $COSMOS_RG -n $COSMOS_NAME --query id -o tsv)
+
+# Add yourself to CosmosDB SQL Access
+az cosmosdb sql role assignment create -g $COSMOS_RG --account-name $COSMOS_NAME --role-definition-id 00000000-0000-0000-0000-000000000001 --principal-id $PRINCIPAL --scope $COSMOS_SCOPE
+az cosmosdb sql role assignment create -g $COSMOS_RG --account-name $COSMOS_NAME --role-definition-id 00000000-0000-0000-0000-000000000002 --principal-id $PRINCIPAL --scope $COSMOS_SCOPE
+```
+
+
 ### Using bash shell
 
 > This will work from a terminal in Visual Studio Codespaces as well
