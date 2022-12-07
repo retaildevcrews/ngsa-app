@@ -21,9 +21,9 @@ namespace Ngsa.Application
         /// Get the secrets from the k8s volume
         /// </summary>
         /// <param name="volume">k8s volume name</param>
-        /// <param name="skipCosmosKey ">Skip reading and validating CosmosKey</param>
+        /// <param name="cosmosAuthType ">Authentication type utilized.</param>
         /// <returns>Secrets or null</returns>
-        public static Secrets GetSecretsFromVolume(string volume, bool skipCosmosKey = false)
+        public static Secrets GetSecretsFromVolume(string volume, CosmosAuthType cosmosAuthType)
         {
             if (string.IsNullOrWhiteSpace(volume))
             {
@@ -46,18 +46,18 @@ namespace Ngsa.Application
             };
 
             // Skip if we're using Managed Identity instead of CosmosKey
-            if (!skipCosmosKey)
+            if (cosmosAuthType != CosmosAuthType.ManagedIdentity)
             {
                 sec.CosmosKey = GetSecretFromFile(volume, "CosmosKey");
             }
 
-            ValidateSecrets(volume, sec, skipCosmosKey);
+            ValidateSecrets(volume, sec, cosmosAuthType);
 
             return sec;
         }
 
         // basic validation of Cosmos values
-        private static void ValidateSecrets(string volume, Secrets sec, bool skipCosmosKeyValidation)
+        private static void ValidateSecrets(string volume, Secrets sec, CosmosAuthType cosmosAuthType)
         {
             if (sec == null)
             {
@@ -74,7 +74,7 @@ namespace Ngsa.Application
                 throw new Exception($"CosmosDatabase cannot be empty");
             }
 
-            if (!skipCosmosKeyValidation && string.IsNullOrWhiteSpace(sec.CosmosKey))
+            if (cosmosAuthType != CosmosAuthType.ManagedIdentity && string.IsNullOrWhiteSpace(sec.CosmosKey))
             {
                 throw new Exception($"CosmosKey cannot be empty");
             }
@@ -90,7 +90,7 @@ namespace Ngsa.Application
                 throw new Exception($"Invalid value for CosmosUrl: {sec.CosmosServer}");
             }
 
-            if (!skipCosmosKeyValidation && sec.CosmosKey.Length < 64)
+            if (cosmosAuthType != CosmosAuthType.ManagedIdentity && sec.CosmosKey.Length < 64)
             {
                 throw new Exception($"Invalid value for CosmosKey: {sec.CosmosKey}");
             }
