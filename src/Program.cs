@@ -61,7 +61,7 @@ namespace Ngsa.Application
             else
             {
                 // We skip CosmosKey validation if we're using Managed Identity
-                Config.Secrets = Secrets.GetSecretsFromVolume(Config.SecretsVolume, Config.CosmosAuthType == CosmosAuthType.ManagedIdentity);
+                Config.Secrets = Secrets.GetSecretsFromVolume(Config.SecretsVolume, Config.CosmosAuthType);
 
                 // set the Cosmos server name for logging
                 Config.CosmosName = Config.Secrets.CosmosServer.Replace("https://", string.Empty, StringComparison.OrdinalIgnoreCase).Replace("http://", string.Empty, StringComparison.OrdinalIgnoreCase);
