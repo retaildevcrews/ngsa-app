@@ -33,7 +33,6 @@ namespace Ngsa.Application.DataAccessLayer
                 throw new ArgumentNullException(nameof(secrets));
             }
 
-            // TODO: Should we put the CosmosAuthType enum in CosmosConfig??
             cosmosDetails = new CosmosConfig
             {
                 CosmosCollection = secrets.CosmosCollection,
@@ -80,9 +79,7 @@ namespace Ngsa.Application.DataAccessLayer
         /// <param name="cosmosAuthType">CosmosDB Auth type</param>
         /// <returns>An open and validated CosmosClient</returns>
         private async Task<CosmosClient> OpenAndTestCosmosClient(string cosmosServer, string cosmosKey, string cosmosDatabase, string cosmosCollection, CosmosAuthType cosmosAuthType = CosmosAuthType.SecretKey)
-        {
-            // TODO: Do we want to have optional/default values for cosmosAuthType, since its a private method?
-            // validate required parameters
+        {            // validate required parameters
             if (cosmosServer == null)
             {
                 throw new ArgumentNullException(nameof(cosmosServer));
