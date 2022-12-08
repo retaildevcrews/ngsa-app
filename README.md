@@ -1,6 +1,6 @@
 # NGSA App
 
-NGSA App is inteneded for platform testing and monitoring in one or many Kubernetes clusters and/or cloud deployments.
+NGSA App is intended for platform testing and monitoring in one or many Kubernetes clusters and/or cloud deployments.
 
 ## Prerequisites
 
@@ -10,6 +10,7 @@ NGSA App is inteneded for platform testing and monitoring in one or many Kuberne
 - Docker CLI ([download](https://docs.docker.com/install/))
 - .NET 5.0 ([download](https://docs.microsoft.com/en-us/dotnet/core/install/))
 - Visual Studio Code (optional) ([download](https://code.visualstudio.com/download))
+- Visual Studio 2022 (optional)  - Must export the AZURE_TENANT_ID value to an environment variable.
 
 ## Ngsa-app Usage
 
@@ -34,6 +35,7 @@ Options:
   -r, --region <region>                                                            Region for log [default: dev]
   -l, --log-level <Critical|Debug|Error|Information|None|Trace|Warning>            Log Level [default: Error]
   -q, --request-log-level <Critical|Debug|Error|Information|None|Trace|Warning>    Request Log Level [default: Information]
+  -c, --cosmos-auth-type <ManagedIdentity|SecretKey>                               CosmosDB Authentication type [default: SecretKey]
   --dry-run                                                                        Validates configuration
   --version                                                                        Show version information
   -?, -h, --help                                                                   Show help and usage information
@@ -52,6 +54,43 @@ To open with codespaces:
 - Click the `Codespaces` tab
 - Click `New Codespace`
 - Choose the `4 core` option
+
+Prior to running the application in Visual Studio Codespaces, use the command below to authenticate:
+
+```bash
+
+# These two values can be obtained from the Azure Portal
+local tenantId = ''
+local subscriptionId = ''
+
+az login --tenant $tenantId
+az account set --subscription $subscriptionId
+
+```
+
+The code above is uses to establish Azure credentials, and specify which tenant and subscription should be utilized for the execution.
+
+For ease of debugging, a launch.json file can be created in the .vscode directory, if there is one already created it can be modified with the following value:
+
+ "args": ["--cosmos-auth-type=ManagedIdentity"],
+
+--cosmos-auth-type has two potential values; ManagedIdentity and Secret.  If set to Secret, a secret key must be provided in the secrets directory.
+
+If a user is testing locally there is not the option to use Managed Identity.  To move past this the following commands can be used to add the user in question to the correct Cosmos groups
+In bash add your own AAD user to CosmosDB:
+
+```bash
+# Get your own Principal ID (replace the email with yours)
+export PRINCIPAL=$(az ad user show --id YOUR-MSFT-ID@microsoft.com --query 'id' -o tsv)
+
+export COSMOS_RG=rg-ngsa-asb-dev-cosmos
+export COSMOS_NAME=ngsa-asb-dev-cosmos
+export COSMOS_SCOPE=$(az cosmosdb show -g $COSMOS_RG -n $COSMOS_NAME --query id -o tsv)
+
+# Add yourself to CosmosDB SQL Access
+az cosmosdb sql role assignment create -g $COSMOS_RG --account-name $COSMOS_NAME --role-definition-id 00000000-0000-0000-0000-000000000002 --principal-id $PRINCIPAL --scope $COSMOS_SCOPE
+```
+
 
 ### Using bash shell
 
@@ -92,7 +131,7 @@ Open a new bash shell
 
 # test the application
 
-# test using httpie (installed automatically in Codespaces)
+# test using http ie (installed automatically in Codespaces)
 http localhost:8080/version
 
 # test using curl

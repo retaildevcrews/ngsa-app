@@ -21,15 +21,16 @@ namespace Ngsa.Application
         /// Get the secrets from the k8s volume
         /// </summary>
         /// <param name="volume">k8s volume name</param>
+        /// <param name="cosmosAuthType ">Authentication type utilized.</param>
         /// <returns>Secrets or null</returns>
-        public static Secrets GetSecretsFromVolume(string volume)
+        public static Secrets GetSecretsFromVolume(string volume, CosmosAuthType cosmosAuthType)
         {
             if (string.IsNullOrWhiteSpace(volume))
             {
                 throw new ArgumentNullException(nameof(volume));
             }
 
-            // thow exception if volume doesn't exist
+            // throw exception if volume doesn't exist
             if (!Directory.Exists(volume))
             {
                 throw new Exception($"Volume '{volume}' does not exist");
@@ -41,17 +42,22 @@ namespace Ngsa.Application
                 Volume = volume,
                 CosmosCollection = GetSecretFromFile(volume, "CosmosCollection"),
                 CosmosDatabase = GetSecretFromFile(volume, "CosmosDatabase"),
-                CosmosKey = GetSecretFromFile(volume, "CosmosKey"),
                 CosmosServer = GetSecretFromFile(volume, "CosmosUrl"),
             };
 
-            ValidateSecrets(volume, sec);
+            // Skip if we're using Managed Identity instead of CosmosKey
+            if (cosmosAuthType != CosmosAuthType.ManagedIdentity)
+            {
+                sec.CosmosKey = GetSecretFromFile(volume, "CosmosKey");
+            }
+
+            ValidateSecrets(volume, sec, cosmosAuthType);
 
             return sec;
         }
 
         // basic validation of Cosmos values
-        private static void ValidateSecrets(string volume, Secrets sec)
+        private static void ValidateSecrets(string volume, Secrets sec, CosmosAuthType cosmosAuthType)
         {
             if (sec == null)
             {
@@ -68,7 +74,7 @@ namespace Ngsa.Application
                 throw new Exception($"CosmosDatabase cannot be empty");
             }
 
-            if (string.IsNullOrWhiteSpace(sec.CosmosKey))
+            if (cosmosAuthType != CosmosAuthType.ManagedIdentity && string.IsNullOrWhiteSpace(sec.CosmosKey))
             {
                 throw new Exception($"CosmosKey cannot be empty");
             }
@@ -84,7 +90,7 @@ namespace Ngsa.Application
                 throw new Exception($"Invalid value for CosmosUrl: {sec.CosmosServer}");
             }
 
-            if (sec.CosmosKey.Length < 64)
+            if (cosmosAuthType != CosmosAuthType.ManagedIdentity && sec.CosmosKey.Length < 64)
             {
                 throw new Exception($"Invalid value for CosmosKey: {sec.CosmosKey}");
             }

@@ -106,6 +106,7 @@ namespace Ngsa.Application
             root.AddOption(EnvVarOption(new string[] { "--region", "-r" }, "Region for log", "dev"));
             root.AddOption(EnvVarOption(new string[] { "--log-level", "-l" }, "Log Level", LogLevel.Error));
             root.AddOption(EnvVarOption(new string[] { "--request-log-level", "-q" }, "Request Log Level", LogLevel.Information));
+            root.AddOption(EnvVarOption(new string[] { "--cosmos-auth-type", "-c" }, "CosmosDB Authentication type", CosmosAuthType.SecretKey));
             root.AddOption(new Option<bool>(new string[] { "--dry-run" }, "Validates configuration"));
 
             // validate dependencies
@@ -128,6 +129,7 @@ namespace Ngsa.Application
             {
                 // get the values to validate
                 AppType appType = result.Children.FirstOrDefault(c => c.Symbol.Name == "app-type") is OptionResult appTypeRes ? appTypeRes.GetValueOrDefault<AppType>() : AppType.App;
+
                 string secrets = result.Children.FirstOrDefault(c => c.Symbol.Name == "secrets-volume") is OptionResult secretsRes ? secretsRes.GetValueOrDefault<string>() : string.Empty;
                 string dataService = result.Children.FirstOrDefault(c => c.Symbol.Name == "data-service") is OptionResult dsRes ? dsRes.GetValueOrDefault<string>() : string.Empty;
                 string urlPrefix = result.Children.FirstOrDefault(c => c.Symbol.Name == "urlPrefix") is OptionResult urlRes ? urlRes.GetValueOrDefault<string>() : string.Empty;
@@ -368,6 +370,8 @@ namespace Ngsa.Application
             // create data access layer
             if (Config.AppType == AppType.App)
             {
+                // Class level variable for global access
+                Config.CosmosAuthType = config.CosmosAuthType;
                 LoadSecrets();
 
                 // load the cache

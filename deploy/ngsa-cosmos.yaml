@@ -27,6 +27,8 @@ spec:
           - dev
           - --region
           - dev
+          - --cosmos-auth-type
+          - ManagedIdentity
           ports:
             - name: http
               containerPort: 8080

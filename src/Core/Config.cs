@@ -19,6 +19,20 @@ namespace Ngsa.Application
         WebAPI,
     }
 
+    public enum CosmosAuthType
+    {
+        /// <summary>
+        /// Secrets specified in files type.
+        /// </summary>
+        SecretKey,
+
+        /// <summary>
+        /// Managed Identity auth type.
+        /// </summary>
+        ManagedIdentity,
+    }
+
+
     public class Config
     {
         public AppType AppType { get; set; } = AppType.App;
@@ -28,6 +42,7 @@ namespace Ngsa.Application
         public string CosmosName { get; set; } = string.Empty;
         public bool IsLogLevelSet { get; set; }
         public Secrets Secrets { get; set; }
+        public CosmosAuthType CosmosAuthType { get; set; }
         public bool DryRun { get; set; }
         public bool InMemory { get; set; }
         public bool Cache => !NoCache;
