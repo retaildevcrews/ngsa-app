@@ -88,7 +88,6 @@ export COSMOS_NAME=ngsa-asb-dev-cosmos
 export COSMOS_SCOPE=$(az cosmosdb show -g $COSMOS_RG -n $COSMOS_NAME --query id -o tsv)
 
 # Add yourself to CosmosDB SQL Access
-az cosmosdb sql role assignment create -g $COSMOS_RG --account-name $COSMOS_NAME --role-definition-id 00000000-0000-0000-0000-000000000001 --principal-id $PRINCIPAL --scope $COSMOS_SCOPE
 az cosmosdb sql role assignment create -g $COSMOS_RG --account-name $COSMOS_NAME --role-definition-id 00000000-0000-0000-0000-000000000002 --principal-id $PRINCIPAL --scope $COSMOS_SCOPE
 ```
 
