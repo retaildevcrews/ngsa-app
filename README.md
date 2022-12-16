@@ -60,8 +60,8 @@ Prior to running the application in Visual Studio Codespaces, use the command be
 ```bash
 
 # These two values can be obtained from the Azure Portal
-local tenantId = ''
-local subscriptionId = ''
+local tenantId=''
+local subscriptionId=''
 
 az login --tenant $tenantId
 az account set --subscription $subscriptionId
@@ -74,23 +74,22 @@ For ease of debugging, a launch.json file can be created in the .vscode director
 
  "args": ["--cosmos-auth-type=ManagedIdentity"],
 
---cosmos-auth-type has two potential values; ManagedIdentity and Secret.  If set to Secret, a secret key must be provided in the secrets directory.
+`--cosmos-auth-type` has two potential values; `ManagedIdentity` and `Secret`.  If set to `Secret`, a secret key must be provided in the secrets directory.
 
-If a user is testing locally there is not the option to use Managed Identity.  To move past this the following commands can be used to add the user in question to the correct Cosmos groups
+If a user is testing locally there is not the option to use `ManagedIdentity`.  To move past this the following commands can be used to add the user in question to the correct Cosmos groups
 In bash add your own AAD user to CosmosDB:
 
 ```bash
 # Get your own Principal ID (replace the email with yours)
-export PRINCIPAL=$(az ad user show --id YOUR-MSFT-ID@microsoft.com --query 'id' -o tsv)
+export PRINCIPAL=$(az ad signed-in-user show --query 'id' -o tsv)
 
-export COSMOS_RG=rg-ngsa-asb-dev-cosmos
-export COSMOS_NAME=ngsa-asb-dev-cosmos
+export COSMOS_RG=rg-wcnp-dev-cosmos
+export COSMOS_NAME=wcnp-dev-cosmos
 export COSMOS_SCOPE=$(az cosmosdb show -g $COSMOS_RG -n $COSMOS_NAME --query id -o tsv)
 
 # Add yourself to CosmosDB SQL Access
 az cosmosdb sql role assignment create -g $COSMOS_RG --account-name $COSMOS_NAME --role-definition-id 00000000-0000-0000-0000-000000000002 --principal-id $PRINCIPAL --scope $COSMOS_SCOPE
 ```
-
 
 ### Using bash shell
 
