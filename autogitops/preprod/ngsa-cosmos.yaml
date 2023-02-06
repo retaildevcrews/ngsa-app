@@ -84,7 +84,7 @@ spec:
         - emptyDir: {}
           name: tmp
       nodeSelector:
-        agentpool: npuser01
+        kubernetes.azure.com/mode: user
 
 ---
 
