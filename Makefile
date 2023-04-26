@@ -7,7 +7,7 @@ delete:
 	@k3d cluster delete ngsa-app
 
 create: delete
-	@k3d cluster create ngsa-app --registry-use k3d-registry.localhost:5000 --config deploy/k3d.yaml --k3s-arg "--no-deploy=traefik@server:0"
+	@k3d cluster create ngsa-app --registry-use k3d-registry.localhost:5000 --config deploy/k3d.yaml --k3s-arg "--disable=traefik@server:0"
 
 	@kubectl wait node --for condition=ready --all --timeout=60s
 	@sleep 5
@@ -47,4 +47,4 @@ test-baseline:
 	@docker run -it --rm --net=host  ghcr.io/retaildevcrews/ngsa-lr:beta --server localhost:30080 --files baseline.json
 
 test-benchmark:
-	@docker run -it --rm --net=host  ghcr.io/retaildevcrews/ngsa-lr:beta --server localhost:30080 --files benchmark.json
+	@docker run -it --rm --net=host  ghcr.io/retaildevcrews/ngsa-lr:beta --server localhost:30080 --files benchmark.json -r True --duration 300

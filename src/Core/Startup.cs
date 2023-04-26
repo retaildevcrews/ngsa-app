@@ -4,6 +4,7 @@
 using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Threading;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -54,6 +55,15 @@ namespace Ngsa.Application
             {
                 throw new ArgumentNullException(nameof(env));
             }
+
+            int processorCount = Environment.ProcessorCount;
+            //int maxWorkerThread, maxCompletionPortsThread;
+
+            //ThreadPool.GetMaxThreads(out maxWorkerThread, out maxCompletionPortsThread);
+            //ThreadPool.SetMaxThreads(processorCount, maxCompletionPortsThread);
+            ThreadPool.SetMinThreads(100, 100);
+            //int minWorkerThread, minCompletionPortsThread;
+            //ThreadPool.GetMinThreads(out minWorkerThread, out minCompletionPortsThread);
 
             // log http responses to the console
             // this should be first as it "wraps" all requests
