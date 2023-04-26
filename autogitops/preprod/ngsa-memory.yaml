@@ -1,0 +1,107 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{gitops.name}}-memory
+  namespace: {{gitops.namespace}}
+  labels:
+    app.kubernetes.io/name: {{gitops.name}}-memory
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{gitops.name}}-memory
+  template:
+    metadata:
+      labels:
+        app: {{gitops.name}}-memory
+        version: beta-{{gitops.version}}
+        deploy: {{gitops.deploy}}
+    spec:
+      containers:
+        - name: app
+          image: {{gitops.imageName}}:{{gitops.imageTag}}
+          imagePullPolicy: Always
+          args: 
+          - --in-memory
+          - --prometheus
+          - --zone
+          - {{gitops.config.zone}}
+          - --region
+          - {{gitops.config.region}}
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          readinessProbe:
+            initialDelaySeconds: 5
+            httpGet:
+              path: /version
+              port: 8080
+          livenessProbe:
+            initialDelaySeconds: 60
+            periodSeconds: 300
+            httpGet:
+              path: /healthz
+              port: 8080
+          resources:
+            limits:
+              cpu: 1000m
+              memory: 512Mi
+            requests:
+              cpu: 50m
+              memory: 128Mi
+          securityContext:
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            runAsNonRoot: true
+            runAsUser: 10001
+          volumeMounts:
+            - mountPath: /tmp
+              name: tmp
+      volumes:
+        - emptyDir: {}
+          name: tmp
+      automountServiceAccountToken: false
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+      nodeSelector:
+        kubernetes.azure.com/mode: user
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{gitops.name}}-memory
+  namespace: {{gitops.namespace}}
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8080
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app: {{gitops.name}}-memory
+
+---
+
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: {{gitops.name}}-memory-vs
+  namespace: {{gitops.namespace}}
+spec:
+  gateways:
+  - istio-system/istio-gateway
+  hosts:
+  - {{gitops.name}}-memory-{{gitops.config.region}}-pre.{{gitops.config.domain}}
+  http:
+  - route:
+    - destination:
+        port:
+          number: 8080
+        host: {{gitops.name}}-memory

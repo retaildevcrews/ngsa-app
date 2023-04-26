@@ -1,0 +1,7 @@
+{
+    "name": "ngsa",
+    "namespace": "ngsa",
+    "imageName": "ghcr.io/retaildevcrews/ngsa-app",
+    "imageTag": "beta",
+    "targets": ["dev-ngsa-asb-eastus","dev-ngsa-asb-westus3","pre-ngsa-asb-northcentralus","pre-ngsa-asb-westus3","pre-ngsa-asb-eastus"]
+}

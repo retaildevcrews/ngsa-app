@@ -1,0 +1,54 @@
+{
+	"name": "ngsa-app",
+  "dockerFile": "Dockerfile",
+
+	// do not change these if you want Docker in Docker support
+	"runArgs": ["--init", "--privileged"],
+	"mounts": [ "source=/var/run/docker.sock,target=/var/run/docker-host.sock,type=bind" ],
+	"overrideCommand": false,
+
+	// some base images require a specific user name
+	"remoteUser": "vscode",
+
+	// Set container specific settings
+	"settings": {
+		"terminal.integrated.defaultProfile.linux": "zsh",
+		"files.trimTrailingWhitespace": true,
+		"files.trimFinalNewlines": true,
+		"files.insertFinalNewline": true
+	},
+
+	"hostRequirements": {
+		"cpus": 4
+	},
+
+  // Forwarded ports
+	"forwardPorts": [
+		8080,
+		30000,
+		30080
+	],
+	// Port Labels
+	"portsAttributes": {
+		"30000": { "label": "Istio IngressGateway LoadBalancer NodePort" },
+		"30080": { "label": "Ngsa NodePort" }
+	},
+
+  // Added for local developement
+  // Without this port forwarding to Windows Network sometime fails
+  "appPort": [8080],
+
+  // Install extensions
+  "extensions": [
+    "eamodio.gitlens",
+    "davidanson.vscode-markdownlint",
+    "gruntfuggly.todo-tree",
+    "ms-azuretools.vscode-docker",
+    "ms-dotnettools.csharp",
+    "ms-kubernetes-tools.vscode-kubernetes-tools",
+    "visualstudioexptteam.vscodeintellicode"
+  ],
+
+  // Run Bash script in .devcontainer directory
+  "onCreateCommand": "/bin/bash ./.devcontainer/on-create.sh"
+}

@@ -1,0 +1,123 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{gitops.name}}-cosmos
+  namespace: {{gitops.namespace}}
+  labels:
+    app.kubernetes.io/name: {{gitops.name}}-cosmos
+spec:
+  selector:
+    matchLabels:
+      app: {{gitops.name}}-cosmos
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        aadpodidbinding: {{gitops.config.mi.name}}
+        app: {{gitops.name}}-cosmos
+        deploy: {{gitops.deploy}}
+        version: beta-{{gitops.version}}
+    spec:
+      containers:
+        - name: app
+          image: {{gitops.imageName}}:{{gitops.imageTag}}
+          imagePullPolicy: Always
+          args:
+          - --prometheus
+          - --no-cache
+          - --zone
+          - {{gitops.config.zone}}
+          - --region
+          - {{gitops.config.region}}
+          - --cosmos-auth-type
+          - ManagedIdentity
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          readinessProbe:
+            initialDelaySeconds: 5
+            httpGet:
+              path: /version
+              port: 8080
+          livenessProbe:
+            initialDelaySeconds: 60
+            periodSeconds: 300
+            httpGet:
+              path: /healthz
+              port: 8080
+          resources:
+            limits:
+              cpu: 1000m
+              memory: 512Mi
+            requests:
+              cpu: 50m
+              memory: 128Mi
+          volumeMounts:
+            - name: secrets
+              mountPath: "/app/secrets"
+            - mountPath: /tmp
+              name: tmp
+          securityContext:
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            runAsNonRoot: true
+            runAsUser: 10001
+      automountServiceAccountToken: false
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+      volumes:
+        - name: secrets
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: ngsa-secrets
+        - emptyDir: {}
+          name: tmp
+      nodeSelector:
+        kubernetes.azure.com/mode: user
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{gitops.name}}-cosmos
+  namespace: {{gitops.namespace}}
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8080
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app: {{gitops.name}}-cosmos
+
+---
+
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: {{gitops.name}}-cosmos-vs
+  namespace: {{gitops.namespace}}
+spec:
+  gateways:
+  - istio-system/istio-gateway
+  hosts:
+  - {{gitops.name}}-cosmos-{{gitops.config.region}}-pre.{{gitops.config.domain}}
+  http:
+  - route:
+    - destination:
+        port:
+          number: 8080
+        host: {{gitops.name}}-cosmos
