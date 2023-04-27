@@ -57,14 +57,22 @@ namespace Ngsa.Application
             }
 
             int processorCount = Environment.ProcessorCount;
-            //int maxWorkerThread, maxCompletionPortsThread;
 
-            //ThreadPool.GetMaxThreads(out maxWorkerThread, out maxCompletionPortsThread);
-            //ThreadPool.SetMaxThreads(processorCount, maxCompletionPortsThread);
-            ThreadPool.SetMinThreads(100, 100);
-            //int minWorkerThread, minCompletionPortsThread;
-            //ThreadPool.GetMinThreads(out minWorkerThread, out minCompletionPortsThread);
+            Console.WriteLine($"ProcessorCount is: {processorCount}");
 
+            ThreadPool.SetMinThreads(processorCount / 2, processorCount / 2);
+
+            ThreadPool.SetMaxThreads(processorCount / 2, processorCount / 2);
+
+            int minWorkerThread, minCompletionPortsThread;
+            ThreadPool.GetMinThreads(out minWorkerThread, out minCompletionPortsThread);
+
+            Console.WriteLine($"minWorkerThread is: {minWorkerThread} - minCompletionPortsThread is: {minCompletionPortsThread}");
+
+            int maxWorkerThread, maxCompletionPortsThread;
+            ThreadPool.GetMaxThreads(out maxWorkerThread, out maxCompletionPortsThread);
+
+            Console.WriteLine($"maxWorkerThread is: {maxWorkerThread} - maxCompletionPortsThread is: {maxCompletionPortsThread}");
             // log http responses to the console
             // this should be first as it "wraps" all requests
             if (App.Config.LogLevel != LogLevel.None)
