@@ -7,7 +7,7 @@ delete:
 	@k3d cluster delete ngsa-app
 
 create: delete
-	@k3d cluster create ngsa-app --registry-use k3d-registry.localhost:5000 --config deploy/k3d.yaml --k3s-arg "--no-deploy=traefik@server:0"
+	@k3d cluster create ngsa-app --registry-use k3d-registry.localhost:5000 --config deploy/k3d.yaml --k3s-arg "--disable=traefik@server:0"
 
 	@kubectl wait node --for condition=ready --all --timeout=60s
 	@sleep 5

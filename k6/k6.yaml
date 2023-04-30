@@ -1,0 +1,76 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: k6
+  namespace: k6
+  labels:
+    app.kubernetes.io/name: k6
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9090"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: k6
+  template:
+    metadata:
+      labels:
+        app: k6
+    spec:
+      containers:
+        - name: app
+          image: loadimpact/k6:latest
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            runAsNonRoot: true
+            runAsUser: 10001
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          resources:
+            limits:
+              memory: 1Gi
+              cpu: 500m
+            requests:
+              memory: 1Gi
+              cpu: 500m
+          args:
+          - run
+          - /scripts/benchmark-k6.js
+          - -u
+          - "10"
+          - -d
+          - "30s"
+          volumeMounts:
+            - name: k6-config
+              mountPath: /scripts
+      volumes:
+        - name: k6-config
+          configMap:
+            name: k6-config
+      automountServiceAccountToken: false
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: k6
+  namespace: k6
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8080
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app: k6
