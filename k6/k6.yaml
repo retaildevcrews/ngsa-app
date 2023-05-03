@@ -20,6 +20,9 @@ spec:
     spec:
       containers:
         - name: app
+          env:
+          - name: "K6_PROMETHEUS_RW_SERVER_URL"
+            value: "http://prometheus-service.monitoring.svc.cluster.local:8080/api/v1/write"
           image: loadimpact/k6:latest
           imagePullPolicy: IfNotPresent
           securityContext:

@@ -132,24 +132,15 @@ kubectl logs <ngsa-memory pod name> -n ngsa --tail 20
 
 [Official k6 Test Result](https://grafana.com/grafana/dashboards/18030-test-result/)
 
-### Install Prometheus
+### Install Grafana and Prometheus
 
 ```bash
-helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+#  deploy prometheus and grafana
+  kubectl apply -f k6/deploy/monitoring
+```
 
-# In k6 cluster
-# kubectl create namespace monitoring
-# helm install prometheus-community prometheus-community/prometheus -f k6/monitoring/prometheus-k6_values.yaml -n monitoring --version 19.0.2
-# kubectl apply -f k6/monitoring/prometheus-k6-service.yml
+### Install a jumpbox to test connectivity
 
-# In main cluster
-helm install prometheus-kube prometheus-community/prometheus -f k6/monitoring/prometheus-kube_values.yaml -n monitoring --version 19.0.2
-helm install prometheus-app prometheus-community/prometheus -f k6/monitoring/prometheus-app_values.yaml -n monitoring --version 19.0.2
-
-
-## Install Grafana
 ```bash
-kubectl create namespace monitoring
-helm repo add grafana https://grafana.github.io/helm-charts
-helm install grafana grafana/grafana -f k6/monitoring/grafana_values.yaml
+kubectl run jumpbox --image=ghcr.io/cse-labs/jumpbox --restart=Always
 ```

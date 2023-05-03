@@ -205,11 +205,12 @@ spec:
     spec:
       containers:
         - name: prometheus
-          image: prom/prometheus:v2.30.0
+          image: prom/prometheus:v2.43.0
           args:
             - "--config.file=/etc/prometheus/prometheus.yml"
             - "--storage.tsdb.path=/prometheus/"
             - "--storage.tsdb.retention.size=3900MB"
+            - "--web.enable-remote-write-receiver"
           ports:
             - containerPort: 9090
           volumeMounts:
@@ -261,7 +262,6 @@ metadata:
   annotations:
       prometheus.io/scrape: 'true'
       prometheus.io/port:   '9090'
-
 spec:
   selector:
     app: prometheus-server
