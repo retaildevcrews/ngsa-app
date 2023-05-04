@@ -89,7 +89,7 @@ We are deploying the [k6 docker image](https://hub.docker.com/r/loadimpact/k6), 
 Also, we are storing the load test script into a Configmap so it can accessable when k6 scales up.
 
 # TODO:
-# - describe how does the scripting file looks like and what it does
+# - describe how the scripting file looks like and what it does
 
 ## How to run a test
 
@@ -144,3 +144,28 @@ kubectl logs <ngsa-memory pod name> -n ngsa --tail 20
 ```bash
 kubectl run jumpbox --image=ghcr.io/cse-labs/jumpbox --restart=Always
 ```
+
+
+<!-- ### Install Prometheus and Grafana
+
+```bash
+
+## Install Prometheus
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+
+kubectl create namespace monitoring
+helm install prometheus-community prometheus-community/prometheus -f k6/monitoring/prometheus_values-app-k6-kube.yaml -n monitoring --version 19.0.2
+kubectl apply -f k6/monitoring/prometheus-k6-service.yaml
+
+## Install Grafana
+
+helm repo add grafana https://grafana.github.io/helm-charts
+helm install grafana grafana/grafana -f k6/monitoring/grafana_values.yaml -n monitoring
+```
+
+### Uninstall Prometheus and Grafana
+
+```bash
+ helm uninstall grafana -n monitoring
+ helm uninstall prometheus-community -n monitoring
+``` -->
