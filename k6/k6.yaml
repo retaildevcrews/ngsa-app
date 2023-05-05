@@ -49,7 +49,9 @@ spec:
           - -u
           - "10"
           - -d
-          - "30s"
+          - "30m"
+          - "--out"
+          - "experimental-prometheus-rw"
           volumeMounts:
             - name: k6-config
               mountPath: /scripts

@@ -1,3 +1,5 @@
+# TODO: describe goal of this lab/demo
+# Move it under k6 labs repo instead?
 # What is k6?
 
 Grafana k6 is an open-source load testing tool that makes performance testing easy and productive for engineering teams. k6 is free, developer-centric, and extensible.
@@ -135,8 +137,17 @@ kubectl logs <ngsa-memory pod name> -n ngsa --tail 20
 ### Install Grafana and Prometheus
 
 ```bash
+
 #  deploy prometheus and grafana
-  kubectl apply -f k6/deploy/monitoring
+kubectl apply -f k6/deploy/monitoring
+
+kubectl port-forward service/grafana 3000:3000 -n monitoring
+
+kubectl port-forward service/prometheus-service 8080:9090 -n monitoring
+
+Open solution in VS code desktop
+
+# open browser on  http://127.0.0.1:3000 or http://localhost:3000/
 ```
 
 ### Install a jumpbox to test connectivity
