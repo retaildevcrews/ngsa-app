@@ -10,7 +10,7 @@ function getGuid() {
 
 export const options = {
         tags: {
-            name: 'k6-instance-benchmark-' + getGuid()
+            unique_instance_name: 'k6-instance-benchmark-' + getGuid()
         },
         };
 
