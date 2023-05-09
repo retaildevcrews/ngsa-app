@@ -1,5 +1,10 @@
-# TODO: describe goal of this lab/demo
-# Move it under k6 labs repo instead?
+# TODO:
+# Move it under k6 labs repo instead, if so, it will require to makesure the tooling to setup local Cluster is available?
+
+This repository leverages GitHub Codespaces to deploy a local Cluster using k3d, then shows the user how to run k6 to perform load testing again ngsa-memory and then enable and leverage observability tools.
+
+The final goal of this repository is to provide an environment that provides a setup that facilitates the user to get familiar with k6 and have a basic undestanding of the script test file. The repository contains guided hands-on learning scenarios to familiarize users with k6.
+
 # What is k6?
 
 Grafana k6 is an open-source load testing tool that makes performance testing easy and productive for engineering teams. k6 is free, developer-centric, and extensible.
@@ -19,7 +24,7 @@ The most common case is to use k6 for testing the performance and reliability of
 - Click the Code button
 - Click the Codespaces tab
 - Click the "Create codespace on main" button
-- Choose the `4 core` option   // TBD is 4 core enough? should we pick 8 or 16 cores since we need Grafana and Prometheus ?
+- Choose the `4 core` option
 
 ## Run k6 locally from docker image
 
@@ -130,6 +135,10 @@ kubectl logs <ngsa-memory pod name> -n ngsa --tail 20
 ```
 
 ## TODO ---- Add Observability
+
+# - Update k6 deployment to enable K6_PROMETHEUS_RW_SERVER_URL
+# - how to import dashbords into grafana, try to use kubectl apply ?
+
 - Add k6 official grafana dashboard for k6 prometheus  - [Time series visualization](https://k6.io/docs/results-output/real-time/prometheus-remote-write/#time-series-visualization)
 
 [Official k6 Test Result](https://grafana.com/grafana/dashboards/18030-test-result/)
