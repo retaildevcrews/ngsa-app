@@ -37,7 +37,10 @@ code benchmark-k6-local.js
 
 
 
- More information about `Test Lifecycle Stages` can be found [here](https://k6.io/docs/using-k6/test-lifecycle/)
+
+ More information related to the concepts listed above can be found here.
+ - [Test Lifecycle Stages](https://k6.io/docs/using-k6/test-lifecycle/)
+ - [Options](https://k6.io/docs/using-k6/k6-options/)
 
 ## Run the ngsa container
 
@@ -60,8 +63,10 @@ For example, we are going to run a 5-second, 2-VU load test. More information ca
 # verify ngsa-memory is accessible from the second terminal, curl should return a 200 http code.
 curl -I localhost:8080/version
 
-# Then tun k6
-docker run --rm -v $(pwd)/k6:/scripts --net=host  loadimpact/k6:latest run --vus 2 --duration 5s  /scripts/baseline-k6-local.js
+docker run --rm -v $(pwd)/k6:/scripts --net=host grafana/k6 run /scripts/baseline-k6-local.js
+
+# Then run k6 and overwrite VUs and duration
+docker run --rm -v $(pwd)/k6:/scripts --net=host grafana/k6 run --vus 2 --duration 5s  /scripts/baseline-k6-local.js
 ```
 
 Now let's take a look at the results
