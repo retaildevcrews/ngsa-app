@@ -3,7 +3,7 @@
 
 This repository leverages GitHub Codespaces to deploy a local Cluster using k3d, then shows the user how to run k6 to perform load testing again ngsa-memory and then enable and leverage observability tools.
 
-The final goal of this repository is to provide an environment that provides a setup that facilitates the user to get familiar with k6 and have a basic undestanding of the script test file. The repository contains guided hands-on learning scenarios to familiarize users with k6.
+The final goal of this repository is to provide an environment that helps the user to get familiar with k6 and have a basic undestanding of scripting load test file. The repository contains guided hands-on learning scenarios to familiarize users with k6.
 
 # What is k6?
 
@@ -28,30 +28,43 @@ The most common case is to use k6 for testing the performance and reliability of
 
 ## Run k6 locally from docker image
 
+First of all let's take a closer look at the load test file utilized for this example and review its contents and learn about `The four lifecycle stages`
+
+```bash
+# Open the file
+code benchmark-k6-local.js
+```
+
+
+
+ More information about `Test Lifecycle Stages` can be found [here](https://k6.io/docs/using-k6/test-lifecycle/)
+
+## Run the ngsa container
+
 From codespaces open up two `zsh` terminals
 
-Navigate to terminal 1 to run ngsa-memory
+Navigate to terminal `1` to run ngsa-memory
 
 ```bash
 # Run ngsa-memory
 docker run --net=host ghcr.io/retaildevcrews/ngsa-app:beta --in-memory
-
 ```
+
+## Run the k6 container
 
 Navigate to the second terminal to run k6
 
 For example, we are going to run a 5-second, 2-VU load test. More information can be found [here](https://k6.io/docs/get-started/running-k6/)
 
 ```bash
-# verify ngsa-memory is accessible
-curl -s localhost:8080/version
-or
+# verify ngsa-memory is accessible from the second terminal, curl should return a 200 http code.
 curl -I localhost:8080/version
 
-# Run k6
+# Then tun k6
 docker run --rm -v $(pwd)/k6:/scripts --net=host  loadimpact/k6:latest run --vus 2 --duration 5s  /scripts/baseline-k6-local.js
 ```
 
+Now let's take a look at the results
 # TODO:
   - analyze load tests configuration from 'baseline-k6-local.js' , show different type pf checks and Metrics
 

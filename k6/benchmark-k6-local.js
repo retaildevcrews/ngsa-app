@@ -1,7 +1,20 @@
+    // 1. init code: Load local files, import modules, declare lifecycle functions
 import http from 'k6/http';
 import { sleep, check } from 'k6';
 
+export const options = {
+    vus: 10,
+    duration: '30s',
+  };
+  
+export function setup() {
+    // 2. setup code: Set up data for processing, share data among VUs
+    // is called at the beginning of the test, after the init stage but before the VU stage.
+  }
+
 export default function () {
+
+    // 3. VU code: Run the test function, usually default
 
     let maxSleep=0;
     let res
@@ -3717,3 +3730,8 @@ export default function () {
     sleep(Math.random() * maxSleep)
 
 }
+
+export function teardown(data) {
+    // 4. teardown code: Process result of setup code, stop test environment
+    // is called at the end of a test, after the VU stage
+  }
