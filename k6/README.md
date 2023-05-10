@@ -28,19 +28,41 @@ The most common case is to use k6 for testing the performance and reliability of
 
 ## Run k6 locally from docker image
 
-First of all let's take a closer look at the load test file utilized for this example and review its contents and learn about `The four lifecycle stages`
+First of all let's identify the Test Lifecycle stages for a k6 test file.
+
+- Init
+- Setup
+- VU code
+- Teardown
+
+Sample:
+
+![Script Sample File](/k6/images/javascript-sample-file.png)
+
+
+More information related to the topics listed above can be found here.
+- [Test Lifecycle Stages](https://k6.io/docs/using-k6/test-lifecycle/)
+- [Options](https://k6.io/docs/using-k6/k6-options/)
+
+Now let's take a closer look at the load test file utilized for this example, and review its contents with special attention to VU code stage.
 
 ```bash
 # Open the file
-code benchmark-k6-local.js
+code baseline-k6-local.js
 ```
 
+Typically, VU code is inside the `default` function, VU code runs over and over through the test duration from start to end in sequence. Once the VU reaches the end of the function, it loops back to the start and executes the code all over.
 
+When creating new load test, usually the first step is to define HTTP request to test and validate endpoints.
 
+In this case, VU code makes a series of Get HTTP requests, and performs a check to validate the reponse.
 
- More information related to the concepts listed above can be found here.
- - [Test Lifecycle Stages](https://k6.io/docs/using-k6/test-lifecycle/)
- - [Options](https://k6.io/docs/using-k6/k6-options/)
+For instance we could check for one or more conditions such as
+
+- HTTP response code
+- Text in the response body
+- Response body size
+-
 
 ## Run the ngsa container
 

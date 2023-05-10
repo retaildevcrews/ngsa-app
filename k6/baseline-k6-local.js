@@ -2,7 +2,7 @@
 import http from 'k6/http';
 import { sleep, check } from 'k6';
 
-// Options
+// Options, allows to configure test-run behavior
 export const options = {
     vus: 10,
     duration: '10s',
@@ -21,6 +21,7 @@ export function setup() {
   }
 
 // 3. VU code: Run the test function, usually default
+// Make https requests, validate responses
 export default function () {
 
     let maxSleep=0;
