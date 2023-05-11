@@ -1,19 +1,16 @@
-# TODO:
-# Move it under k6 labs repo instead, if so, it will require to makesure the tooling to setup local Cluster is available?
+# TODO: Move it under k6 labs repo instead, if so, it will require to makesure the tooling to setup local Cluster is available?
+
+# K6 overview
 
 This repository leverages GitHub Codespaces to deploy a local Cluster using k3d, then shows the user how to run k6 to perform load testing again ngsa-memory and then enable and leverage observability tools.
 
 The final goal of this repository is to provide an environment that helps the user to get familiar with k6 and have a basic undestanding of scripting load test file. The repository contains guided hands-on learning scenarios to familiarize users with k6.
 
-# What is k6?
+## What is k6?
 
 Grafana k6 is an open-source load testing tool that makes performance testing easy and productive for engineering teams. k6 is free, developer-centric, and extensible.
 
-Using k6, you can test the reliability and performance of your systems and catch performance regressions and problems earlier. k6 will help you to build resilient and performant applications that scale.
-
-k6 is a high-performing load testing tool, scriptable in JavaScript
-
-More documentation can be found [here](https://k6.io/docs/).
+Using k6, you can test the reliability and performance of your systems and catch performance regressions and problems earlier, k6 will help you to build resilient and performant applications that scale, one of the most K6 powerful feature is that it's a load testing tool scriptable in JavaScript. More documentation can be found [here](https://k6.io/docs/).
 
 ## Use cases
 
@@ -35,20 +32,18 @@ First of all let's identify the Test Lifecycle stages for a k6 test file.
 - VU code
 - Teardown
 
-Load test code snippet.
+Load test code snippet
 
 ![Script Sample File](/k6/images/javascript-sample-file.png)
 
-
 More information related to the topics listed above can be found here.
+
 - [Test Lifecycle Stages](https://k6.io/docs/using-k6/test-lifecycle/)
 - [Options](https://k6.io/docs/using-k6/k6-options/)
 
 Typically, VU code is inside the `default` function, VU code runs over and over through the test duration from start to end in sequence. Once the VU reaches the end of the function, it loops back to the start and executes the code all over.
 
-When creating new load test, usually the first step is to define [HTTP requests](https://k6.io/docs/using-k6/http-requests/) to test and validate endpoints.
-
-In this case, VU code makes a series of Get HTTP requests, and performs a check to validate the reponse.
+When creating new load test, usually the first step is to define [HTTP requests](https://k6.io/docs/using-k6/http-requests/) to test and validate endpoints. In this case, VU code makes a series of Get HTTP requests, and performs a check to validate the reponse.
 
 For instance we could check for one or more conditions at the time such as:
 
@@ -56,7 +51,7 @@ For instance we could check for one or more conditions at the time such as:
 - Text in the response body
 - Response body size
 
-Check definitions can be labeled so when the script includes checks, the summary report shows what type of Check and how many passed.
+Check definitions can be labeled so when the script includes checks, the summary report shows what type of `check` and how many passed or failed
 
 ![Script Sample File](/k6/images/javascript-checks.png)
 
@@ -144,7 +139,8 @@ We are deploying the [k6 docker image](https://hub.docker.com/r/loadimpact/k6), 
 
 Also, we are storing the load test script into a Configmap so it can accessable when k6 scales up.
 
-# TODO:
+# TODO
+
 # - describe how the scripting file looks like and what it does
 
 ## How to run a test
@@ -186,6 +182,7 @@ kubectl logs <ngsa-memory pod name> -n ngsa --tail 20
 ## TODO ---- Add Observability
 
 # - Update k6 deployment to enable K6_PROMETHEUS_RW_SERVER_URL
+
 # - how to import dashbords into grafana, try to use kubectl apply ?
 
 - Add k6 official grafana dashboard for k6 prometheus  - [Time series visualization](https://k6.io/docs/results-output/real-time/prometheus-remote-write/#time-series-visualization)
@@ -213,7 +210,6 @@ Open solution in VS code desktop
 ```bash
 kubectl run jumpbox --image=ghcr.io/cse-labs/jumpbox --restart=Always
 ```
-
 
 <!-- ### Install Prometheus and Grafana
 
