@@ -18,6 +18,7 @@ export const options = {
 // 2. setup code: Set up data for processing, share data among VUs
 // is called at the beginning of the test, after the init stage but before the VU stage.
 export function setup() {
+        console.log("Set up data for processing, share data among VUs");
   }
 
 // 3. VU code: Run the test function, usually default
@@ -1185,5 +1186,5 @@ export default function () {
 // 4. teardown code: Process result of setup code, stop test environment
 // is called at the end of a test, after the VU stage
 export function teardown(data) {
-
+        console.log("Process result of setup code, stop test environment");
 }

@@ -35,7 +35,7 @@ First of all let's identify the Test Lifecycle stages for a k6 test file.
 - VU code
 - Teardown
 
-Sample:
+Load test code snippet.
 
 ![Script Sample File](/k6/images/javascript-sample-file.png)
 
@@ -53,16 +53,21 @@ code baseline-k6-local.js
 
 Typically, VU code is inside the `default` function, VU code runs over and over through the test duration from start to end in sequence. Once the VU reaches the end of the function, it loops back to the start and executes the code all over.
 
-When creating new load test, usually the first step is to define HTTP request to test and validate endpoints.
+When creating new load test, usually the first step is to define [HTTP requests](https://k6.io/docs/using-k6/http-requests/) to test and validate endpoints.
 
 In this case, VU code makes a series of Get HTTP requests, and performs a check to validate the reponse.
 
-For instance we could check for one or more conditions such as
+For instance we could check for one or more conditions at the time such as:
 
 - HTTP response code
 - Text in the response body
 - Response body size
--
+
+Check definitions can be labeled so when the script includes checks, the summary report shows what type of Check and how many passed.
+
+![Script Sample File](/k6/images/javascript-checks.png)
+
+More information about Checks can be found [here](https://k6.io/docs/using-k6/checks/)
 
 ## Run the ngsa container
 
@@ -79,15 +84,21 @@ docker run --net=host ghcr.io/retaildevcrews/ngsa-app:beta --in-memory
 
 Navigate to the second terminal to run k6
 
-For example, we are going to run a 5-second, 2-VU load test. More information can be found [here](https://k6.io/docs/get-started/running-k6/)
+For example, we are going to run a 5-second, 2-VU load test. In order to do that we are going to approach it in two different ways
+
+- Run the load test script by setting VU and duration values in the file under Options.
+- Run the load test script by supplying VU and duration as arguments, this will ovewrite the values under Option id any.
+
+More information can be found [here](https://k6.io/docs/get-started/running-k6/)
 
 ```bash
 # verify ngsa-memory is accessible from the second terminal, curl should return a 200 http code.
 curl -I localhost:8080/version
 
+# Run k6 with default options for VUs and duration
 docker run --rm -v $(pwd)/k6:/scripts --net=host grafana/k6 run /scripts/baseline-k6-local.js
 
-# Then run k6 and overwrite VUs and duration
+# Then try to run k6 and overwrite VUs and duration by setting those arguments in-line
 docker run --rm -v $(pwd)/k6:/scripts --net=host grafana/k6 run --vus 2 --duration 5s  /scripts/baseline-k6-local.js
 ```
 
