@@ -138,7 +138,7 @@ namespace Ngsa.Middleware
             // compute request duration
             duration = Math.Round(DateTime.Now.Subtract(dtStart).TotalMilliseconds, 2);
 
-            LogRequest(context, ttfb, duration);
+            //LogRequest(context, ttfb, duration);
         }
 
         // log the request
