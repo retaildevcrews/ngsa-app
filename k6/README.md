@@ -101,7 +101,7 @@ More information about running k6 can be found [here](https://k6.io/docs/get-sta
 ```bash
 - k6 run -e MY_HOSTNAME=localhost:8080 script.js
 - k6 run -e MY_HOSTNAME=ngsa-memory.ngsa.svc.cluster.local:8080 script.js
-
+- Add env variable to k6 deployment
 Implementation:
 let targetHost= `http://${__ENV.MY_HOSTNAME}/`;
 ```
