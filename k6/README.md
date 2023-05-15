@@ -40,6 +40,7 @@ More information related to the topics listed above can be found here.
 
 - [Test Lifecycle Stages](https://k6.io/docs/using-k6/test-lifecycle/)
 - [Options](https://k6.io/docs/using-k6/k6-options/)
+- [Exemples](https://k6.io/docs/examples/)
 
 Typically, VU code is inside the `default` function, VU code runs over and over through the test duration from start to end in sequence. Once the VU reaches the end of the function, it loops back to the start and executes the code all over.
 
@@ -94,6 +95,17 @@ For example, we are going to run a 5-second, 2-VU load test. In order to do that
 - Run the load test script by supplying VU and duration values as arguments, this will ovewrite the values under Option if any.
 
 More information about running k6 can be found [here](https://k6.io/docs/get-started/running-k6/)
+
+# TODO:  use env variable to pass in host [Env Variables](https://k6.io/docs/using-k6/environment-variables/)
+
+```bash
+- k6 run -e MY_HOSTNAME=localhost:8080 script.js
+- k6 run -e MY_HOSTNAME=ngsa-memory.ngsa.svc.cluster.local:8080 script.js
+
+Implementation:
+let targetHost= `http://${__ENV.MY_HOSTNAME}/`;
+```
+
 
 ```bash
 # verify ngsa-memory is accessible from the second terminal, curl should return a 200 http code.
