@@ -57,10 +57,9 @@ Check definitions can be labeled so when the script includes checks, the summary
 
 More information about Checks can be found [here](https://k6.io/docs/using-k6/checks/)
 
-
 ### Load Test Files
 
-Let's identify eacch load test file utilized for this lab.
+Let's identify each load test file utilized for this lab.
 
 - `baseline-k6-local.js`, provides a baseline load test for local deployment `http://localhost:8080`
 - `benchmark-k6-local.js`, provides a benchmark load test for local deployment `http://localhost:8080`
@@ -185,15 +184,15 @@ kubectl get pods -n ngsa
 kubectl logs <ngsa-memory pod name> -n ngsa --tail 20
 ```
 
-## TODO ---- Add Observability
+## Setup Monitoring
 
-# - Update k6 deployment to enable K6_PROMETHEUS_RW_SERVER_URL
+The following instructions deploy Prometheus and Grafana in an existing cluster.
 
-# - how to import dashbords into grafana, try to use kubectl apply ?
+The k6 has an experimental feature name [Prometheus remote write](https://k6.io/docs/results-output/real-time/prometheus-remote-write/), that can be enabled by setting the variable `K6_PROMETHEUS_RW_SERVER_URL`
 
-- Add k6 official grafana dashboard for k6 prometheus  - [Time series visualization](https://k6.io/docs/results-output/real-time/prometheus-remote-write/#time-series-visualization)
+![Prometheus remote write configuration](/k6/images/k6-prometheus-remote-write.png)
 
-[Official k6 Test Result](https://grafana.com/grafana/dashboards/18030-test-result/)
+NOTE: The [k6 deployment file](/k6/k6.yaml) has already set this configuration.
 
 ### Install Grafana and Prometheus
 
@@ -205,38 +204,16 @@ kubectl apply -f k6/deploy/monitoring
 kubectl port-forward service/grafana 3000:3000 -n monitoring
 
 kubectl port-forward service/prometheus-service 8080:9090 -n monitoring
-
-Open solution in VS code desktop
-
-# open browser on  http://127.0.0.1:3000 or http://localhost:3000/
 ```
 
-### Install a jumpbox to test connectivity
+### Open grafana dashboard
+
+- Open solution in VS code desktop
+- Then, for grafana open browser on  http://127.0.0.1:3000 or http://localhost:3000/
+
+To [visualize time series](https://k6.io/docs/results-output/real-time/prometheus-remote-write/#time-series-visualization), you can use Grafana via explorer, importing the pre-built [official dashboard](https://grafana.com/grafana/dashboards/18030-test-result/)
+### Tooling, install a jumpbox to test connectivity
 
 ```bash
 kubectl run jumpbox --image=ghcr.io/cse-labs/jumpbox --restart=Always
 ```
-
-<!-- ### Install Prometheus and Grafana
-
-```bash
-
-## Install Prometheus
-helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
-
-kubectl create namespace monitoring
-helm install prometheus-community prometheus-community/prometheus -f k6/monitoring/prometheus_values-app-k6-kube.yaml -n monitoring --version 19.0.2
-kubectl apply -f k6/monitoring/prometheus-k6-service.yaml
-
-## Install Grafana
-
-helm repo add grafana https://grafana.github.io/helm-charts
-helm install grafana grafana/grafana -f k6/monitoring/grafana_values.yaml -n monitoring
-```
-
-### Uninstall Prometheus and Grafana
-
-```bash
- helm uninstall grafana -n monitoring
- helm uninstall prometheus-community -n monitoring
-``` -->
