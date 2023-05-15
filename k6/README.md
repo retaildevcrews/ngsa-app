@@ -1,6 +1,6 @@
 # TODO: Move it under k6 labs repo instead, if so, it will require to makesure the tooling to setup local Cluster is available?
 
-# K6 overview
+# k6 overview
 
 This repository leverages GitHub Codespaces to deploy a local Cluster using k3d, then shows the user how to run k6 to perform load testing again ngsa-memory and then enable and leverage observability tools.
 
@@ -10,7 +10,7 @@ The final goal of this repository is to provide an environment that helps the us
 
 Grafana k6 is an open-source load testing tool that makes performance testing easy and productive for engineering teams. k6 is free, developer-centric, and extensible.
 
-Using k6, you can test the reliability and performance of your systems and catch performance regressions and problems earlier, k6 will help you to build resilient and performant applications that scale, one of the most K6 powerful feature is that it's a load testing tool scriptable in JavaScript. More documentation can be found [here](https://k6.io/docs/).
+Using k6, you can test the reliability and performance of your systems and catch performance regressions and problems earlier, k6 will help you to build resilient and performant applications that scale, one of the most k6 powerful feature is that it's a load testing tool scriptable in JavaScript. More documentation can be found [here](https://k6.io/docs/).
 
 ## Use cases
 
@@ -144,7 +144,7 @@ kubectl logs <ngsa-memory pod name> -n ngsa --tail 10
 
 ## Deploy k6 from docker image
 
-We are deploying the [k6 docker image](https://hub.docker.com/r/loadimpact/k6), however k6 package can be installed on multiple operating systems such as Linux, Mac, and Windows. [here](https://k6.io/docs/get-started/installation/).
+We are deploying the [k6 docker image](https://hub.docker.com/r/loadimpact/k6), however k6 package can be installed on multiple operating systems such as Linux, Mac, and Windows. [k6 Installation options](https://k6.io/docs/get-started/installation/).
 
 Also, we are storing the load test script into a Configmap so it can accessable when k6 scales up.
 
