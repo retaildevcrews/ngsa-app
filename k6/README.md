@@ -57,6 +57,16 @@ Check definitions can be labeled so when the script includes checks, the summary
 
 More information about Checks can be found [here](https://k6.io/docs/using-k6/checks/)
 
+
+### Load Test Files
+
+Let's identify eacch load test file utilized for this lab.
+
+- `baseline-k6-local.js`, provides a baseline load test for local deployment `http://localhost:8080`
+- `benchmark-k6-local.js`, provides a benchmark load test for local deployment `http://localhost:8080`
+- `benchmark-k6-cluster.js`, provides a benchmark load test for cluster deployment `http://ngsa-memory.ngsa.svc.cluster.local:8080`
+
+
 Now let's take a closer look at the load test file utilized for this example, and review its contents with special attention to VU code stage and different type of Checks.
 
 ```bash
@@ -138,10 +148,6 @@ kubectl logs <ngsa-memory pod name> -n ngsa --tail 10
 We are deploying the [k6 docker image](https://hub.docker.com/r/loadimpact/k6), however k6 package can be installed on multiple operating systems such as Linux, Mac, and Windows. [here](https://k6.io/docs/get-started/installation/).
 
 Also, we are storing the load test script into a Configmap so it can accessable when k6 scales up.
-
-# TODO
-
-# - describe how the scripting file looks like and what it does
 
 ## How to run a test
 
