@@ -1,7 +1,7 @@
 {
   "openapi": "3.0.1",
   "info": {
-    "title": "Next Gen Symmetric Apps",
+    "title": "Movie Service",
     "version": "1.0"
   },
   "paths": {
