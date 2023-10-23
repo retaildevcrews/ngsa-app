@@ -18,14 +18,18 @@ echo "export AUTH_TYPE=CLI" >> ~/.bashrc
 echo "" >> ~/.zshrc
 echo "export AUTH_TYPE=CLI" >> ~/.zshrc
 
+# Temporary fix until we migrate to the latest k3d version
+echo "Installing k3d version v5.3.0"
+wget -q -O - https://raw.githubusercontent.com/rancher/k3d/main/install.sh | TAG=v5.3.0 bash
+
 # Install k3d > 5.0.1
-k3d --version | grep -Eo '^k3d version v5...[1-9]$' > /dev/null 2>&1
-if [ $? -ne 0 ]; then
-    # Means we don't have proper k3d version
-    # Install v5.0.1
-    echo "Installing latest k3d"
-    wget -q -O - https://raw.githubusercontent.com/rancher/k3d/main/install.sh | sudo bash
-fi
+# k3d --version | grep -Eo '^k3d version v5...[1-9]$' > /dev/null 2>&1
+# if [ $? -ne 0 ]; then
+#     # Means we don't have proper k3d version
+#     # Install v5.0.1
+#     echo "Installing latest k3d"
+#     wget -q -O - https://raw.githubusercontent.com/rancher/k3d/main/install.sh | sudo bash
+# fi
 
 # Install Istio
 hash istioctl || (echo "Installing istioctl" ; curl -sL https://istio.io/downloadIstioctl | sh - > /dev/null 2>&1; sudo mv ~/.istioctl/bin/istioctl /usr/local/bin)
